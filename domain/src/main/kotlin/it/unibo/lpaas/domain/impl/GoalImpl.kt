@@ -1,9 +1,9 @@
 package it.unibo.lpaas.domain.impl
 
 import it.unibo.lpaas.domain.Goal
-import it.unibo.lpaas.domain.SubGoal
+import it.unibo.lpaas.domain.GoalData
 
-class GoalImpl(
+internal class GoalImpl(
     override val name: String,
-    override val subGoals: List<SubGoal>,
+    override val data: GoalData,
 ) : Goal

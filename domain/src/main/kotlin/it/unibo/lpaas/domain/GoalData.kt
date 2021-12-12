@@ -1,24 +1,31 @@
 package it.unibo.lpaas.domain
 
+import it.unibo.lpaas.domain.impl.GoalDataImpl
 import it.unibo.lpaas.domain.impl.GoalImpl
-import it.unibo.lpaas.domain.impl.SubGoalImpl
 
 interface GoalData {
-    val subGoals: List<SubGoal>
+    val subgoals: List<Subgoal>
+
+    fun append(subGoal: Subgoal): GoalData
+
+    fun replace(index: Int, subGoal: Subgoal): GoalData
+
+    fun remove(index: Int): GoalData
+
+    companion object {
+        fun of(subgoals: List<Subgoal>): GoalData = GoalDataImpl(subgoals)
+    }
 }
 
-interface Goal : GoalData {
+interface Goal {
     val name: String
+
+    val data: GoalData
 
     companion object {
         fun of(
             name: String,
-            subGoals: List<SubGoal>,
-        ): Goal = GoalImpl(name, subGoals)
-
-        fun of(
-            name: String,
-            term: Term,
-        ): Goal = GoalImpl(name, listOf(SubGoalImpl(term)))
+            goalData: GoalData,
+        ): Goal = GoalImpl(name, goalData)
     }
 }

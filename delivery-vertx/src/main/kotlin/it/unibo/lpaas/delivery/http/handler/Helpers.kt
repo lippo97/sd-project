@@ -68,7 +68,7 @@ internal fun Route.suspendHandler(fn: suspend (RoutingContext) -> Unit): Route =
 /**
  * Helper DSL method that allows to work with [UseCase]s.
  */
-internal fun <T> Route.jsonHandler(
+internal fun <T> Route.useCaseHandler(
     mapper: Map<MimeType, BufferSerializer>,
     returnCode: HTTPStatusCode = HTTPStatusCode.OK,
     fn: suspend (RoutingContext) -> UseCase<T>

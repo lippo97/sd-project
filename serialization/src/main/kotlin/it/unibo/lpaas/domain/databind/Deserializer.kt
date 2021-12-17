@@ -1,10 +1,7 @@
 package it.unibo.lpaas.domain.databind
 
-import com.fasterxml.jackson.core.exc.StreamWriteException
-import com.fasterxml.jackson.databind.DatabindException
 import com.fasterxml.jackson.databind.ObjectReader
 import java.io.IOException
-import java.io.StringWriter
 
 interface Deserializer {
 

@@ -27,11 +27,9 @@ internal class IncrementalVersionTest : FunSpec({
         }
         test("0 should be equal to 0") {
             Version.incremental(0)!! shouldBeEqualComparingTo Version.incremental(0)!!
-
         }
         test("0 should be less than 1") {
             Version.incremental(0)!! shouldBeLessThan Version.incremental(1)!!
         }
     }
-
 })

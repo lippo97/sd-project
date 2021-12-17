@@ -1,12 +1,12 @@
 package it.unibo.lpaas.domain
 
-/**
- * A non-negative progressive integer representing the version of the resource.
- */
-@JvmInline
-value class Version private constructor (val value: Int) {
+import it.unibo.lpaas.domain.impl.IncrementalVersion
+import it.unibo.lpaas.domain.impl.SemanticVersion
+
+interface Version : Comparable<Version> {
     companion object {
-        fun of(value: Int = 0): Version? =
-            if (value >= 0) Version(value) else null
+        fun incremental(startingAt: Int = 0): Version? = IncrementalVersion.of(startingAt)
+
+        fun semantic(x: Int, y: Int, z: Int): Version? = SemanticVersion.of(x, y, z)
     }
 }

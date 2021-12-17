@@ -1,11 +1,7 @@
 package it.unibo.lpaas.domain
 
-import it.unibo.lpaas.domain.impl.SubgoalImpl
+import it.unibo.tuprolog.core.Struct
 
-interface Subgoal {
-    val value: Term
-
-    companion object {
-        fun of(term: Term): Subgoal = SubgoalImpl(term)
-    }
-}
+data class Subgoal(
+    val value: Struct
+)

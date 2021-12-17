@@ -6,6 +6,7 @@ import io.vertx.core.http.HttpServerResponse
 enum class HTTPStatusCode(val code: Int) {
     OK(200),
     CREATED(201),
+    NO_CONTENT(204),
     BAD_REQUEST(400),
     UNAUTHORIZED(401),
     FORBIDDEN(403),

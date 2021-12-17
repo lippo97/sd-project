@@ -9,7 +9,15 @@ fun interface Controller {
     companion object {
         fun make(dependencyGraph: DependencyGraph): Controller = Controller {
             Router.router(dependencyGraph.vertx).apply {
-                mountSubRouter("/goal", goalHandler(dependencyGraph.vertx, dependencyGraph.goalRepository))
+                mountSubRouter(
+                    "/goal",
+                    goalHandler(
+                        dependencyGraph.vertx,
+                        dependencyGraph.goalRepository,
+                        dependencyGraph.serializers,
+                        dependencyGraph.factories.goalIdFactory,
+                    )
+                )
             }
         }
     }

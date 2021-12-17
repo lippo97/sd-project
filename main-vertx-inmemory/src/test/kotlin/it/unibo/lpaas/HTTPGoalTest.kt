@@ -67,6 +67,8 @@ class HTTPGoalTest : FunSpec({
     val exampleGoal = "parent(goku, gohan)"
     val anotherExampleGoal = "parent(vegeta, trunks)"
 
+    val goalBaseUrl = Controller.GOAL_BASEURL
+
     beforeAny {
         runTest {
             val server = vertx.createHttpServer()
@@ -91,14 +93,14 @@ class HTTPGoalTest : FunSpec({
     }
 
     test("The service should be running") {
-        client.get("/goal")
+        client.get(goalBaseUrl)
             .map { it.statusCode() }
             .map { it shouldBeExactly 200 }
             .await()
     }
 
     test("The service should be initialized with a goal") {
-        client.get("/goal")
+        client.get(goalBaseUrl)
             .flatMap { it.body() }
             .map { body ->
                 body.toJsonArray().let {
@@ -111,7 +113,7 @@ class HTTPGoalTest : FunSpec({
 
     context("When a new goal is submitted") {
         test("a resource must be created successfully") {
-            client.post("/goal") {
+            client.post(goalBaseUrl) {
                 obj(
                     "name" to "myGoal",
                     "subgoals" to array(obj("value" to exampleGoal))
@@ -122,7 +124,7 @@ class HTTPGoalTest : FunSpec({
                 .await()
         }
         test("the goals index must be updated") {
-            client.get("/goal")
+            client.get(goalBaseUrl)
                 .flatMap { it.body() }
                 .map {
                     it.toJson() shouldBe json {
@@ -135,7 +137,7 @@ class HTTPGoalTest : FunSpec({
                 .await()
         }
         test("it can be retrieved at its URI") {
-            client.get("/goal/myGoal")
+            client.get("$goalBaseUrl/myGoal")
                 .flatMap { it.body() }
                 .map {
                     it.toJsonObject().get<String>("name") shouldBe "myGoal"
@@ -151,7 +153,7 @@ class HTTPGoalTest : FunSpec({
 
     context("When an existing theory is replaced") {
         test("it should return the updated record") {
-            client.put("/goal/default") {
+            client.put("$goalBaseUrl/default") {
                 obj(
                     "subgoals" to array(obj("value" to anotherExampleGoal))
                 )
@@ -174,7 +176,7 @@ class HTTPGoalTest : FunSpec({
 
     context("When a goal is deleted") {
         test("request should complete successfully") {
-            client.delete("/goal/myGoal/")
+            client.delete("$goalBaseUrl/myGoal/")
                 .map {
                     it.statusCode() shouldBe 204
                 }
@@ -190,7 +192,7 @@ class HTTPGoalTest : FunSpec({
 
     context("When a subgoal is appended") {
         test("request should complete successfully") {
-            client.patch("/goal/default") {
+            client.patch("$goalBaseUrl/default") {
                 obj(
                     "value" to "parent(bardok, goku)"
                 )
@@ -209,7 +211,7 @@ class HTTPGoalTest : FunSpec({
                 .await()
         }
         test("it can be retrieved at its index") {
-            client.get("/goal/default/1")
+            client.get("$goalBaseUrl/default/1")
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
                 .map {
@@ -220,7 +222,7 @@ class HTTPGoalTest : FunSpec({
     }
     context("When a subgoal is replaced") {
         test("request should complete successfully") {
-            client.put("/goal/default/1") {
+            client.put("$goalBaseUrl/default/1") {
                 obj(
                     "value" to "parent(bulma, trunks)"
                 )
@@ -242,7 +244,7 @@ class HTTPGoalTest : FunSpec({
 
     context("When a subgoal is deleted") {
         test("request should complete successfully") {
-            client.delete("/goal/default/1")
+            client.delete("$goalBaseUrl/default/1")
                 .map { it.statusCode() shouldBeExactly 204 }
                 .await()
         }
@@ -256,7 +258,7 @@ class HTTPGoalTest : FunSpec({
     context("When querying using the accept-content feature") {
         test("response should default to json if header was not provided") {
             client.get(
-                "/goal/default",
+                "$goalBaseUrl/default",
             )
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
@@ -267,7 +269,7 @@ class HTTPGoalTest : FunSpec({
         }
         test("response should be in the requested format (JSON)") {
             client.get(
-                "/goal/default",
+                "$goalBaseUrl/default",
                 headers = HttpHeaders.set(HttpHeaders.ACCEPT, MimeType.JSON.value)
             )
                 .tap { it.statusCode() shouldBeExactly 200 }
@@ -279,7 +281,7 @@ class HTTPGoalTest : FunSpec({
         }
         test("response should be in the requested format (YAML)") {
             client.get(
-                "/goal/default",
+                "$goalBaseUrl/default",
                 headers = HttpHeaders.set(HttpHeaders.ACCEPT, MimeType.YAML.value)
             )
                 .tap { it.statusCode() shouldBeExactly 200 }

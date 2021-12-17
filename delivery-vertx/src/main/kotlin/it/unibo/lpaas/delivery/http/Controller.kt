@@ -7,10 +7,13 @@ fun interface Controller {
     fun routes(): Router
 
     companion object {
+
+        const val GOAL_BASEURL = "/goals"
+
         fun make(dependencyGraph: DependencyGraph): Controller = Controller {
             Router.router(dependencyGraph.vertx).apply {
                 mountSubRouter(
-                    "/goal",
+                    GOAL_BASEURL,
                     goalHandler(
                         dependencyGraph.vertx,
                         dependencyGraph.goalRepository,

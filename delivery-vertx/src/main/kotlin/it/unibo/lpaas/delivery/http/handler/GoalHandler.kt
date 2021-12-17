@@ -89,10 +89,9 @@ fun goalHandler(
             }
 
         delete("/:name/:index")
-            .produces(serializers.keys)
             .useCaseHandler(serializers) { ctx ->
                 val name = nameFactory(ctx.pathParam("name"))
                 val index = ctx.pathParam("index").toInt()
-                goalUseCases.deleteSubgoal(name, index)
+                goalUseCases.deleteSubgoal(name, index).void()
             }
     }

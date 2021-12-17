@@ -243,14 +243,7 @@ class HTTPGoalTest : FunSpec({
     context("When a subgoal is deleted") {
         test("request should complete successfully") {
             client.delete("/goal/default/1")
-                .tap { it.statusCode() shouldBeExactly 200 }
-                .flatMap { it.body() }
-                .map {
-                    it.toJsonObject().getString("name") shouldBe "default"
-                    it.toJsonObject()
-                        .getJsonObject("data")
-                        .getJsonArray("subgoals").size() shouldBeExactly 1
-                }
+                .map { it.statusCode() shouldBeExactly 204 }
                 .await()
         }
         test("you shouldn't be able to retrieve the goal") {

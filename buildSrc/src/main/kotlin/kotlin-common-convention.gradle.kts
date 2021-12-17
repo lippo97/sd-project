@@ -34,6 +34,10 @@ tasks.withType<KotlinCompile> {
     }
 }
 
+detekt {
+    autoCorrect = true
+}
+
 tasks.withType<Detekt>().configureEach {
     jvmTarget = "1.8"
 }

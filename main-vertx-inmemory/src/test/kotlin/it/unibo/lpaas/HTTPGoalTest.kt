@@ -17,13 +17,12 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.Factories
 import it.unibo.lpaas.delivery.http.MimeType
-import it.unibo.lpaas.delivery.http.databind.BufferSerializer
+import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.Subgoal
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.databind.DomainSerializationModule
-import it.unibo.lpaas.domain.databind.ObjectMappers
 import it.unibo.lpaas.domain.databind.configureMappers
 import it.unibo.lpaas.domain.impl.IncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
@@ -39,10 +38,15 @@ import kotlinx.coroutines.test.runTest
 
 class HTTPGoalTest : FunSpec({
 
-    val jsonMapper = ObjectMappers.json()
-    val yamlMapper = ObjectMappers.yaml()
+    val jsonSerializer = ObjectMapperSerializer.json()
+    val yamlSerializer = ObjectMapperSerializer.yaml()
 
-    configureMappers(DatabindCodec.mapper(), DatabindCodec.prettyMapper(), jsonMapper, yamlMapper) {
+    configureMappers(
+        DatabindCodec.mapper(),
+        DatabindCodec.prettyMapper(),
+        jsonSerializer.objectMapper,
+        yamlSerializer.objectMapper
+    ) {
         registerKotlinModule()
         registerModule(DomainSerializationModule())
         registerModule(
@@ -52,9 +56,6 @@ class HTTPGoalTest : FunSpec({
             }
         )
     }
-
-    val jsonSerializer = BufferSerializer.of(jsonMapper.writer())
-    val yamlSerializer = BufferSerializer.of(yamlMapper.writer())
 
     val serializers = mapOf(
         MimeType.JSON to jsonSerializer,

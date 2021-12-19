@@ -18,6 +18,7 @@ import it.unibo.lpaas.core.exception.ValidationException
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.MimeType
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
+import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.delivery.http.setStatusCode
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -87,8 +88,8 @@ internal fun <T> Route.useCaseHandler(
             // Default it with a Json factory in order to let it not crash
             val serializer = mapper[contentType] ?: run {
                 println("Coudln't find the requested serializer.")
-                BufferSerializer.of(
-                    ObjectMapper(JsonFactory()).enable(SerializationFeature.INDENT_OUTPUT).writer()
+                ObjectMapperSerializer.of(
+                    ObjectMapper(JsonFactory()).enable(SerializationFeature.INDENT_OUTPUT)
                 )
             }
 

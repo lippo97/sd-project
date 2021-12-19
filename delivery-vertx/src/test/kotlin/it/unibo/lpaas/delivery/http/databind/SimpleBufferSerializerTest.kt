@@ -19,7 +19,7 @@ internal class SimpleBufferSerializerTest : FunSpec({
         registerKotlinModule()
     }
 
-    val serializer = BufferSerializer.of(objectMapper.writer())
+    val serializer = ObjectMapperSerializer.of(objectMapper)
 
     val plainObject = Inner(30, "hello")
     val nestedObject = Outer(
@@ -73,7 +73,7 @@ internal class SimpleBufferSerializerTest : FunSpec({
 
     context("When using a YAML mapper") {
         test("it should produce YAML formatted strings") {
-            Serializer.of(ObjectMapper(YAMLFactory()).enable(SerializationFeature.INDENT_OUTPUT).writer()).apply {
+            Serializer.of(ObjectMapper(YAMLFactory()).enable(SerializationFeature.INDENT_OUTPUT)).apply {
                 serializeToString(Inner(0, "ciao")) shouldBe """
                     ---
                     a: 0

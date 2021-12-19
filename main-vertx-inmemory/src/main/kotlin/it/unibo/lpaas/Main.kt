@@ -13,7 +13,6 @@ import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.databind.DomainSerializationModule
-import it.unibo.lpaas.domain.databind.ObjectMappers
 import it.unibo.lpaas.domain.databind.configureMappers
 import it.unibo.lpaas.domain.impl.IncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
@@ -22,10 +21,17 @@ import it.unibo.lpaas.persistence.InMemoryGoalRepository
 @Suppress("MagicNumber")
 fun main() {
 
-    val jsonSerializer = ObjectMapperSerializer.of(ObjectMappers.json())
-    val yamlSerializer = ObjectMapperSerializer.of(ObjectMappers.yaml())
+    val jsonSerializer = ObjectMapperSerializer.json()
+    val yamlSerializer = ObjectMapperSerializer.yaml()
+    val xmlSerializer = ObjectMapperSerializer.xml()
 
-    configureMappers(mapper(), prettyMapper(), jsonSerializer.objectMapper, yamlSerializer.objectMapper) {
+    configureMappers(
+        mapper(),
+        prettyMapper(),
+        jsonSerializer.objectMapper,
+        yamlSerializer.objectMapper,
+        xmlSerializer.objectMapper,
+    ) {
         registerKotlinModule()
         registerModule(DomainSerializationModule())
         registerModule(
@@ -39,6 +45,7 @@ fun main() {
     val serializers = mapOf(
         MimeType.JSON to jsonSerializer,
         MimeType.YAML to yamlSerializer,
+        MimeType.XML to xmlSerializer
     )
 
     val vertx = Vertx.vertx()

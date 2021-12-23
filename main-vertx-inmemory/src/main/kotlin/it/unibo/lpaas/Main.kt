@@ -8,6 +8,7 @@ import io.vertx.core.json.jackson.DatabindCodec.prettyMapper
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.Factories
+import it.unibo.lpaas.delivery.http.MimeSerializer
 import it.unibo.lpaas.delivery.http.MimeType
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.domain.GoalId
@@ -52,7 +53,7 @@ fun main() {
     val controller = Controller.make(
         DependencyGraph(
             vertx = vertx,
-            serializers = serializers,
+            mimeSerializer = MimeSerializer.of(serializers),
             goalRepository = InMemoryGoalRepository(),
             factories = Factories(
                 goalIdFactory = GoalId::of

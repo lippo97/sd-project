@@ -13,10 +13,13 @@ interface RBAC {
     companion object {
         fun default(): RBAC = SimpleRBAC().apply {
             addPermissions(Role.CLIENT, listOf("getAllGoals", "getAllGoalsIndex", "getGoalByName").map { Tag(it) })
-            addPermissions(Role.CONFIGURATOR, listOf(
-                "getAllGoals", "getAllGoalsIndex", "getGoalByName", "createGoal", "replaceGoal", "deleteGoal",
-                "appendSubgoal", "getSubgoalByIndex", "replaceSubgoal", "deleteSubgoal"
-            ).map { Tag(it) })
+            addPermissions(
+                Role.CONFIGURATOR,
+                listOf(
+                    "getAllGoals", "getAllGoalsIndex", "getGoalByName", "createGoal", "replaceGoal", "deleteGoal",
+                    "appendSubgoal", "getSubgoalByIndex", "replaceSubgoal", "deleteSubgoal"
+                ).map { Tag(it) }
+            )
         }
     }
 }

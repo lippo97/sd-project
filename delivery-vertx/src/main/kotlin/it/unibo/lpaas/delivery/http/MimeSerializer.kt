@@ -25,10 +25,9 @@ interface MimeSerializer<out T : BufferSerializer> {
 
             override fun getOrDefault(mimeType: MimeType, bufferSerializer: BufferSerializer): BufferSerializer =
                 serializers.getOrDefault(mimeType, bufferSerializer)
-
         }
 
-        fun <T : BufferSerializer>of(serializers: Map<MimeType, T>): MimeSerializer<T> =
+        fun <T : BufferSerializer> of(serializers: Map<MimeType, T>): MimeSerializer<T> =
             SimpleMimeSerializer(serializers)
     }
 }

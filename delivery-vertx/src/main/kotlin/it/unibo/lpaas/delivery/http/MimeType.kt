@@ -2,7 +2,8 @@ package it.unibo.lpaas.delivery.http
 
 enum class MimeType(val value: String) {
     JSON("application/json"),
-    YAML("application/yaml");
+    YAML("application/yaml"),
+    XML("application/xml");
 
     companion object {
         @Throws(NoSuchElementException::class)

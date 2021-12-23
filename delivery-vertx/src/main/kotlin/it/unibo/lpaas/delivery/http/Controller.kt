@@ -17,7 +17,7 @@ fun interface Controller {
                     goalHandler(
                         dependencyGraph.vertx,
                         dependencyGraph.goalRepository,
-                        dependencyGraph.serializers,
+                        dependencyGraph.mimeSerializer,
                         dependencyGraph.factories.goalIdFactory,
                     )
                 )

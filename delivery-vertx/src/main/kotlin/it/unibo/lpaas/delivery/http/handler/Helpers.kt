@@ -16,8 +16,10 @@ import it.unibo.lpaas.core.exception.NonFatalError
 import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.core.exception.ValidationException
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
+import it.unibo.lpaas.delivery.http.MimeSerializer
 import it.unibo.lpaas.delivery.http.MimeType
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
+import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.delivery.http.setStatusCode
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -69,7 +71,7 @@ internal fun Route.suspendHandler(fn: suspend (RoutingContext) -> Unit): Route =
  * Helper DSL method that allows to work with [UseCase]s.
  */
 internal fun <T> Route.useCaseHandler(
-    mapper: Map<MimeType, BufferSerializer>,
+    mimeSerializer: MimeSerializer<BufferSerializer>,
     returnCode: HTTPStatusCode = HTTPStatusCode.OK,
     fn: suspend (RoutingContext) -> UseCase<T>
 ): Route =
@@ -85,10 +87,10 @@ internal fun <T> Route.useCaseHandler(
                 .getOrThrow()
 
             // Default it with a Json factory in order to let it not crash
-            val serializer = mapper[contentType] ?: run {
+            val serializer = mimeSerializer[contentType] ?: run {
                 println("Coudln't find the requested serializer.")
-                BufferSerializer.of(
-                    ObjectMapper(JsonFactory()).enable(SerializationFeature.INDENT_OUTPUT).writer()
+                ObjectMapperSerializer.of(
+                    ObjectMapper(JsonFactory()).enable(SerializationFeature.INDENT_OUTPUT)
                 )
             }
 

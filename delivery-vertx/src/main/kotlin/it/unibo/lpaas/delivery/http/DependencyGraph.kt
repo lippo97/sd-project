@@ -11,7 +11,7 @@ class Factories(
 
 class DependencyGraph(
     val vertx: Vertx,
-    val serializers: Map<MimeType, BufferSerializer>,
+    val mimeSerializer: MimeSerializer<BufferSerializer>,
     val goalRepository: GoalRepository,
     val factories: Factories,
 )

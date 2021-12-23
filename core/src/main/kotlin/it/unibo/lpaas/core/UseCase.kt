@@ -1,7 +1,10 @@
 package it.unibo.lpaas.core
 
+@JvmInline
+value class Tag(val value: String)
+
 interface UseCase<T> {
-    val tag: String
+    val tag: Tag
 
     suspend fun execute(): T
 
@@ -12,10 +15,12 @@ interface UseCase<T> {
     fun void(): UseCase<Unit> = `as`(Unit)
 
     companion object {
-        fun <T> of(tag: String, execute: suspend () -> T): UseCase<T> = object : UseCase<T> {
-            override val tag: String = tag
+        fun <T> of(tag: Tag, execute: suspend () -> T): UseCase<T> = object : UseCase<T> {
+            override val tag: Tag = tag
 
             override suspend fun execute(): T = execute()
         }
+
+        fun <T> of(tag: String, execute: suspend () -> T): UseCase<T> = of(Tag(tag), execute)
     }
 }

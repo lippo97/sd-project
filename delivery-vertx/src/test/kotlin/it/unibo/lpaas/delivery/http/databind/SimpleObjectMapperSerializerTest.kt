@@ -12,12 +12,12 @@ internal class SimpleObjectMapperSerializerTest : FunSpec({
     context("Default ObjectMapperSerializer instances") {
         test("should serialize data structures (JSON)") {
             ObjectMapperSerializer.json()
-                .apply { objectMapper.registerKotlinModule() }
+                .apply {
+                    objectMapper.registerKotlinModule()
+                    objectMapper.disable(SerializationFeature.INDENT_OUTPUT)
+                }
                 .serializeToString(Test(30, "ciao")) shouldBe """
-                    {
-                      "a" : 30,
-                      "b" : "ciao"
-                    }
+                    {"a":30,"b":"ciao"}
             """.trimIndent()
         }
         test("should serialize data structures (YAML)") {
@@ -34,14 +34,9 @@ internal class SimpleObjectMapperSerializerTest : FunSpec({
             ObjectMapperSerializer.xml()
                 .apply {
                     objectMapper.registerKotlinModule()
-                    objectMapper.enable(SerializationFeature.INDENT_OUTPUT)
                 }
                 .serializeToString(Test(30, "ciao")) shouldBe """
-                    <Test>
-                      <a>30</a>
-                      <b>ciao</b>
-                    </Test>
-                    
+                    <Test><a>30</a><b>ciao</b></Test>
             """.trimIndent()
         }
     }

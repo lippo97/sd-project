@@ -21,6 +21,6 @@ dependencies {
  * $ gradle test -Dkotest.tags=""
  */
 tasks.withType<Test> {
-    this.environment["kotest.tags"] = this.environment["kotest.tags"] ?: "!Mongo"
+    environment["kotest.tags"] = environment["kotest.tags"] ?: "!Mongo"
 }
 

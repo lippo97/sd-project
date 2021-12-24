@@ -34,6 +34,17 @@ tasks.withType<KotlinCompile> {
     }
 }
 
+/*
+ * Propagate system properties to the test executor, so that they know about
+ * inline System Properties.
+ * See: https://kotest.io/docs/framework/tags.html#gradle
+ */
+tasks.withType<Test> {
+    systemProperties = System.getProperties()
+        .map { it.key.toString() to it.value }
+        .toMap()
+}
+
 detekt {
     autoCorrect = true
 }

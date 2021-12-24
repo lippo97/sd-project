@@ -2,7 +2,6 @@ package it.unibo.lpaas
 
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.kotest.core.Tag
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeExactly
@@ -41,8 +40,6 @@ import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.InMemoryGoalRepository
 import it.unibo.tuprolog.core.Struct
 import kotlinx.coroutines.test.runTest
-
-object HTTP : Tag()
 
 @Tags("HTTP")
 class HTTPGoalTest : FunSpec({

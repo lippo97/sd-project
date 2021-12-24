@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.databind.module.SimpleModule
 import io.kotest.assertions.shouldFail
+import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.core.Tag
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -16,7 +17,6 @@ import it.unibo.lpaas.domain.impl.IncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.MongoGoalRepository
 import it.unibo.tuprolog.core.Struct
-import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 import org.litote.kmongo.util.KMongoConfiguration
@@ -26,8 +26,7 @@ object Mongo : Tag()
 class MongoGoalRepositoryTest : FunSpec({
     tags(Mongo)
 
-    lateinit var database: CoroutineDatabase
-    lateinit var repository: MongoGoalRepository
+    val client = KMongo.createClient().coroutine
 
     KMongoConfiguration.registerBsonModule(
         SimpleModule().apply {
@@ -39,13 +38,14 @@ class MongoGoalRepositoryTest : FunSpec({
     )
 
     test("The mongo service must be running") {
-        val client = KMongo.createClient().coroutine
-        database = client.getDatabase("goal-repo-test")
-        database.getCollection<Goal>()
-            .let {
-                repository = MongoGoalRepository(it)
-            }
+        shouldNotThrow<Exception> {
+            client.getDatabase("goal-repo-test")
+                .getCollection<Goal>()
+        }
     }
+
+    val database = client.getDatabase("goal-repo-test")
+    val repository = MongoGoalRepository(database.getCollection())
 
     test("The database should be empty") {
         repository.findAll().isEmpty().shouldBeTrue()

@@ -39,8 +39,11 @@ import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.InMemoryGoalRepository
 import it.unibo.tuprolog.core.Struct
 import kotlinx.coroutines.test.runTest
+import kotlin.time.Duration.Companion.minutes
 
 class HTTPGoalTest : FunSpec({
+
+    timeout = 60.minutes.inWholeMilliseconds
 
     val jsonSerializer = ObjectMapperSerializer.json()
     val yamlSerializer = ObjectMapperSerializer.yaml()

@@ -8,10 +8,10 @@ import io.vertx.core.json.jackson.DatabindCodec.prettyMapper
 import it.unibo.lpaas.auth.RBAC
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
-import it.unibo.lpaas.delivery.http.databind.MimeMap
-import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.Parsers
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerFactory
+import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.Version

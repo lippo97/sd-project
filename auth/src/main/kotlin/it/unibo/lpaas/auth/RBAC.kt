@@ -14,7 +14,6 @@ interface RBAC {
 
         fun simple(): RBAC = SimpleRBAC()
 
-        // TODO: Questo diventerà il metodo factory di default
         fun default(): RBAC = configure {
             addPermissions(Role.CLIENT, listOf("getAllGoals", "getAllGoalsIndex", "getGoalByName").map { Tag(it) })
             addPermissions(

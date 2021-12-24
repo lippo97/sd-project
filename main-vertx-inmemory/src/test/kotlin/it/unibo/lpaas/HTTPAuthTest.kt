@@ -11,7 +11,6 @@ import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.RBAC
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.core.GoalUseCases
-import it.unibo.lpaas.core.Tag
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.Parsers
@@ -21,9 +20,7 @@ import it.unibo.lpaas.delivery.http.databind.MimeMap
 import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.delivery.http.get
-import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
-import it.unibo.lpaas.domain.Subgoal
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.databind.DomainSerializationModule
 import it.unibo.lpaas.domain.databind.configureMappers

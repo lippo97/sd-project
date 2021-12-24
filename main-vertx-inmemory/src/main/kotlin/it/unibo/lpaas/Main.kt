@@ -5,11 +5,13 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.vertx.core.Vertx
 import io.vertx.core.json.jackson.DatabindCodec.mapper
 import io.vertx.core.json.jackson.DatabindCodec.prettyMapper
+import it.unibo.lpaas.auth.RBAC
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
-import it.unibo.lpaas.delivery.http.Factories
-import it.unibo.lpaas.delivery.http.MimeSerializer
-import it.unibo.lpaas.delivery.http.MimeType
+import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.delivery.http.databind.MimeType
+import it.unibo.lpaas.delivery.http.Parsers
+import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerFactory
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.Version
@@ -53,11 +55,13 @@ fun main() {
     val controller = Controller.make(
         DependencyGraph(
             vertx = vertx,
-            mimeSerializer = MimeSerializer.of(serializers),
+            mimeMap = MimeMap.of(serializers),
+            authenticationHandler = AuthenticationHandlerFactory.alwaysGrant(),
             goalRepository = InMemoryGoalRepository(),
-            factories = Factories(
-                goalIdFactory = GoalId::of
-            )
+            parsers = Parsers(
+                goalIdParser = GoalId::of
+            ),
+            rbac = RBAC.alwaysGrant(),
         )
     )
 

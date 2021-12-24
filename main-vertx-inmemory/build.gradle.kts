@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":serialization"))
     implementation(project(":core"))
+    implementation(project(":auth"))
     implementation(project(":delivery-vertx"))
     implementation(project(":persistence-inmemory"))
 

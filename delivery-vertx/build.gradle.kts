@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":serialization"))
     implementation("io.vertx:vertx-core:4.2.1")
     implementation("io.vertx:vertx-web:4.2.1")
-    implementation("io.vertx:vertx-web-validation:4.2.1")
+    implementation("io.vertx:vertx-auth-jwt:4.2.1")
     implementation("io.vertx:vertx-lang-kotlin:4.2.1")
     implementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")

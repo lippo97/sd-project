@@ -1,4 +1,4 @@
-package it.unibo.lpaas.http
+package it.unibo.lpaas.delivery.http
 
 import io.vertx.core.Future
 

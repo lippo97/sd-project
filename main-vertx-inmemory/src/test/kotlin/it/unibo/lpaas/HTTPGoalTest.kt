@@ -13,12 +13,21 @@ import io.vertx.kotlin.core.json.get
 import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.await
+import it.unibo.lpaas.auth.RBAC
+import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
-import it.unibo.lpaas.delivery.http.Factories
-import it.unibo.lpaas.delivery.http.MimeSerializer
-import it.unibo.lpaas.delivery.http.MimeType
+import it.unibo.lpaas.delivery.http.Parsers
+import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
+import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
+import it.unibo.lpaas.delivery.http.delete
+import it.unibo.lpaas.delivery.http.get
+import it.unibo.lpaas.delivery.http.patch
+import it.unibo.lpaas.delivery.http.post
+import it.unibo.lpaas.delivery.http.put
+import it.unibo.lpaas.delivery.http.tap
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.Subgoal
@@ -27,12 +36,6 @@ import it.unibo.lpaas.domain.databind.DomainSerializationModule
 import it.unibo.lpaas.domain.databind.configureMappers
 import it.unibo.lpaas.domain.impl.IncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
-import it.unibo.lpaas.http.delete
-import it.unibo.lpaas.http.get
-import it.unibo.lpaas.http.patch
-import it.unibo.lpaas.http.post
-import it.unibo.lpaas.http.put
-import it.unibo.lpaas.http.tap
 import it.unibo.lpaas.persistence.InMemoryGoalRepository
 import it.unibo.tuprolog.core.Struct
 import kotlinx.coroutines.test.runTest
@@ -58,11 +61,6 @@ class HTTPGoalTest : FunSpec({
         )
     }
 
-    val serializers = mapOf(
-        MimeType.JSON to jsonSerializer,
-        MimeType.YAML to yamlSerializer,
-    )
-
     val vertx = Vertx.vertx()
     val client = vertx.createHttpClient()
 
@@ -77,15 +75,20 @@ class HTTPGoalTest : FunSpec({
             val controller = Controller.make(
                 DependencyGraph(
                     vertx = vertx,
-                    mimeSerializer = MimeSerializer.of(serializers),
+                    mimeMap = MimeMap.of(
+                        MimeType.JSON to jsonSerializer,
+                        MimeType.YAML to yamlSerializer
+                    ),
+                    authenticationHandler = AuthenticationHandlerTestFactory.alwaysGrantAndMockGroups(Role.CLIENT),
                     goalRepository = InMemoryGoalRepository(
                         mapOf(
                             StringId("default") to Goal.Data(listOf(Subgoal(Struct.of("parent"))))
                         )
                     ),
-                    factories = Factories(
-                        goalIdFactory = GoalId::of
-                    )
+                    parsers = Parsers(
+                        goalIdParser = GoalId::of
+                    ),
+                    rbac = RBAC.alwaysGrant()
                 )
             )
             server
@@ -285,6 +288,7 @@ class HTTPGoalTest : FunSpec({
             client.get(
                 "$goalBaseUrl/default",
                 headers = HttpHeaders.set(HttpHeaders.ACCEPT, MimeType.YAML.value)
+                    .set(HttpHeaders.AUTHORIZATION, "Bearer")
             )
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }

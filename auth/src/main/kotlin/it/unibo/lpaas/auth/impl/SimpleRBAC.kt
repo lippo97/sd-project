@@ -1,10 +1,10 @@
 package it.unibo.lpaas.auth.impl
 
-import it.unibo.lpaas.auth.RBAC
+import it.unibo.lpaas.auth.ConfigurableRBAC
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.core.Tag
 
-class SimpleRBAC : RBAC {
+class SimpleRBAC : ConfigurableRBAC {
     private var permissions: Set<Pair<Role, Tag>> = setOf()
 
     override fun isAuthorized(role: Role, tag: Tag) =

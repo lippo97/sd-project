@@ -20,7 +20,5 @@ interface UseCase<T> {
 
             override suspend fun execute(): T = execute()
         }
-
-        fun <T> of(tag: String, execute: suspend () -> T): UseCase<T> = of(Tag(tag), execute)
     }
 }

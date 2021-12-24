@@ -1,8 +1,6 @@
-package it.unibo.lpaas.delivery.http
+package it.unibo.lpaas.delivery.http.databind
 
-import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-
-interface MimeSerializer<out T : BufferSerializer> {
+interface MimeMap<out T : BufferSerializer> {
 
     val availableTypes: Set<MimeType>
 
@@ -14,9 +12,9 @@ interface MimeSerializer<out T : BufferSerializer> {
 
     companion object {
 
-        class SimpleMimeSerializer<out T : BufferSerializer>(
+        class SimpleMimeMap<out T : BufferSerializer>(
             private val serializers: Map<MimeType, T>
-        ) : MimeSerializer<T> {
+        ) : MimeMap<T> {
             override val availableTypes: Set<MimeType> = serializers.keys
 
             override fun configureSerializers(fn: (T) -> Unit) = serializers.values.forEach(fn)
@@ -27,7 +25,9 @@ interface MimeSerializer<out T : BufferSerializer> {
                 serializers.getOrDefault(mimeType, bufferSerializer)
         }
 
-        fun <T : BufferSerializer> of(serializers: Map<MimeType, T>): MimeSerializer<T> =
-            SimpleMimeSerializer(serializers)
+        fun <T : BufferSerializer> of(serializers: Map<MimeType, T>): MimeMap<T> =
+            SimpleMimeMap(serializers)
+
+        fun <T : BufferSerializer> of(vararg pairs: Pair<MimeType, T>): MimeMap<T> = of(pairs.toMap())
     }
 }

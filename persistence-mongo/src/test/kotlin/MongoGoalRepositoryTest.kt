@@ -1,7 +1,7 @@
 import com.fasterxml.jackson.databind.module.SimpleModule
 import io.kotest.assertions.shouldFail
 import io.kotest.assertions.throwables.shouldNotThrow
-import io.kotest.core.Tag
+import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
@@ -21,10 +21,8 @@ import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 import org.litote.kmongo.util.KMongoConfiguration
 
-object Mongo : Tag()
-
+@Tags("Mongo")
 class MongoGoalRepositoryTest : FunSpec({
-    tags(Mongo)
 
     val client = KMongo.createClient().coroutine
 

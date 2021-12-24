@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.module.SimpleDeserializers
 import com.fasterxml.jackson.databind.module.SimpleSerializers
 import it.unibo.lpaas.domain.databind.impl.StringIDSerializer
-import it.unibo.lpaas.domain.databind.impl.StructSerializer
+import it.unibo.lpaas.domain.databind.impl.StructToStringSerializer
 import it.unibo.lpaas.domain.databind.impl.stringIdDeserializer
 import it.unibo.lpaas.domain.databind.impl.structDeserializer
 import it.unibo.lpaas.domain.impl.StringId
@@ -22,7 +22,7 @@ class DomainSerializationModule : Module() {
             addSerializers(
                 SimpleSerializers().apply {
                     addSerializer(StringId::class.java, StringIDSerializer())
-                    addSerializer(Struct::class.java, StructSerializer())
+                    addSerializer(Struct::class.java, StructToStringSerializer())
                 }
             )
             addDeserializers(

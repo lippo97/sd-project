@@ -7,6 +7,6 @@ import it.unibo.lpaas.domain.impl.StringId
 
 class StringIDSerializer : JsonSerializer<StringId>() {
     override fun serialize(value: StringId, gen: JsonGenerator, serializers: SerializerProvider?) {
-        gen.writeString(value.name)
+        gen.writeString(value.value)
     }
 }

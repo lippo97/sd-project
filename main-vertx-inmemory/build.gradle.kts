@@ -20,10 +20,6 @@ dependencies {
     testImplementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.1")
 }
 
-tasks.withType<Test> {
-    this.environment["kotest.tags"] = this.environment["kotest.tags"] ?: "!Mongo"
-}
-
 application {
     mainClass.set("it.unibo.lpaas.MainKt")
 }

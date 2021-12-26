@@ -5,7 +5,9 @@ import it.unibo.tuprolog.theory.Theory as Theory2P
 
 data class Theory(
     val name: TheoryId,
-    val value: Theory2P,
+    val data: Data,
     val version: Version,
     val createdAt: Instant = Instant.now(),
-)
+) {
+    data class Data(val value: Theory2P)
+}

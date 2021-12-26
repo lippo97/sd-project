@@ -4,30 +4,31 @@ interface MimeMap<out T : BufferSerializer> {
 
     val availableTypes: Set<MimeType>
 
+    val availableSerializers: Collection<T>
+
     fun configureSerializers(fn: (T) -> Unit)
 
-    operator fun get(mimeType: MimeType): BufferSerializer?
+    fun serializerForMimeType(mimeType: MimeType): BufferSerializer?
 
-    fun getOrDefault(mimeType: MimeType, bufferSerializer: BufferSerializer): BufferSerializer
+    fun serializerOrDefault(mimeType: MimeType, bufferSerializer: BufferSerializer): BufferSerializer =
+        serializerForMimeType(mimeType) ?: bufferSerializer
 
     companion object {
 
-        class SimpleMimeMap<out T : BufferSerializer>(
-            private val serializers: Map<MimeType, T>
-        ) : MimeMap<T> {
-            override val availableTypes: Set<MimeType> = serializers.keys
-
-            override fun configureSerializers(fn: (T) -> Unit) = serializers.values.forEach(fn)
-
-            override fun get(mimeType: MimeType): BufferSerializer? = serializers[mimeType]
-
-            override fun getOrDefault(mimeType: MimeType, bufferSerializer: BufferSerializer): BufferSerializer =
-                serializers.getOrDefault(mimeType, bufferSerializer)
-        }
-
+        @JvmStatic
         fun <T : BufferSerializer> of(serializers: Map<MimeType, T>): MimeMap<T> =
             SimpleMimeMap(serializers)
 
+        @JvmStatic
         fun <T : BufferSerializer> of(vararg pairs: Pair<MimeType, T>): MimeMap<T> = of(pairs.toMap())
+
+        @JvmStatic
+        @JvmName("makeDefault")
+        fun default(): MimeMap<ObjectMapperSerializer> =
+            of(
+                MimeType.JSON to ObjectMapperSerializer.json(),
+                MimeType.YAML to ObjectMapperSerializer.yaml(),
+                MimeType.XML to ObjectMapperSerializer.xml(),
+            )
     }
 }

@@ -8,14 +8,16 @@ import io.vertx.core.Vertx
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.handler.AuthenticationHandler
 import io.vertx.kotlin.coroutines.await
-import it.unibo.lpaas.auth.RBAC
+import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.core.GoalUseCases
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.Parsers
+import it.unibo.lpaas.delivery.http.Repositories
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerFactory
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
+import it.unibo.lpaas.delivery.http.bindAPIVersion
 import it.unibo.lpaas.delivery.http.databind.MimeMap
 import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
@@ -48,28 +50,32 @@ class HTTPAuthTest : FunSpec({
 
     val vertx = Vertx.vertx()
     val client = vertx.createHttpClient()
+    val goalBaseUrl = Controller.API_VERSION + Controller.GOAL_BASEURL
 
-    fun makeControllerOf(authenticationHandler: AuthenticationHandler, rbac: RBAC): Controller = Controller.make(
+    fun makeControllerOf(
+        authenticationHandler: AuthenticationHandler,
+        authorizationProvider: AuthorizationProvider
+    ): Controller = Controller.make(
         DependencyGraph(
             vertx = vertx,
             mimeMap = MimeMap.of(
                 MimeType.JSON to jsonSerializer,
             ),
             authenticationHandler = authenticationHandler,
-            goalRepository = InMemoryGoalRepository(),
+            repositories = Repositories(
+                goalRepository = InMemoryGoalRepository(),
+            ),
             parsers = Parsers(
                 goalIdParser = GoalId::of
             ),
-            rbac = rbac,
+            authorizationProvider = authorizationProvider,
         )
     )
 
     suspend fun withHttpServerOf(controller: Controller, fn: suspend () -> Unit) {
         with(
             vertx.createHttpServer()
-                .requestHandler(
-                    controller.routes()
-                )
+                .bindAPIVersion(1, controller, vertx)
         ) {
             listen(8080).await()
             fn()
@@ -82,10 +88,10 @@ class HTTPAuthTest : FunSpec({
             withHttpServerOf(
                 makeControllerOf(
                     authenticationHandler = AuthenticationHandlerTestFactory.alwaysGrantAndMockGroups(Role.CLIENT),
-                    rbac = RBAC.alwaysGrant()
+                    authorizationProvider = AuthorizationProvider.alwaysGrant()
                 )
             ) {
-                client.get(Controller.GOAL_BASEURL)
+                client.get(goalBaseUrl)
                     .map { it.statusCode() shouldBe 200 }
                     .await()
             }
@@ -97,10 +103,10 @@ class HTTPAuthTest : FunSpec({
             withHttpServerOf(
                 makeControllerOf(
                     authenticationHandler = AuthenticationHandlerTestFactory.alwaysDeny(),
-                    rbac = RBAC.alwaysGrant()
+                    authorizationProvider = AuthorizationProvider.alwaysGrant()
                 )
             ) {
-                client.get(Controller.GOAL_BASEURL)
+                client.get(goalBaseUrl)
                     .map { it.statusCode() shouldBe 401 }
                     .await()
             }
@@ -112,12 +118,12 @@ class HTTPAuthTest : FunSpec({
             withHttpServerOf(
                 makeControllerOf(
                     authenticationHandler = AuthenticationHandlerFactory.alwaysGrant(),
-                    rbac = RBAC.configure {
+                    authorizationProvider = AuthorizationProvider.configureRoleBased {
                         addPermission(Role.CONFIGURATOR, GoalUseCases.Tags.getAllGoals)
                     }
                 )
             ) {
-                client.get(Controller.GOAL_BASEURL)
+                client.get(goalBaseUrl)
                     .map { it.statusCode() shouldBe 403 }
                     .await()
             }
@@ -126,12 +132,12 @@ class HTTPAuthTest : FunSpec({
             withHttpServerOf(
                 makeControllerOf(
                     authenticationHandler = AuthenticationHandlerTestFactory.alwaysGrantAndMockGroups(Role.CLIENT),
-                    rbac = RBAC.configure {
+                    authorizationProvider = AuthorizationProvider.configureRoleBased {
                         addPermission(Role.CONFIGURATOR, GoalUseCases.Tags.getAllGoalsIndex)
                     }
                 )
             ) {
-                client.get(Controller.GOAL_BASEURL)
+                client.get(goalBaseUrl)
                     .map { it.statusCode() shouldBe 403 }
                     .await()
             }
@@ -141,12 +147,12 @@ class HTTPAuthTest : FunSpec({
                 makeControllerOf(
                     authenticationHandler = AuthenticationHandlerTestFactory
                         .alwaysGrantAndMockGroups(Role.CONFIGURATOR),
-                    rbac = RBAC.configure {
+                    authorizationProvider = AuthorizationProvider.configureRoleBased {
                         addPermission(Role.CONFIGURATOR, GoalUseCases.Tags.getAllGoalsIndex)
                     }
                 )
             ) {
-                client.get(Controller.GOAL_BASEURL)
+                client.get(goalBaseUrl)
                     .map { it.statusCode() shouldBe 200 }
                     .await()
             }

@@ -24,13 +24,13 @@ tasks.withType<Test> {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 }
 
@@ -50,8 +50,8 @@ detekt {
 }
 
 tasks.withType<Detekt>().configureEach {
-    jvmTarget = "1.8"
+    jvmTarget = "11"
 }
 tasks.withType<DetektCreateBaselineTask>().configureEach {
-    jvmTarget = "1.8"
+    jvmTarget = "11"
 }

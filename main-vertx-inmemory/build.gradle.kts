@@ -1,5 +1,6 @@
 plugins {
     id("kotlin-common-convention")
+    `jvm-test-convention`
     application
 }
 
@@ -14,6 +15,7 @@ dependencies {
     implementation("io.vertx:vertx-core:4.2.1")
     implementation("io.vertx:vertx-web:4.2.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0")
+    implementation("io.insert-koin:koin-core:3.1.4")
 
     testImplementation(testFixtures(project(":test-lib-vertx")))
     testImplementation("io.vertx:vertx-lang-kotlin:4.2.1")

@@ -9,24 +9,44 @@ import it.unibo.lpaas.domain.Subgoal
 class GoalUseCases(private val goalRepository: GoalRepository) {
 
     companion object Tags {
+        @JvmStatic
+        @get:JvmName("getAllGoals")
         val getAllGoals = Tag("getAllGoals")
 
+        @JvmStatic
+        @get:JvmName("getAllGoalsIndex")
         val getAllGoalsIndex = Tag("getAllGoalsIndex")
 
+        @JvmStatic
+        @get:JvmName("getGoalByName")
         val getGoalByName = Tag("getGoalByName")
 
+        @JvmStatic
+        @get:JvmName("createGoal")
         val createGoal = Tag("createGoal")
 
+        @JvmStatic
+        @get:JvmName("replaceGoal")
         val replaceGoal = Tag("replaceGoal")
 
+        @JvmStatic
+        @get:JvmName("deleteGoal")
         val deleteGoal = Tag("deleteGoal")
 
+        @JvmStatic
+        @get:JvmName("appendSubgoal")
         val appendSubgoal = Tag("appendSubgoal")
 
+        @JvmStatic
+        @get:JvmName("getSubgoalByIndex")
         val getSubgoalByIndex = Tag("getSubgoalByIndex")
 
+        @JvmStatic
+        @get:JvmName("replaceSubgoal")
         val replaceSubgoal = Tag("replaceSubgoal")
 
+        @JvmStatic
+        @get:JvmName("deleteSubgoal")
         val deleteSubgoal = Tag("deleteSubgoal")
     }
 

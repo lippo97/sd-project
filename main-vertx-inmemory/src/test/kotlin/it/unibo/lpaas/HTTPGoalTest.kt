@@ -14,12 +14,14 @@ import io.vertx.kotlin.core.json.get
 import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.await
-import it.unibo.lpaas.auth.RBAC
+import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.Parsers
+import it.unibo.lpaas.delivery.http.Repositories
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
+import it.unibo.lpaas.delivery.http.bindAPIVersion
 import it.unibo.lpaas.delivery.http.databind.MimeMap
 import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
@@ -69,7 +71,7 @@ class HTTPGoalTest : FunSpec({
     val exampleGoal = "parent(goku, gohan)"
     val anotherExampleGoal = "parent(vegeta, trunks)"
 
-    val goalBaseUrl = Controller.GOAL_BASEURL
+    val goalBaseUrl = Controller.API_VERSION + Controller.GOAL_BASEURL
 
     beforeAny {
         runTest {
@@ -82,19 +84,21 @@ class HTTPGoalTest : FunSpec({
                         MimeType.YAML to yamlSerializer
                     ),
                     authenticationHandler = AuthenticationHandlerTestFactory.alwaysGrantAndMockGroups(Role.CLIENT),
-                    goalRepository = InMemoryGoalRepository(
-                        mapOf(
-                            StringId("default") to Goal.Data(listOf(Subgoal(Struct.of("parent"))))
-                        )
+                    repositories = Repositories(
+                        goalRepository = InMemoryGoalRepository(
+                            mapOf(
+                                StringId("default") to Goal.Data(listOf(Subgoal(Struct.of("parent"))))
+                            )
+                        ),
                     ),
                     parsers = Parsers(
                         goalIdParser = GoalId::of
                     ),
-                    rbac = RBAC.alwaysGrant()
+                    authorizationProvider = AuthorizationProvider.alwaysGrant()
                 )
             )
             server
-                .requestHandler(controller.routes())
+                .bindAPIVersion(1, controller, vertx)
                 .listen(8080)
         }
     }
@@ -128,6 +132,17 @@ class HTTPGoalTest : FunSpec({
             }
                 .map { it.statusCode() }
                 .map { it shouldBeExactly 201 }
+                .await()
+        }
+        test("the body should be validated") {
+            client.post(goalBaseUrl) {
+                obj(
+                    "name" to "myGoal",
+                    "subgoals" to array(obj("value" to "someWrong("))
+                )
+            }
+                .map { it.statusCode() }
+                .map { it shouldBeExactly 400 }
                 .await()
         }
         test("the goals index must be updated") {

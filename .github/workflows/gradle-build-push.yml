@@ -16,7 +16,8 @@ jobs:
         with:
           java-version: 11
       - uses: gradle/gradle-build-action@v2
-      - run: "./gradlew build -Dkotest.tags='!Mongo & !HTTP' "
+      - run: |
+        ./gradlew build -Dkotest.tags='!Mongo & !HTTP'
 
   gradle_macos:
     runs-on: macos-latest

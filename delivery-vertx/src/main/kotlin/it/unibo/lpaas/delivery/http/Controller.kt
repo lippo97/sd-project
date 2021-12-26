@@ -1,6 +1,5 @@
 package it.unibo.lpaas.delivery.http
 
-import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import it.unibo.lpaas.delivery.http.handler.GoalController
 

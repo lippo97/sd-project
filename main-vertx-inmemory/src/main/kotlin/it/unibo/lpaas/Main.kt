@@ -3,10 +3,8 @@ package it.unibo.lpaas
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.vertx.core.Vertx
-import io.vertx.core.http.HttpServer
 import io.vertx.core.json.jackson.DatabindCodec.mapper
 import io.vertx.core.json.jackson.DatabindCodec.prettyMapper
-import io.vertx.ext.web.Router
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph

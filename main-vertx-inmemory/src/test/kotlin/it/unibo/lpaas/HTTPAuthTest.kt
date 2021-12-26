@@ -2,6 +2,7 @@ package it.unibo.lpaas
 
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.vertx.core.Vertx
@@ -30,6 +31,7 @@ import it.unibo.lpaas.domain.impl.IncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.InMemoryGoalRepository
 
+@Tags("HTTP")
 class HTTPAuthTest : FunSpec({
 
     val jsonSerializer = ObjectMapperSerializer.json()

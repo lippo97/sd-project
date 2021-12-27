@@ -43,6 +43,20 @@ internal class `2PTheoryTest` : FunSpec({
             """.trimIndent()
         }
 
+        test("test custom clause print") {
+            class WrappedClause(private val clause: Clause) {
+                override fun toString(): String {
+                    return if (clause.isFact) clause.head.toString()
+                    else clause.toString()
+                }
+            }
+            val clause = WrappedClause(Clause.of(Struct.of("alberto"), Struct.of("mario")))
+            val clause2 = WrappedClause(Clause.of(Struct.of("alberto")))
+
+            clause.toString() shouldBe "alberto :- mario"
+            clause2.toString() shouldBe "alberto"
+        }
+
         context("retract a clause") {
             test("it should use an anonymous variable") {
                 val res = theory.retractAll(Struct.of("marco", Var.anonymous()))
@@ -86,10 +100,6 @@ internal class `2PTheoryTest` : FunSpec({
                 updated.clauses shouldHaveSize 5
                 updated.clauses.take(2).shouldContainExactly(aClause, aClause)
             }
-        }
-
-        test("inspect clauses") {
-            theory.clauses.forEach { println(it) }
         }
     }
 })

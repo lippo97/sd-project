@@ -4,7 +4,6 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import it.unibo.tuprolog.core.Clause
@@ -33,7 +32,7 @@ internal class `2PTheoryTest` : FunSpec({
         Clause.of(Struct.of("marco", Struct.of("letto"))),
     )
 
-    context("2p-kt Theory").config(enabled = true) {
+    context("2p-kt Theory").config(enabled = false) {
 
         test("toString as Prolog text") {
             theory.toString(true) shouldBe """

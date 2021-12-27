@@ -1,3 +1,4 @@
 package it.unibo.lpaas.domain
 
-interface Fact
+@JvmInline
+value class Fact(val value: String)

@@ -47,14 +47,14 @@ internal class TheoryUseCasesTest : FunSpec({
             coVerify { theoryRepository.findAll() }
         }
     }
-    xcontext("getTheoryByName") {
+
+    context("getTheoryByName") {
         test("it should have the right tag") {
             theoryUseCases.getTheoryByName(realId).tag shouldBe TheoryUseCases.Tags.getTheoryByName
         }
         coEvery { theoryRepository.findByName(realId) } returns theory
         test("it should return the matching theory") {
             theoryUseCases.getTheoryByName(realId).execute() shouldBe theory
-
             coVerify { theoryRepository.findByName(realId) }
         }
 

@@ -30,7 +30,9 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         theoryRepository.findAll().map { it.name }
     }
 
-    fun getTheoryByName(name: TheoryId): UseCase<Theory> = TODO()
+    fun getTheoryByName(name: TheoryId): UseCase<Theory> = UseCase.of(Tags.getTheoryByName) {
+        theoryRepository.findByName(name)
+    }
 
     fun createTheory(name: TheoryId, data: Theory.Data): UseCase<Theory> = TODO()
 

@@ -1,16 +1,8 @@
 package it.unibo.lpaas.domain
 
-import it.unibo.tuprolog.core.Clause
+import it.unibo.tuprolog.core.Struct
 import java.time.Instant
 import it.unibo.tuprolog.theory.Theory as Theory2P
-
-fun Theory2P.getFactsByFunctor(functor: Functor) =
-    clauses
-        .map { println(it); it }
-        .filter(Clause::isFact)
-        .map { it.head }
-        .filter { it?.functor == functor.value }
-        .map { Fact(it.toString()) }
 
 data class Theory(
     val name: TheoryId,
@@ -18,5 +10,17 @@ data class Theory(
     val version: Version,
     val createdAt: Instant = Instant.now(),
 ) {
-    data class Data(val value: Theory2P)
+    data class Data(val value: Theory2P) {
+        fun appendFact(fact: Fact) = copy(
+            value = value.assertZ(
+                Struct.of(fact.functor, fact.args.map { Struct.of(it) })
+            )
+        )
+
+        fun prependFact(fact: Fact) = copy(
+            value = value.assertA(
+                Struct.of(fact.functor, fact.args.map { Struct.of(it) })
+            )
+        )
+    }
 }

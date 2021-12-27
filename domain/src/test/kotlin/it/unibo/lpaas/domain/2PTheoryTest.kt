@@ -120,9 +120,9 @@ internal class `2PTheoryTest` : FunSpec({
                 theory
                     .getFactsByFunctor(Functor("marco"))
                     .shouldContainInOrder(
-                        Fact("marco(polo)"),
-                        Fact("marco(lino)"),
-                        Fact("marco(letto)")
+                        Fact.of("marco", "polo"),
+                        Fact.of("marco", "lino"),
+                        Fact.of("marco", "letto")
                     )
             }
         }

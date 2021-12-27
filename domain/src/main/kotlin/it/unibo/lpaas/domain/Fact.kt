@@ -1,4 +1,29 @@
 package it.unibo.lpaas.domain
 
-@JvmInline
-value class Fact(val value: String)
+class Fact(
+    val functor: String,
+    val args: List<String> = emptyList(),
+) {
+    companion object {
+        fun of(functor: String, vararg args: String): Fact =
+            Fact(functor, args.toList())
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Fact
+
+        if (functor != other.functor) return false
+        if (args != other.args) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = functor.hashCode()
+        result = 31 * result + args.hashCode()
+        return result
+    }
+}

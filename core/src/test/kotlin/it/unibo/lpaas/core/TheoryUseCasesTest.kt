@@ -9,6 +9,8 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.spyk
+import io.mockk.verify
 import it.unibo.lpaas.core.exception.DuplicateIdentifierException
 import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.core.exception.ValidationException
@@ -17,7 +19,10 @@ import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
+import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.getFactsByFunctor
+import it.unibo.tuprolog.core.Clause
+import it.unibo.tuprolog.core.Struct
 import org.junit.jupiter.api.assertThrows
 import it.unibo.tuprolog.theory.Theory as Theory2P
 
@@ -32,7 +37,7 @@ internal class TheoryUseCasesTest : FunSpec({
     val someData = mockk<Theory.Data>()
     val invalidData = mockk<Theory.Data>()
 
-    afterAny {
+    afterContainer {
         clearMocks(theoryRepository)
         clearMocks(theory)
     }
@@ -156,7 +161,7 @@ internal class TheoryUseCasesTest : FunSpec({
                 TheoryUseCases.Tags.getFactsInTheory
         }
 
-        mockkStatic("it.unibo.lpaas.domain.TheoryKt")
+        mockkStatic("it.unibo.lpaas.domain.Theory2PExtensionsKt")
         val someFunctor = Functor("someFunctor")
         val theory2P = mockk<Theory2P>()
         coEvery { theory2P.getFactsByFunctor(someFunctor) } returns listOf(Fact("someFact"))
@@ -172,6 +177,46 @@ internal class TheoryUseCasesTest : FunSpec({
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
                 theoryUseCases.getFactsInTheory(notFoundId, someFunctor).execute()
+            }
+        }
+    }
+
+    context("addFactToTheory") {
+        test("it should have the right tag") {
+            theoryUseCases.addFactToTheory(realId, Fact("someFact")).tag shouldBe
+                TheoryUseCases.Tags.addFactToTheory
+        }
+
+        val theory2P = spyk(
+            Theory2P.of(
+                Clause.of(Struct.of("mario")),
+                Clause.of(Struct.of("luigi")),
+            )
+        )
+
+        context("it should return the updated theory") {
+            val theory = Theory(realId, Theory.Data(theory2P), Version.incremental)
+            val updatedTheory = mockk<Theory>()
+            coEvery { theoryRepository.findByName(realId) } returns theory
+            coEvery { theoryRepository.updateByName(realId, any()) } returns updatedTheory
+
+            test("it should prepend on begging = true") {
+                theoryUseCases.addFactToTheory(realId, Fact("wario")).execute() shouldBe updatedTheory
+                verify { theory2P.assertA(Struct.of("wario")) }
+            }
+
+            test("it should append on begging = false") {
+                theoryUseCases.addFactToTheory(realId, Fact("wario"), beginning = false)
+                    .execute() shouldBe updatedTheory
+                verify { theory2P.assertA(Struct.of("wario")) }
+            }
+        }
+
+        coEvery { theoryRepository.findByName(notFoundId) } throws
+            NotFoundException(notFoundId, "Theory")
+        test("it should throw not found identifier") {
+            assertThrows<NotFoundException> {
+                theoryUseCases.addFactToTheory(notFoundId, Fact("wario")).execute()
             }
         }
     }

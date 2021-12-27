@@ -38,6 +38,10 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         @JvmStatic
         @get:JvmName("getFactsInTheory")
         val getFactsInTheory = Tag("getFactsInTheory")
+
+        @JvmStatic
+        @get:JvmName("addFactToTheory")
+        val addFactToTheory = Tag("addFactToTheory")
     }
 
     val getAllTheoriesIndex: UseCase<List<TheoryId>> = UseCase.of(Tags.getAllTheoriesIndex) {
@@ -64,7 +68,14 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         theoryRepository.findByName(name).data.value.getFactsByFunctor(functor)
     }
 
-    fun addFactToTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): UseCase<Theory> = TODO()
+    fun addFactToTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): UseCase<Theory> =
+        UseCase.of(Tags.addFactToTheory) {
+            theoryRepository.run {
+                val theory = findByName(name)
+                val f = if (beginning) Theory.Data::prependFact else Theory.Data::appendFact
+                updateByName(name, f(theory.data, fact))
+            }
+        }
 
     fun updateFactInTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): UseCase<Theory> = TODO()
 }

@@ -1,29 +1,35 @@
 package it.unibo.lpaas.domain
 
-class Fact(
-    val functor: Functor,
-    val args: List<String> = emptyList(),
-) {
+import it.unibo.lpaas.domain.impl.FromFunctorFact
+import it.unibo.lpaas.domain.impl.SimpleFact
+import it.unibo.tuprolog.core.Clause
+import it.unibo.tuprolog.core.Struct
+
+/**
+ * A Prolog fact that can hold only compound terms and simple atoms.
+ */
+interface Fact {
+    val struct: Struct
+
+    val functor: Functor
+        get() = Functor(struct.functor)
+
+    val arity: Int
+        get() = struct.arity
+
     companion object {
         fun of(functor: Functor, vararg args: String): Fact =
-            Fact(functor, args.toList())
-    }
+            FromFunctorFact(functor, args.map { Argument(it) }.toList())
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+        @Throws(IllegalArgumentException::class)
+        fun of(clause: Clause): Fact {
+            val head = clause.head
+            require(clause.isFact && head != null) { "The provided Struct is not a fact." }
+            return SimpleFact(head)
+        }
 
-        other as Fact
-
-        if (functor != other.functor) return false
-        if (args != other.args) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = functor.hashCode()
-        result = 31 * result + args.hashCode()
-        return result
+        fun of(struct: Struct): Fact {
+            return SimpleFact(struct)
+        }
     }
 }

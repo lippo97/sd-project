@@ -84,7 +84,7 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
     fun updateFactInTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): UseCase<Theory> =
         UseCase.of(Tags.updateFactInTheory) {
             theoryRepository.run {
-                val theoryData = findByName(name).data.retract(fact.functor, fact.args.size)
+                val theoryData = findByName(name).data.retract(fact.functor, fact.arity)
                 val f = if (beginning) Theory.Data::assertA else Theory.Data::assertZ
                 updateByName(name, f(theoryData, fact))
             }

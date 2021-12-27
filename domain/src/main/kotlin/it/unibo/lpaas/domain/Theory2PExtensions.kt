@@ -5,7 +5,16 @@ import it.unibo.tuprolog.theory.Theory
 
 fun Theory.getFactsByFunctor(functor: Functor): List<Fact> =
     clauses
+        .asSequence()
         .filter(Clause::isFact)
         .map { it.head }
-        .filter { it?.functor == functor.value }
-        .map { Fact(Functor(it!!.functor), it.args.map { it.toString() }) }
+        .filterNotNull()
+        .filter { it.functor == functor.value }
+        .map {
+            println(it)
+            println(it.functor)
+            println(it.args)
+            it
+        }
+        .map(Fact::of)
+        .toList()

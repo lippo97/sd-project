@@ -164,12 +164,12 @@ internal class TheoryUseCasesTest : FunSpec({
         mockkStatic("it.unibo.lpaas.domain.Theory2PExtensionsKt")
         val someFunctor = Functor("someFunctor")
         val theory2P = mockk<Theory2P>()
-        coEvery { theory2P.getFactsByFunctor(someFunctor) } returns listOf(Fact(Functor("someFact")))
+        coEvery { theory2P.getFactsByFunctor(someFunctor) } returns listOf(Fact.of(Functor("someFact")))
         coEvery { theory.data } returns Theory.Data(theory2P)
         coEvery { theoryRepository.findByName(realId) } returns theory
         test("it should return the facts of the theory") {
             theoryUseCases.getFactsInTheory(realId, someFunctor).execute() shouldContainInOrder
-                listOf(Fact(Functor("someFact")))
+                listOf(Fact.of(Functor("someFact")))
         }
 
         coEvery { theoryRepository.findByName(notFoundId) } throws
@@ -183,7 +183,7 @@ internal class TheoryUseCasesTest : FunSpec({
 
     context("addFactToTheory") {
         test("it should have the right tag") {
-            theoryUseCases.addFactToTheory(realId, Fact(Functor("someFact"))).tag shouldBe
+            theoryUseCases.addFactToTheory(realId, Fact.of(Functor("someFact"))).tag shouldBe
                 TheoryUseCases.Tags.addFactToTheory
         }
 
@@ -200,13 +200,13 @@ internal class TheoryUseCasesTest : FunSpec({
             coEvery { theoryRepository.findByName(realId) } returns theory
             coEvery { theoryRepository.updateByName(realId, any()) } returns updatedTheory
 
-            test("it should prepend on begging = true") {
-                theoryUseCases.addFactToTheory(realId, Fact(Functor("wario"))).execute() shouldBe updatedTheory
+            test("it should prepend on beginning = true") {
+                theoryUseCases.addFactToTheory(realId, Fact.of(Functor("wario"))).execute() shouldBe updatedTheory
                 verify { theory2P.assertA(Struct.of("wario")) }
             }
 
-            test("it should append on begging = false") {
-                theoryUseCases.addFactToTheory(realId, Fact(Functor("wario")), beginning = false)
+            test("it should append on beginning = false") {
+                theoryUseCases.addFactToTheory(realId, Fact.of(Functor("wario")), beginning = false)
                     .execute() shouldBe updatedTheory
                 verify { theory2P.assertA(Struct.of("wario")) }
             }
@@ -216,15 +216,31 @@ internal class TheoryUseCasesTest : FunSpec({
             NotFoundException(notFoundId, "Theory")
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
-                theoryUseCases.addFactToTheory(notFoundId, Fact(Functor("wario"))).execute()
+                theoryUseCases.addFactToTheory(notFoundId, Fact.of(Functor("wario"))).execute()
             }
         }
     }
 
     context("updateFactInTheory") {
         test("it should have the right tag") {
-            theoryUseCases.updateFactInTheory(realId, Fact(Functor("somaFact"))).tag shouldBe
+            theoryUseCases.updateFactInTheory(realId, Fact.of(Functor("someFact"))).tag shouldBe
                 TheoryUseCases.Tags.updateFactInTheory
+        }
+
+        coEvery { theoryRepository.findByName(realId) } returns theory
+        every { theory.data } returns someData
+        val updatedData = mockk<Theory.Data>()
+        val updatedData2 = mockk<Theory.Data>()
+        every { someData.retract(Functor("temperature"), 1) } returns updatedData
+        every { updatedData.assertA(Fact.of(Functor("temperature"), "30")) } returns updatedData2
+        val updatedTheory = mockk<Theory>()
+        coEvery { theoryRepository.updateByName(realId, updatedData2) } returns updatedTheory
+        test("it should return the updated theory") {
+            theoryUseCases.updateFactInTheory(realId, Fact.of(Functor("temperature"), "30")).execute() shouldBe
+                updatedTheory
+
+            coVerify { theoryRepository.updateByName(realId, updatedData2) }
+            verify { someData.retract(Functor("temperature"), 1) }
         }
     }
 })

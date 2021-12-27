@@ -21,6 +21,7 @@ internal class TheoryUseCasesTest : FunSpec({
     val realId = mockk<TheoryId>()
     val fakeId = mockk<TheoryId>()
     val duplicateId = mockk<TheoryId>()
+    val notFoundId = mockk<TheoryId>()
     val theoryRepository = mockk<TheoryRepository>()
     val theory = mockk<Theory>()
     val someData = mockk<Theory.Data>()
@@ -91,6 +92,33 @@ internal class TheoryUseCasesTest : FunSpec({
                 theoryUseCases.createTheory(realId, invalidData).execute()
             }
             coVerify { theoryRepository.create(realId, invalidData) }
+        }
+    }
+
+    context("updateTheory") {
+        test("it should have the right tag") {
+            theoryUseCases.updateTheory(realId, someData).tag shouldBe TheoryUseCases.Tags.updateTheory
+        }
+
+        coEvery { theoryRepository.updateByName(realId, someData) } returns theory
+        test("it should return the updated theory") {
+            theoryUseCases.updateTheory(realId, someData).execute() shouldBe theory
+        }
+
+        coEvery { theoryRepository.updateByName(notFoundId, someData) } throws
+            NotFoundException(notFoundId, "Theory")
+        test("it should throw not found identifier") {
+            assertThrows<NotFoundException> {
+                theoryUseCases.updateTheory(notFoundId, someData).execute()
+            }
+        }
+
+        coEvery { theoryRepository.updateByName(realId, someData) } throws
+            ValidationException("Theory")
+        test("it should throw validation exception") {
+            assertThrows<ValidationException> {
+                theoryUseCases.updateTheory(realId, someData).execute()
+            }
         }
     }
 })

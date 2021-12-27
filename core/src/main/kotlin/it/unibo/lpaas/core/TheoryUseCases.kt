@@ -24,6 +24,10 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         @JvmStatic
         @get:JvmName("createTheory")
         val createTheory = Tag("createTheory")
+
+        @JvmStatic
+        @get:JvmName("updateTheory")
+        val updateTheory = Tag("updateTheory")
     }
 
     val getAllTheoriesIndex: UseCase<List<TheoryId>> = UseCase.of(Tags.getAllTheoriesIndex) {
@@ -38,7 +42,9 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         theoryRepository.create(name, data)
     }
 
-    fun updateTheory(name: TheoryId, data: Theory.Data): UseCase<Theory> = TODO()
+    fun updateTheory(name: TheoryId, data: Theory.Data): UseCase<Theory> = UseCase.of(Tags.updateTheory) {
+        theoryRepository.updateByName(name, data)
+    }
 
     fun deleteTheory(name: TheoryId): UseCase<Theory> = TODO()
 

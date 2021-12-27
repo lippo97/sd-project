@@ -53,6 +53,7 @@ internal class TheoryUseCasesTest : FunSpec({
         test("it should have the right tag") {
             theoryUseCases.getTheoryByName(realId).tag shouldBe TheoryUseCases.Tags.getTheoryByName
         }
+
         coEvery { theoryRepository.findByName(realId) } returns theory
         test("it should return the matching theory") {
             theoryUseCases.getTheoryByName(realId).execute() shouldBe theory
@@ -72,11 +73,13 @@ internal class TheoryUseCasesTest : FunSpec({
         test("it should have the right tag") {
             theoryUseCases.createTheory(realId, someData).tag shouldBe TheoryUseCases.Tags.createTheory
         }
+
         coEvery { theoryRepository.create(realId, someData) } returns theory
         test("it should return the created theory") {
             theoryUseCases.createTheory(realId, someData).execute() shouldBe theory
             coVerify { theoryRepository.create(realId, someData) }
         }
+
         coEvery { theoryRepository.create(duplicateId, someData) } throws
             DuplicateIdentifierException(duplicateId, "Theory")
         test("it should throw duplicate identifier") {
@@ -85,6 +88,7 @@ internal class TheoryUseCasesTest : FunSpec({
             }
             coVerify { theoryRepository.create(duplicateId, someData) }
         }
+
         coEvery { theoryRepository.create(realId, invalidData) } throws
             ValidationException()
         test("it should throw validation exception") {
@@ -118,6 +122,25 @@ internal class TheoryUseCasesTest : FunSpec({
         test("it should throw validation exception") {
             assertThrows<ValidationException> {
                 theoryUseCases.updateTheory(realId, someData).execute()
+            }
+        }
+    }
+
+    context("deleteTheory") {
+        test("it should have the right tag") {
+            theoryUseCases.deleteTheory(realId).tag shouldBe TheoryUseCases.Tags.deleteTheory
+        }
+
+        coEvery { theoryRepository.deleteAllVersionsByName(realId) } returns theory
+        test("it should return the deleted theory") {
+            theoryUseCases.deleteTheory(realId).execute() shouldBe theory
+        }
+
+        coEvery { theoryRepository.deleteAllVersionsByName(notFoundId) } throws
+            NotFoundException(notFoundId, "Theory")
+        test("it should throw not found identifier") {
+            assertThrows<NotFoundException> {
+                theoryUseCases.deleteTheory(notFoundId).execute()
             }
         }
     }

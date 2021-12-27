@@ -2,8 +2,10 @@ package it.unibo.lpaas.core
 
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.Fact
+import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
+import it.unibo.lpaas.domain.getFactsByFunctor
 
 @Suppress("all")
 class TheoryUseCases(private val theoryRepository: TheoryRepository) {
@@ -32,6 +34,10 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         @JvmStatic
         @get:JvmName("deleteTheory")
         val deleteTheory = Tag("deleteTheory")
+
+        @JvmStatic
+        @get:JvmName("getFactsInTheory")
+        val getFactsInTheory = Tag("getFactsInTheory")
     }
 
     val getAllTheoriesIndex: UseCase<List<TheoryId>> = UseCase.of(Tags.getAllTheoriesIndex) {
@@ -52,6 +58,10 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
 
     fun deleteTheory(name: TheoryId): UseCase<Theory> = UseCase.of(Tags.deleteTheory) {
         theoryRepository.deleteAllVersionsByName(name)
+    }
+
+    fun getFactsInTheory(name: TheoryId, functor: Functor): UseCase<List<Fact>> = UseCase.of(Tags.getFactsInTheory) {
+        theoryRepository.findByName(name).data.value.getFactsByFunctor(functor)
     }
 
     fun addFactToTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): UseCase<Theory> = TODO()

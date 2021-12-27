@@ -117,10 +117,8 @@ internal class `2PTheoryTest` : FunSpec({
             }
 
             test("get facts by functor") {
-                theory.clauses
-                    .filter { it.isFact }
-                    .filter { it.head?.functor == "marco" }
-                    .map { Fact(it.head.toString()) }
+                theory
+                    .getFactsByFunctor(Functor("marco"))
                     .shouldContainInOrder(
                         Fact("marco(polo)"),
                         Fact("marco(lino)"),

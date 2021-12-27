@@ -8,13 +8,18 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import it.unibo.lpaas.core.exception.DuplicateIdentifierException
 import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.core.exception.ValidationException
 import it.unibo.lpaas.core.persistence.TheoryRepository
+import it.unibo.lpaas.domain.Fact
+import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
+import it.unibo.lpaas.domain.getFactsByFunctor
 import org.junit.jupiter.api.assertThrows
+import it.unibo.tuprolog.theory.Theory as Theory2P
 
 internal class TheoryUseCasesTest : FunSpec({
 
@@ -27,10 +32,9 @@ internal class TheoryUseCasesTest : FunSpec({
     val someData = mockk<Theory.Data>()
     val invalidData = mockk<Theory.Data>()
 
-    every { theory.name } returns realId
-
     afterAny {
         clearMocks(theoryRepository)
+        clearMocks(theory)
     }
 
     val theoryUseCases = TheoryUseCases(theoryRepository)
@@ -40,6 +44,7 @@ internal class TheoryUseCasesTest : FunSpec({
             theoryUseCases.getAllTheoriesIndex.tag shouldBe TheoryUseCases.Tags.getAllTheoriesIndex
         }
 
+        every { theory.name } returns realId
         coEvery { theoryRepository.findAll() } returns listOf(theory, theory, theory)
         test("it should return all the theories") {
             theoryUseCases.getAllTheoriesIndex.execute() shouldContainInOrder
@@ -141,6 +146,32 @@ internal class TheoryUseCasesTest : FunSpec({
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
                 theoryUseCases.deleteTheory(notFoundId).execute()
+            }
+        }
+    }
+
+    context("getFactsInTheory") {
+        test("it should have the right tag") {
+            theoryUseCases.getFactsInTheory(realId, Functor("someFunctor")).tag shouldBe
+                TheoryUseCases.Tags.getFactsInTheory
+        }
+
+        mockkStatic("it.unibo.lpaas.domain.TheoryKt")
+        val someFunctor = Functor("someFunctor")
+        val theory2P = mockk<Theory2P>()
+        coEvery { theory2P.getFactsByFunctor(someFunctor) } returns listOf(Fact("someFact"))
+        coEvery { theory.data } returns Theory.Data(theory2P)
+        coEvery { theoryRepository.findByName(realId) } returns theory
+        test("it should return the facts of the theory") {
+            theoryUseCases.getFactsInTheory(realId, someFunctor).execute() shouldContainInOrder
+                listOf(Fact("someFact"))
+        }
+
+        coEvery { theoryRepository.findByName(notFoundId) } throws
+            NotFoundException(notFoundId, "Theory")
+        test("it should throw not found identifier") {
+            assertThrows<NotFoundException> {
+                theoryUseCases.getFactsInTheory(notFoundId, someFunctor).execute()
             }
         }
     }

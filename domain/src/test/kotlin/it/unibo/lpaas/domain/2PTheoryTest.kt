@@ -32,7 +32,7 @@ internal class `2PTheoryTest` : FunSpec({
         Clause.of(Struct.of("marco", Struct.of("letto"))),
     )
 
-    context("2p-kt Theory").config(enabled = true) {
+    context("2p-kt Theory").config(enabled = false) {
 
         test("toString as Prolog text") {
             theory.toString(true) shouldBe """
@@ -42,6 +42,19 @@ internal class `2PTheoryTest` : FunSpec({
             marco(letto) :- true.
 
             """.trimIndent()
+        }
+
+        test("test boolean properties") {
+            Clause.of(Struct.of("alberto")).apply {
+                isFact shouldBe true
+                isRule shouldBe true
+                isClause shouldBe true
+            }
+            Clause.of(Struct.of("alberto"), Struct.of("ciao")).apply {
+                isFact shouldBe false
+                isRule shouldBe true
+                isClause shouldBe true
+            }
         }
 
         test("test custom clause print") {
@@ -107,12 +120,12 @@ internal class `2PTheoryTest` : FunSpec({
             test("it should return a list of the facts") {
                 theory.clauses
                     .filter { it.isFact }
-                    .map { Fact(Functor(it.head.toString())) }
+                    .map { Fact.of(Functor(it.head.toString())) }
                     .shouldContainInOrder(
-                        Fact(Functor("alberto")),
-                        Fact(Functor("marco(polo)")),
-                        Fact(Functor("marco(lino)")),
-                        Fact(Functor("marco(letto)"))
+                        Fact.of(Functor("alberto")),
+                        Fact.of(Functor("marco(polo)")),
+                        Fact.of(Functor("marco(lino)")),
+                        Fact.of(Functor("marco(letto)"))
                     )
             }
 

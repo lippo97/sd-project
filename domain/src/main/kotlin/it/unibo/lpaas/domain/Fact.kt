@@ -1,4 +1,3 @@
 package it.unibo.lpaas.domain
 
-interface Fact {
-}
+interface Fact

@@ -5,6 +5,7 @@ import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 
+@Suppress("all")
 class TheoryUseCases(private val theoryRepository: TheoryRepository) {
 
     companion object Tags {

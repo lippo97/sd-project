@@ -8,4 +8,4 @@ fun Theory.getFactsByFunctor(functor: Functor): List<Fact> =
         .filter(Clause::isFact)
         .map { it.head }
         .filter { it?.functor == functor.value }
-        .map { Fact(it!!.functor, it.args.map { it.toString() }) }
+        .map { Fact(Functor(it!!.functor), it.args.map { it.toString() }) }

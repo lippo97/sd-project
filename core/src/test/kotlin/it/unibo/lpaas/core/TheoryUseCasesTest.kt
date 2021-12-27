@@ -164,12 +164,12 @@ internal class TheoryUseCasesTest : FunSpec({
         mockkStatic("it.unibo.lpaas.domain.Theory2PExtensionsKt")
         val someFunctor = Functor("someFunctor")
         val theory2P = mockk<Theory2P>()
-        coEvery { theory2P.getFactsByFunctor(someFunctor) } returns listOf(Fact("someFact"))
+        coEvery { theory2P.getFactsByFunctor(someFunctor) } returns listOf(Fact(Functor("someFact")))
         coEvery { theory.data } returns Theory.Data(theory2P)
         coEvery { theoryRepository.findByName(realId) } returns theory
         test("it should return the facts of the theory") {
             theoryUseCases.getFactsInTheory(realId, someFunctor).execute() shouldContainInOrder
-                listOf(Fact("someFact"))
+                listOf(Fact(Functor("someFact")))
         }
 
         coEvery { theoryRepository.findByName(notFoundId) } throws
@@ -183,7 +183,7 @@ internal class TheoryUseCasesTest : FunSpec({
 
     context("addFactToTheory") {
         test("it should have the right tag") {
-            theoryUseCases.addFactToTheory(realId, Fact("someFact")).tag shouldBe
+            theoryUseCases.addFactToTheory(realId, Fact(Functor("someFact"))).tag shouldBe
                 TheoryUseCases.Tags.addFactToTheory
         }
 
@@ -201,12 +201,12 @@ internal class TheoryUseCasesTest : FunSpec({
             coEvery { theoryRepository.updateByName(realId, any()) } returns updatedTheory
 
             test("it should prepend on begging = true") {
-                theoryUseCases.addFactToTheory(realId, Fact("wario")).execute() shouldBe updatedTheory
+                theoryUseCases.addFactToTheory(realId, Fact(Functor("wario"))).execute() shouldBe updatedTheory
                 verify { theory2P.assertA(Struct.of("wario")) }
             }
 
             test("it should append on begging = false") {
-                theoryUseCases.addFactToTheory(realId, Fact("wario"), beginning = false)
+                theoryUseCases.addFactToTheory(realId, Fact(Functor("wario")), beginning = false)
                     .execute() shouldBe updatedTheory
                 verify { theory2P.assertA(Struct.of("wario")) }
             }
@@ -216,8 +216,15 @@ internal class TheoryUseCasesTest : FunSpec({
             NotFoundException(notFoundId, "Theory")
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
-                theoryUseCases.addFactToTheory(notFoundId, Fact("wario")).execute()
+                theoryUseCases.addFactToTheory(notFoundId, Fact(Functor("wario"))).execute()
             }
+        }
+    }
+
+    context("updateFactInTheory") {
+        test("it should have the right tag") {
+            theoryUseCases.updateFactInTheory(realId, Fact(Functor("somaFact"))).tag shouldBe
+                TheoryUseCases.Tags.updateFactInTheory
         }
     }
 })

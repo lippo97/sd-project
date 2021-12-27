@@ -1,11 +1,11 @@
 package it.unibo.lpaas.domain
 
 class Fact(
-    val functor: String,
+    val functor: Functor,
     val args: List<String> = emptyList(),
 ) {
     companion object {
-        fun of(functor: String, vararg args: String): Fact =
+        fun of(functor: Functor, vararg args: String): Fact =
             Fact(functor, args.toList())
     }
 

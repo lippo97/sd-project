@@ -1,6 +1,7 @@
 package it.unibo.lpaas.core
 
 import it.unibo.lpaas.core.persistence.TheoryRepository
+import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 
@@ -31,4 +32,12 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
     fun getTheoryByName(name: TheoryId): UseCase<Theory> = TODO()
 
     fun createTheory(name: TheoryId, data: Theory.Data): UseCase<Theory> = TODO()
+
+    fun updateTheory(name: TheoryId, data: Theory.Data): UseCase<Theory> = TODO()
+
+    fun deleteTheory(name: TheoryId): UseCase<Theory> = TODO()
+
+    fun addFactToTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): UseCase<Theory> = TODO()
+
+    fun updateFactInTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): UseCase<Theory> = TODO()
 }

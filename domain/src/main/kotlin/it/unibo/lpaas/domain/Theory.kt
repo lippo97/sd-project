@@ -9,8 +9,5 @@ data class Theory(
     val version: Version,
     val createdAt: Instant = Instant.now(),
 ) {
-    data class Data(val value: Theory2P) {
-
-    }
-
+    data class Data(val value: Theory2P)
 }

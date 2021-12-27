@@ -2,7 +2,9 @@ package it.unibo.lpaas.domain
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import it.unibo.tuprolog.core.Clause
@@ -31,7 +33,7 @@ internal class `2PTheoryTest` : FunSpec({
         Clause.of(Struct.of("marco", Struct.of("letto"))),
     )
 
-    context("2p-kt Theory").config(enabled = false) {
+    context("2p-kt Theory").config(enabled = true) {
 
         test("toString as Prolog text") {
             theory.toString(true) shouldBe """
@@ -99,6 +101,32 @@ internal class `2PTheoryTest` : FunSpec({
                 val updated = theory.assertA(aClause)
                 updated.clauses shouldHaveSize 5
                 updated.clauses.take(2).shouldContainExactly(aClause, aClause)
+            }
+        }
+
+        context("get facts in theory") {
+            test("it should return a list of the facts") {
+                theory.clauses
+                    .filter { it.isFact }
+                    .map { Fact(it.head.toString()) }
+                    .shouldContainInOrder(
+                        Fact("alberto"),
+                        Fact("marco(polo)"),
+                        Fact("marco(lino)"),
+                        Fact("marco(letto)")
+                    )
+            }
+
+            test("get facts by functor") {
+                theory.clauses
+                    .filter { it.isFact }
+                    .filter { it.head?.functor == "marco" }
+                    .map { Fact(it.head.toString()) }
+                    .shouldContainInOrder(
+                        Fact("marco(polo)"),
+                        Fact("marco(lino)"),
+                        Fact("marco(letto)")
+                    )
             }
         }
     }

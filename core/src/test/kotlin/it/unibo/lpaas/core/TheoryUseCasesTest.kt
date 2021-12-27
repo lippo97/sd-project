@@ -67,7 +67,7 @@ internal class TheoryUseCasesTest : FunSpec({
         }
     }
 
-    xcontext("createTheory") {
+    context("createTheory") {
         test("it should have the right tag") {
             theoryUseCases.createTheory(realId, someData).tag shouldBe TheoryUseCases.Tags.createTheory
         }

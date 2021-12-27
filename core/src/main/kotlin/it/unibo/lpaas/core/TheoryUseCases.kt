@@ -34,7 +34,9 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         theoryRepository.findByName(name)
     }
 
-    fun createTheory(name: TheoryId, data: Theory.Data): UseCase<Theory> = TODO()
+    fun createTheory(name: TheoryId, data: Theory.Data): UseCase<Theory> = UseCase.of(Tags.createTheory) {
+        theoryRepository.create(name, data)
+    }
 
     fun updateTheory(name: TheoryId, data: Theory.Data): UseCase<Theory> = TODO()
 

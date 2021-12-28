@@ -5,6 +5,7 @@ import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
+import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.getFactsByFunctor
 
 @Suppress("all")
@@ -46,6 +47,14 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         @JvmStatic
         @get:JvmName("updateFactInTheory")
         val updateFactInTheory = Tag("updateFactInTheory")
+
+        @JvmStatic
+        @get:JvmName("getTheoryByVersion")
+        val getTheoryByVersion = Tag("getTheoryByVersion")
+
+        @JvmStatic
+        @get:JvmName("deleteTheoryByVersion")
+        val deleteTheoryByVersion = Tag("deleteTheoryByVersion")
     }
 
     val getAllTheoriesIndex: UseCase<List<TheoryId>> = UseCase.of(Tags.getAllTheoriesIndex) {
@@ -88,5 +97,15 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
                 val f = if (beginning) Theory.Data::assertA else Theory.Data::assertZ
                 updateByName(name, f(theoryData, fact))
             }
+        }
+
+    fun getTheoryByNameAndVersion(name: TheoryId, version: Version): UseCase<Theory> =
+        UseCase.of(Tags.getTheoryByVersion) {
+            theoryRepository.findByNameAndVersion(name, version)
+        }
+
+    fun deleteTheoryByVersion(name: TheoryId, version: Version): UseCase<Theory> =
+        UseCase.of(Tags.deleteTheoryByVersion) {
+            theoryRepository.deleteByNameAndVersion(name, version)
         }
 }

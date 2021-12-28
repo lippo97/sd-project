@@ -36,6 +36,7 @@ internal class TheoryUseCasesTest : FunSpec({
     val theory = mockk<Theory>()
     val someData = mockk<Theory.Data>()
     val invalidData = mockk<Theory.Data>()
+    val defaultVersion = mockk<Version>()
 
     afterContainer {
         clearMocks(theoryRepository)
@@ -241,6 +242,47 @@ internal class TheoryUseCasesTest : FunSpec({
 
             coVerify { theoryRepository.updateByName(realId, updatedData2) }
             verify { someData.retract(Functor("temperature"), 1) }
+        }
+    }
+
+    context("getTheoryByVersion") {
+        test("it should have the right tag") {
+            theoryUseCases.getTheoryByNameAndVersion(realId, defaultVersion).tag shouldBe
+                TheoryUseCases.Tags.getTheoryByVersion
+        }
+
+        coEvery { theoryRepository.findByNameAndVersion(notFoundId, defaultVersion) } throws
+            NotFoundException(notFoundId, "Theory")
+        test("it should throw not found identifier") {
+            assertThrows<NotFoundException> {
+                theoryUseCases.getTheoryByNameAndVersion(notFoundId, defaultVersion).execute()
+            }
+        }
+
+        coEvery { theoryRepository.findByNameAndVersion(realId, defaultVersion) } returns theory
+        test("it should return the matching theory") {
+            theoryUseCases.getTheoryByNameAndVersion(realId, defaultVersion).execute() shouldBe theory
+            coVerify { theoryRepository.findByNameAndVersion(realId, defaultVersion) }
+        }
+    }
+
+    context("deleteTheoryByVersion") {
+        test("it should have the right tag") {
+            theoryUseCases.deleteTheoryByVersion(realId, defaultVersion).tag shouldBe
+                TheoryUseCases.Tags.deleteTheoryByVersion
+        }
+
+        coEvery { theoryRepository.deleteByNameAndVersion(realId, defaultVersion) } returns theory
+        test("it should return the deleted theory") {
+            theoryUseCases.deleteTheoryByVersion(realId, defaultVersion).execute() shouldBe theory
+        }
+
+        coEvery { theoryRepository.deleteByNameAndVersion(notFoundId, defaultVersion) } throws
+            NotFoundException(notFoundId, "Theory")
+        test("it should throw not found identifier") {
+            assertThrows<NotFoundException> {
+                theoryUseCases.deleteTheoryByVersion(notFoundId, defaultVersion).execute()
+            }
         }
     }
 })

@@ -6,8 +6,7 @@ import it.unibo.lpaas.domain.Version
 /**
  * A non-negative progressive integer representing the version of the resource.
  */
-@JvmInline
-value class IntegerIncrementalVersion private constructor (val value: Int) : IncrementalVersion {
+class IntegerIncrementalVersion private constructor (val value: Int) : IncrementalVersion {
     override fun next(): IncrementalVersion = IntegerIncrementalVersion(value + 1)
 
     override fun compareTo(other: Version): Int {
@@ -16,6 +15,15 @@ value class IntegerIncrementalVersion private constructor (val value: Int) : Inc
         }
         return value.compareTo(other.value)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (other is IntegerIncrementalVersion) {
+            return value == other.value
+        }
+        return false
+    }
+
+    override fun hashCode(): Int = value
 
     companion object {
         @Throws(IllegalArgumentException::class)

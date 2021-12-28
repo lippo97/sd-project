@@ -11,10 +11,8 @@ import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
-import it.unibo.lpaas.domain.databind.impl.IntegerIncrementalVersionSerializer
 import it.unibo.lpaas.domain.databind.impl.TheoryDeserializer
 import it.unibo.lpaas.domain.databind.impl.TheorySerializer
-import it.unibo.lpaas.domain.databind.impl.incrementalVersionDeserializer
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.MongoTheoryRepository
@@ -34,8 +32,6 @@ class MongoTheoryRepositoryTest : FunSpec({
         SimpleModule().apply {
             addAbstractTypeMapping(IncrementalVersion::class.java, IntegerIncrementalVersion::class.java)
             addAbstractTypeMapping(TheoryId::class.java, StringId::class.java)
-            addSerializer(IntegerIncrementalVersion::class.java, IntegerIncrementalVersionSerializer())
-            addDeserializer(IntegerIncrementalVersion::class.java, incrementalVersionDeserializer)
             addSerializer(Theory2P::class.java, TheorySerializer())
             addDeserializer(Theory2P::class.java, TheoryDeserializer())
         }

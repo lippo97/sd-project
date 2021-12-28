@@ -3,6 +3,7 @@ package it.unibo.lpaas.domain
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 
 interface IncrementalVersion : Version {
+
     fun next(): IncrementalVersion
 
     companion object {

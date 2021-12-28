@@ -9,11 +9,9 @@ import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
-import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Subgoal
 import it.unibo.lpaas.domain.databind.impl.StructDeserializer
 import it.unibo.lpaas.domain.databind.impl.StructSerializer
-import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.MongoGoalRepository
 import it.unibo.tuprolog.core.Struct
@@ -28,7 +26,6 @@ class MongoGoalRepositoryTest : FunSpec({
 
     KMongoConfiguration.registerBsonModule(
         SimpleModule().apply {
-            addAbstractTypeMapping(IncrementalVersion::class.java, IntegerIncrementalVersion::class.java)
             addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
             addSerializer(Struct::class.java, StructSerializer())
             addDeserializer(Struct::class.java, StructDeserializer())

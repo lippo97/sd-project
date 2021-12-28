@@ -1,6 +1,5 @@
 package it.unibo.lpaas.domain
 
-import it.unibo.lpaas.domain.impl.IncrementalVersion
 import it.unibo.lpaas.domain.impl.SemanticVersion
 
 interface Version : Comparable<Version> {

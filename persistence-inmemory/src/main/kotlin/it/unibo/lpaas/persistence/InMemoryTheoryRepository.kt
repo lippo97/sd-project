@@ -2,19 +2,21 @@ package it.unibo.lpaas.persistence
 
 import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.core.persistence.TheoryRepository
+import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 
 class InMemoryTheoryRepository(
-    memory: Map<TheoryId, List<Theory>> = mapOf()
+    memory: Map<TheoryId, List<Theory>> = mapOf(),
+    private val incrementalVersionFactory: () -> IncrementalVersion,
 ) : TheoryRepository {
 
     private val baseMemoryRepository: BaseMemoryRepository<TheoryId, List<Theory>, List<Theory>> =
         BaseMemoryRepository(memory, "Theory") { _, theories -> theories }
 
     private fun make(theoryId: TheoryId, data: Theory.Data): Theory =
-        Theory(theoryId, data, Version.incrementalZero)
+        Theory(theoryId, data, incrementalVersionFactory())
 
     override suspend fun findAll(): List<Theory> =
         baseMemoryRepository.findAll().flatten()
@@ -30,7 +32,8 @@ class InMemoryTheoryRepository(
 
     override suspend fun updateByName(name: TheoryId, data: Theory.Data): Theory {
         return make(name, data).also {
-            val updatedList = listOf(it) + baseMemoryRepository.findByName(name)
+            val updatedList = (listOf(it) + baseMemoryRepository.findByName(name))
+                .sortedWith { x, y -> x.version.compareTo(y.version) }
             baseMemoryRepository.updateByName(name, updatedList)
         }
     }

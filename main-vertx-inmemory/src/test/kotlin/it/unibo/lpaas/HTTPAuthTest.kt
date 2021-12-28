@@ -26,11 +26,12 @@ import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.delivery.http.get
 import it.unibo.lpaas.domain.GoalId
+import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.databind.DomainSerializationModule
 import it.unibo.lpaas.domain.databind.configureMappers
-import it.unibo.lpaas.domain.impl.IncrementalVersion
+import it.unibo.lpaas.domain.impl.IncrementalVersionImpl
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.ext.inMemory
 
@@ -47,7 +48,7 @@ class HTTPAuthTest : FunSpec({
         registerModule(DomainSerializationModule())
         registerModule(
             SimpleModule().apply {
-                addAbstractTypeMapping(Version::class.java, IncrementalVersion::class.java)
+                addAbstractTypeMapping(Version::class.java, IncrementalVersionImpl::class.java)
                 addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
             }
         )
@@ -75,7 +76,7 @@ class HTTPAuthTest : FunSpec({
                 goalIdParser = GoalId::of,
             ),
             theoryDependencies = TheoryDependencies(
-                theoryRepository = TheoryRepository.inMemory(),
+                theoryRepository = TheoryRepository.inMemory { IncrementalVersion.zero },
                 theoryIdParser = TheoryId::of
             ),
         ),

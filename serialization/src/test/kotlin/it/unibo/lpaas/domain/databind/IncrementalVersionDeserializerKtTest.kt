@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import it.unibo.lpaas.domain.databind.impl.incrementalVersionDeserializer
-import it.unibo.lpaas.domain.impl.IncrementalVersion
+import it.unibo.lpaas.domain.IncrementalVersion
+import it.unibo.lpaas.domain.databind.impl.incrementalVersionImplDeserializer
 
 internal class IncrementalVersionDeserializerKtTest : FunSpec({
 
@@ -22,7 +22,7 @@ internal class IncrementalVersionDeserializerKtTest : FunSpec({
         val mapper = ObjectMapper().apply {
             registerModule(
                 SimpleModule()
-                    .addDeserializer(IncrementalVersion::class.java, incrementalVersionDeserializer)
+                    .addDeserializer(IncrementalVersion::class.java, incrementalVersionImplDeserializer)
             )
             registerKotlinModule()
         }

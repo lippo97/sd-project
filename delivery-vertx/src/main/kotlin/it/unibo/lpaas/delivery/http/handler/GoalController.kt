@@ -2,13 +2,10 @@ package it.unibo.lpaas.delivery.http.handler
 
 import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
-import io.vertx.ext.web.handler.AuthenticationHandler
 import io.vertx.ext.web.handler.BodyHandler
-import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.core.GoalUseCases
-import it.unibo.lpaas.core.persistence.GoalRepository
-import it.unibo.lpaas.delivery.StringParser
 import it.unibo.lpaas.delivery.http.Controller
+import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
 import it.unibo.lpaas.delivery.http.databind.MimeMap
@@ -16,28 +13,26 @@ import it.unibo.lpaas.delivery.http.handler.dsl.HandlerDSL
 import it.unibo.lpaas.delivery.http.handler.dto.CreateGoalDTO
 import it.unibo.lpaas.delivery.http.handler.dto.ReplaceGoalDTO
 import it.unibo.lpaas.domain.Goal
-import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.Subgoal
 
 interface GoalController : Controller {
-    companion object {
 
-        @Suppress("LongParameterList")
+    companion object {
         @JvmStatic
         fun make(
             vertx: Vertx,
-            goalRepository: GoalRepository,
-            authenticationHandler: AuthenticationHandler,
+            goalDependencies: GoalDependencies,
+            authOptions: Controller.AuthOptions,
             mimeMap: MimeMap<BufferSerializer>,
-            goalIdParser: StringParser<GoalId>,
-            rbac: AuthorizationProvider,
         ): GoalController = object : GoalController {
 
+            val goalRepository = goalDependencies.goalRepository
+            val goalIdParser = goalDependencies.goalIdParser
             val goalUseCases: GoalUseCases = GoalUseCases(goalRepository)
 
             @Suppress("LongMethod")
             override fun routes(): Router = Router.router(vertx).apply {
-                with(HandlerDSL(mimeMap, authenticationHandler, rbac)) {
+                with(HandlerDSL(mimeMap, authOptions.authenticationHandler, authOptions.authorizationProvider)) {
                     get("/")
                         .produces(mimeMap.availableTypes)
                         .authenticationHandler()

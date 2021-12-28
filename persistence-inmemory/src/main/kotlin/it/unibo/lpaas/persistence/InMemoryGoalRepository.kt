@@ -7,8 +7,10 @@ import it.unibo.lpaas.domain.GoalId
 class InMemoryGoalRepository(
     private var memory: Map<GoalId, Goal.Data> = mapOf()
 ) : GoalRepository by
-BaseMemoryRepository(
-    memory,
-    "Goal",
-    { id, value -> Goal(id, value) },
+GoalRepository.of(
+    BaseMemoryRepository(
+        memory,
+        "Goal",
+        { id, value -> Goal(id, value) },
+    )
 )

@@ -5,7 +5,10 @@ import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.persistence.InMemoryGoalRepository
 
-fun GoalRepository.inMemory(
+fun GoalRepository.Companion.inMemory(
     memory: Map<GoalId, Goal.Data> = mapOf(),
 ): GoalRepository =
     InMemoryGoalRepository(memory)
+
+fun GoalRepository.Companion.inMemory(vararg tuples: Pair<GoalId, Goal.Data>): GoalRepository =
+    inMemory(tuples.toMap())

@@ -78,7 +78,7 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
     }
 
     fun deleteTheory(name: TheoryId): UseCase<Theory> = UseCase.of(Tags.deleteTheory) {
-        theoryRepository.deleteAllVersionsByName(name)
+        theoryRepository.deleteByName(name)
     }
 
     fun getFactsInTheory(name: TheoryId, functor: Functor): UseCase<List<Fact>> = UseCase.of(Tags.getFactsInTheory) {

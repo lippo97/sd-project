@@ -24,18 +24,23 @@ class MongoTheoryRepository(
         theoryCollection.findOne(and(Theory::name eq name, Theory::version eq version))
             ?: throw NotFoundException(name, "Theory")
 
+    // TODO the version must be a parameter
     override suspend fun create(name: TheoryId, data: Theory.Data): Theory =
-        Theory(name, data, Version.incremental).also { theoryCollection.insertOne(it) }
+        create(name, data, Version.incremental)
 
-    override suspend fun updateByName(name: TheoryId, data: Theory.Data): Theory {
-        TODO("Not yet implemented")
-    }
+    // TODO version must have next() method
+    override suspend fun updateByName(name: TheoryId, data: Theory.Data): Theory =
+        theoryCollection.run {
+            val theory = findByName(name)
+            create(name, theory.data, theory.version)
+        }
 
-    override suspend fun deleteAllVersionsByName(name: TheoryId): Theory {
+    override suspend fun deleteAllVersionsByName(name: TheoryId): Theory =
         TODO("Not yet implemented")
-    }
 
-    override suspend fun deleteByNameAndVersion(name: TheoryId, version: Version): Theory {
+    override suspend fun deleteByNameAndVersion(name: TheoryId, version: Version): Theory =
         TODO("Not yet implemented")
-    }
+
+    private suspend fun create(name: TheoryId, data: Theory.Data, version: Version): Theory =
+        Theory(name, data, version).also { theoryCollection.insertOne(it) }
 }

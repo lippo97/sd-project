@@ -5,6 +5,7 @@ import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
+import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.descending
 import org.litote.kmongo.eq
@@ -20,7 +21,8 @@ class MongoTheoryRepository(
             ?: throw NotFoundException(name, "Theory")
 
     override suspend fun findByNameAndVersion(name: TheoryId, version: Version): Theory =
-        TODO("Not yet implemented")
+        theoryCollection.findOne(and(Theory::name eq name, Theory::version eq version))
+            ?: throw NotFoundException(name, "Theory")
 
     override suspend fun create(name: TheoryId, data: Theory.Data): Theory =
         Theory(name, data, Version.incremental).also { theoryCollection.insertOne(it) }

@@ -1,11 +1,13 @@
 import com.fasterxml.jackson.databind.module.SimpleModule
 import io.kotest.assertions.shouldFail
 import io.kotest.assertions.throwables.shouldNotThrow
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.ints.shouldBeExactly
+import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
@@ -69,12 +71,20 @@ class MongoTheoryRepositoryTest : FunSpec({
             repository.findAll().size.shouldBeExactly(1)
         }
 
-        test("the theory should be found by name") {
+        context("the theory should be found") {
             val theoryId = TheoryId.of("exampleTheory2")
             repository.create(theoryId, exampleTheory.data)
-            repository.findByName(theoryId).run {
-                data shouldBeEqualToComparingFields exampleTheory.data
-                version shouldBeEqualToComparingFields exampleTheory.version
+            test("by name") {
+                repository.findByName(theoryId).run {
+                    data shouldBeEqualToComparingFields exampleTheory.data
+                    version shouldBeEqualToComparingFields exampleTheory.version
+                }
+            }
+            test("by name and version") {
+                repository.findByNameAndVersion(theoryId, exampleTheory.version).run {
+                    data shouldBeEqualToComparingFields exampleTheory.data
+                    version shouldBeEqualToComparingFields exampleTheory.version
+                }
             }
         }
 
@@ -85,7 +95,40 @@ class MongoTheoryRepositoryTest : FunSpec({
         }
     }
 
-    afterSpec {
+    context("When a theory is retrieved") {
+        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), Version.incremental)
+        repository.create(exampleTheory.name, exampleTheory.data)
+        test("the theory should be returned") {
+            repository.findByName(exampleTheory.name).data shouldBeEqualToComparingFields exampleTheory.data
+            repository.findByNameAndVersion(exampleTheory.name, exampleTheory.version).run {
+                data shouldBeEqualToComparingFields exampleTheory.data
+                version shouldBeEqualToComparingFields exampleTheory.version
+            }
+        }
+
+        test("should be thrown if name doesn't exist") {
+            val fakeId = TheoryId.of("fakeId")
+            shouldThrow<NotFoundException> {
+                repository.findByName(fakeId)
+            }
+        }
+
+        test("should be thrown if version doesn't match") {
+            val fakeVersion = Version.incremental(startingAt = 5)!!
+            shouldThrow<NotFoundException> {
+                repository.findByNameAndVersion(exampleTheory.name, fakeVersion)
+            }
+        }
+    }
+
+    xcontext("When a theory is updated") {
+        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), Version.incremental)
+        repository.create(exampleTheory.name, exampleTheory.data)
+        test("must return the updated theory") {
+        }
+    }
+
+    afterContainer {
         database.drop()
     }
 })

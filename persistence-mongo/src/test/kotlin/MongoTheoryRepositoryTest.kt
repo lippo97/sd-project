@@ -59,7 +59,7 @@ class MongoTheoryRepositoryTest : FunSpec({
     )
 
     context("When a new theory is submitted") {
-        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), Version.incremental)
+        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), Version.incrementalZero)
 
         test("a document must be insert into the DB") {
             val createdTheory = repository.create(exampleTheory.name, exampleTheory.data)
@@ -96,7 +96,7 @@ class MongoTheoryRepositoryTest : FunSpec({
     }
 
     context("When a theory is retrieved") {
-        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), Version.incremental)
+        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), Version.incrementalZero)
         repository.create(exampleTheory.name, exampleTheory.data)
         test("the theory should be returned") {
             repository.findByName(exampleTheory.name).data shouldBeEqualToComparingFields exampleTheory.data
@@ -122,7 +122,7 @@ class MongoTheoryRepositoryTest : FunSpec({
     }
 
     xcontext("When a theory is updated") {
-        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), Version.incremental)
+        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), Version.incrementalZero)
         repository.create(exampleTheory.name, exampleTheory.data)
         test("must return the updated theory") {
         }

@@ -1,27 +1,28 @@
 package it.unibo.lpaas.delivery.http
 
 import io.vertx.core.Vertx
-import io.vertx.ext.web.handler.AuthenticationHandler
-import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.core.persistence.GoalRepository
+import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.delivery.StringParser
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
 import it.unibo.lpaas.delivery.http.databind.MimeMap
 import it.unibo.lpaas.domain.GoalId
+import it.unibo.lpaas.domain.TheoryId
 
-class Parsers(
-    val goalIdParser: StringParser<GoalId>
-)
-
-class Repositories(
+class GoalDependencies(
     val goalRepository: GoalRepository,
+    val goalIdParser: StringParser<GoalId>,
 )
 
-class DependencyGraph(
+class TheoryDependencies(
+    val theoryRepository: TheoryRepository,
+    val theoryIdParser: StringParser<TheoryId>
+)
+
+data class DependencyGraph(
     val vertx: Vertx,
     val mimeMap: MimeMap<BufferSerializer>,
-    val repositories: Repositories,
-    val authenticationHandler: AuthenticationHandler,
-    val authorizationProvider: AuthorizationProvider,
-    val parsers: Parsers,
+    val goalDependencies: GoalDependencies,
+    val theoryDependencies: TheoryDependencies,
+    val authOptions: Controller.AuthOptions,
 )

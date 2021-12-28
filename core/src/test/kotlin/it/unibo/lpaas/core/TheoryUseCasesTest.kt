@@ -142,12 +142,12 @@ internal class TheoryUseCasesTest : FunSpec({
             theoryUseCases.deleteTheory(realId).tag shouldBe TheoryUseCases.Tags.deleteTheory
         }
 
-        coEvery { theoryRepository.deleteAllVersionsByName(realId) } returns theory
+        coEvery { theoryRepository.deleteByName(realId) } returns theory
         test("it should return the deleted theory") {
             theoryUseCases.deleteTheory(realId).execute() shouldBe theory
         }
 
-        coEvery { theoryRepository.deleteAllVersionsByName(fakeId) } throws
+        coEvery { theoryRepository.deleteByName(fakeId) } throws
             NotFoundException(fakeId, "Theory")
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
@@ -195,7 +195,7 @@ internal class TheoryUseCasesTest : FunSpec({
         )
 
         context("it should return the updated theory") {
-            val theory = Theory(realId, Theory.Data(theory2P), Version.incremental)
+            val theory = Theory(realId, Theory.Data(theory2P), Version.incrementalZero)
             val updatedTheory = mockk<Theory>()
             coEvery { theoryRepository.findByName(realId) } returns theory
             coEvery { theoryRepository.updateByName(realId, any()) } returns updatedTheory

@@ -1,24 +1,31 @@
 package it.unibo.lpaas.core.persistence
 
-import it.unibo.lpaas.core.exception.DuplicateIdentifierException
-import it.unibo.lpaas.core.exception.NotFoundException
-import it.unibo.lpaas.core.exception.ValidationException
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
-import kotlin.jvm.Throws
 
-interface GoalRepository {
-    suspend fun findAll(): List<Goal>
+interface GoalRepository : Repository<GoalId, Goal.Data, Goal> {
 
-    @Throws(NotFoundException::class)
-    suspend fun findByName(name: GoalId): Goal
+    companion object {
+        /**
+         * Factory method for the creation of a [GoalRepository] from a
+         * [Repository] by delegation.
+         *
+         * Unfortunately this is needed because [GoalRepository] isn't defined
+         * by a `typealias` but as an extension of [Repository], so its
+         * delegation using wouldn't be enough to fulfill the [GoalRepository]
+         * interface contract.
+         */
+        @JvmStatic
+        fun of(repository: Repository<GoalId, Goal.Data, Goal>): GoalRepository = object : GoalRepository {
+            override suspend fun findAll(): List<Goal> = repository.findAll()
 
-    @Throws(ValidationException::class, DuplicateIdentifierException::class)
-    suspend fun create(name: GoalId, data: Goal.Data): Goal
+            override suspend fun findByName(name: GoalId): Goal = repository.findByName(name)
 
-    @Throws(ValidationException::class, NotFoundException::class)
-    suspend fun updateByName(name: GoalId, data: Goal.Data): Goal
+            override suspend fun create(name: GoalId, data: Goal.Data): Goal = repository.create(name, data)
 
-    @Throws(NotFoundException::class)
-    suspend fun deleteByName(name: GoalId): Goal
+            override suspend fun updateByName(name: GoalId, data: Goal.Data): Goal = repository.updateByName(name, data)
+
+            override suspend fun deleteByName(name: GoalId): Goal = repository.deleteByName(name)
+        }
+    }
 }

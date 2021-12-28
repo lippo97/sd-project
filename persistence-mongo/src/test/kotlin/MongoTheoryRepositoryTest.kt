@@ -1,0 +1,91 @@
+import com.fasterxml.jackson.databind.module.SimpleModule
+import io.kotest.assertions.shouldFail
+import io.kotest.assertions.throwables.shouldNotThrow
+import io.kotest.core.annotation.Tags
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.equality.shouldBeEqualToComparingFields
+import io.kotest.matchers.ints.shouldBeExactly
+import it.unibo.lpaas.domain.Theory
+import it.unibo.lpaas.domain.TheoryId
+import it.unibo.lpaas.domain.Version
+import it.unibo.lpaas.domain.databind.impl.TheoryDeserializer
+import it.unibo.lpaas.domain.databind.impl.TheorySerializer
+import it.unibo.lpaas.domain.impl.IncrementalVersion
+import it.unibo.lpaas.domain.impl.StringId
+import it.unibo.lpaas.persistence.MongoTheoryRepository
+import it.unibo.tuprolog.core.Clause
+import it.unibo.tuprolog.core.Struct
+import org.litote.kmongo.coroutine.coroutine
+import org.litote.kmongo.reactivestreams.KMongo
+import org.litote.kmongo.util.KMongoConfiguration
+import it.unibo.tuprolog.theory.Theory as Theory2P
+
+@Tags("Mongo")
+class MongoTheoryRepositoryTest : FunSpec({
+
+    val client = KMongo.createClient().coroutine
+
+    KMongoConfiguration.registerBsonModule(
+        SimpleModule().apply {
+            addAbstractTypeMapping(Version::class.java, IncrementalVersion::class.java)
+            addAbstractTypeMapping(TheoryId::class.java, StringId::class.java)
+            addSerializer(Theory2P::class.java, TheorySerializer())
+            addDeserializer(Theory2P::class.java, TheoryDeserializer())
+        }
+    )
+
+    test("The mongo service must be running") {
+        shouldNotThrow<Exception> {
+            client.getDatabase("theory-repo-test")
+                .getCollection<Theory>()
+        }
+    }
+
+    val database = client.getDatabase("theory-repo-test")
+    val repository = MongoTheoryRepository(database.getCollection())
+
+    test("The database should be empty") {
+        repository.findAll().isEmpty().shouldBeTrue()
+    }
+
+    val theory2p = it.unibo.tuprolog.theory.Theory.of(
+        Clause.of(Struct.of("mario")),
+        Clause.of(Struct.of("luigi")),
+        Clause.of(Struct.of("daisy")),
+        Clause.of(Struct.of("peach")),
+    )
+
+    context("When a new theory is submitted") {
+        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), Version.incremental)
+
+        test("a document must be insert into the DB") {
+            val createdTheory = repository.create(exampleTheory.name, exampleTheory.data)
+            createdTheory.data shouldBeEqualToComparingFields exampleTheory.data
+            createdTheory.version shouldBeEqualToComparingFields exampleTheory.version
+        }
+
+        test("the theory collection must be updated") {
+            repository.findAll().size.shouldBeExactly(1)
+        }
+
+        test("the theory should be found by name") {
+            val theoryId = TheoryId.of("exampleTheory2")
+            repository.create(theoryId, exampleTheory.data)
+            repository.findByName(theoryId).run {
+                data shouldBeEqualToComparingFields exampleTheory.data
+                version shouldBeEqualToComparingFields exampleTheory.version
+            }
+        }
+
+        xtest("the theory's id must be unique") {
+            shouldFail {
+                repository.create(exampleTheory.name, exampleTheory.data)
+            }
+        }
+    }
+
+    afterSpec {
+        database.drop()
+    }
+})

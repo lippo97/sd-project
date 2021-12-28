@@ -15,4 +15,6 @@ interface TheoryRepository : Repository<TheoryId, Theory.Data, Theory> {
      */
     @Throws(NotFoundException::class)
     suspend fun deleteByNameAndVersion(name: TheoryId, version: Version): Theory
+
+    companion object
 }

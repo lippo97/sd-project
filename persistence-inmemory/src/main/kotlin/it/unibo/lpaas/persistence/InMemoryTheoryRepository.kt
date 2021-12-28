@@ -7,7 +7,7 @@ import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 
 class InMemoryTheoryRepository(
-    private var memory: Map<TheoryId, List<Theory>> = mapOf()
+    memory: Map<TheoryId, List<Theory>> = mapOf()
 ) : TheoryRepository {
 
     private val baseMemoryRepository: BaseMemoryRepository<TheoryId, List<Theory>, List<Theory>> =

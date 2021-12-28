@@ -163,6 +163,34 @@ class MongoTheoryRepositoryTest : FunSpec({
         }
     }
 
+    context("When a theory is deleted by version") {
+        val createdTheory = repository.create(exampleTheory.name, exampleTheory.data)
+        val updatedTheory = repository.updateByName(createdTheory.name, Theory.Data(Theory2P.of(emptyList())))
+
+        test("must return the deleted theory") {
+            repository.findAll().size shouldBeExactly 2
+            val deletedTheory = repository.deleteByNameAndVersion(createdTheory.name, createdTheory.version)
+            deletedTheory.version shouldBeEqualToComparingFields createdTheory.version
+            repository.findAll().size shouldBeExactly 1
+            val deletedTheory2 = repository.deleteByNameAndVersion(updatedTheory.name, updatedTheory.version)
+            deletedTheory2.version shouldBeEqualToComparingFields updatedTheory.version
+            repository.findAll().size shouldBeExactly 0
+        }
+
+        test("should thrown if name doesn't exist") {
+            val fakeId = TheoryId.of("fakeId")
+            val fakeVersion = IncrementalVersion.zero.next()
+            shouldThrow<NotFoundException> {
+                repository.deleteByNameAndVersion(fakeId, fakeVersion)
+            }
+
+            repository.create(exampleTheory.name, exampleTheory.data)
+            shouldThrow<NotFoundException> {
+                repository.deleteByNameAndVersion(exampleTheory.name, fakeVersion)
+            }
+        }
+    }
+
     afterContainer {
         database.drop()
     }

@@ -42,7 +42,8 @@ class MongoTheoryRepository(
         }
 
     override suspend fun deleteByNameAndVersion(name: TheoryId, version: IncrementalVersion): Theory =
-        TODO("Not yet implemented")
+        theoryCollection.findOneAndDelete(and(Theory::name eq name, Theory::version eq version))
+            ?: throw NotFoundException(name, "Theory")
 
     private suspend fun create(name: TheoryId, data: Theory.Data, version: IncrementalVersion): Theory =
         Theory(name, data, version).also { theoryCollection.insertOne(it) }

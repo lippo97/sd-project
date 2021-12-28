@@ -31,12 +31,15 @@ class MongoTheoryRepository(
     override suspend fun updateByName(name: TheoryId, data: Theory.Data): Theory =
         theoryCollection.run {
             val theory = findByName(name)
-            create(name, theory.data, incrementalVersionFactory().next())
+            create(name, data, theory.version.next())
         }
 
-    override suspend fun deleteByName(name: TheoryId): Theory {
-        TODO("Not yet implemented")
-    }
+    override suspend fun deleteByName(name: TheoryId): Theory =
+        theoryCollection.run {
+            val latestTheory = findByName(name)
+            deleteMany(Theory::name eq name)
+            latestTheory
+        }
 
     override suspend fun deleteByNameAndVersion(name: TheoryId, version: IncrementalVersion): Theory =
         TODO("Not yet implemented")

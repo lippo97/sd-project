@@ -5,6 +5,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.ints.shouldBeExactly
 import it.unibo.lpaas.core.exception.NotFoundException
@@ -82,8 +83,8 @@ class MongoTheoryRepositoryTest : FunSpec({
             }
             test("by name and version") {
                 repository.findByNameAndVersion(theoryId, exampleTheory.version).run {
-//                    data shouldBeEqualToComparingFields exampleTheory.data
-//                    version shouldBeEqualToComparingFields exampleTheory.version
+                    data shouldBeEqualToComparingFields exampleTheory.data
+                    version shouldBeEqualToComparingFields exampleTheory.version
                 }
             }
         }
@@ -121,10 +122,29 @@ class MongoTheoryRepositoryTest : FunSpec({
         }
     }
 
-    xcontext("When a theory is updated") {
+    context("When a theory is updated") {
         val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), IncrementalVersion.zero)
         repository.create(exampleTheory.name, exampleTheory.data)
+        val updatedData = Theory.Data(
+            Theory2P.of(
+                Clause.of(Struct.of("mario")),
+                Clause.of(Struct.of("luigi")),
+            )
+        )
         test("must return the updated theory") {
+            repository.updateByName(exampleTheory.name, updatedData).run {
+                version shouldBeGreaterThan exampleTheory.version
+                name shouldBeEqualToComparingFields exampleTheory.name
+                createdAt shouldBeGreaterThan exampleTheory.createdAt
+                data shouldBeEqualToComparingFields updatedData
+            }
+        }
+
+        test("should thrown if name doesn't exist") {
+            val fakeId = TheoryId.of("fakeId")
+            shouldThrow<NotFoundException> {
+                repository.updateByName(fakeId, exampleTheory.data)
+            }
         }
     }
 

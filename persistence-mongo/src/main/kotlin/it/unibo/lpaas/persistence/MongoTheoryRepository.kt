@@ -11,7 +11,8 @@ import org.litote.kmongo.descending
 import org.litote.kmongo.eq
 
 class MongoTheoryRepository(
-    private val theoryCollection: CoroutineCollection<Theory>
+    private val theoryCollection: CoroutineCollection<Theory>,
+    private val incrementalVersionFactory: () -> IncrementalVersion,
 ) : TheoryRepository {
     override suspend fun findAll(): List<Theory> =
         theoryCollection.find().toList()
@@ -25,13 +26,12 @@ class MongoTheoryRepository(
             ?: throw NotFoundException(name, "Theory")
 
     override suspend fun create(name: TheoryId, data: Theory.Data): Theory =
-        create(name, data, IncrementalVersion.zero)
+        create(name, data, incrementalVersionFactory())
 
-    // TODO version must have next() method
     override suspend fun updateByName(name: TheoryId, data: Theory.Data): Theory =
         theoryCollection.run {
             val theory = findByName(name)
-            create(name, theory.data, theory.version)
+            create(name, theory.data, incrementalVersionFactory().next())
         }
 
     override suspend fun deleteByName(name: TheoryId): Theory {

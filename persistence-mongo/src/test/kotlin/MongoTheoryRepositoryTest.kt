@@ -45,7 +45,7 @@ class MongoTheoryRepositoryTest : FunSpec({
     }
 
     val database = client.getDatabase("theory-repo-test")
-    val repository = MongoTheoryRepository(database.getCollection())
+    val repository = MongoTheoryRepository(database.getCollection()) { IncrementalVersion.zero }
 
     test("The database should be empty") {
         repository.findAll().isEmpty().shouldBeTrue()

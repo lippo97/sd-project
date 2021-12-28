@@ -59,9 +59,9 @@ class MongoTheoryRepositoryTest : FunSpec({
         Clause.of(Struct.of("peach")),
     )
 
-    context("When a new theory is submitted") {
-        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), IncrementalVersion.zero)
+    val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), IncrementalVersion.zero)
 
+    context("When a new theory is submitted") {
         test("a document must be insert into the DB") {
             val createdTheory = repository.create(exampleTheory.name, exampleTheory.data)
             createdTheory.data shouldBeEqualToComparingFields exampleTheory.data
@@ -97,7 +97,6 @@ class MongoTheoryRepositoryTest : FunSpec({
     }
 
     context("When a theory is retrieved") {
-        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), IncrementalVersion.zero)
         repository.create(exampleTheory.name, exampleTheory.data)
         test("the theory should be returned") {
             repository.findByName(exampleTheory.name).data shouldBeEqualToComparingFields exampleTheory.data
@@ -123,7 +122,6 @@ class MongoTheoryRepositoryTest : FunSpec({
     }
 
     context("When a theory is updated") {
-        val exampleTheory = Theory(TheoryId.of("exampleTheory"), Theory.Data(theory2p), IncrementalVersion.zero)
         repository.create(exampleTheory.name, exampleTheory.data)
         val updatedData = Theory.Data(
             Theory2P.of(
@@ -144,6 +142,23 @@ class MongoTheoryRepositoryTest : FunSpec({
             val fakeId = TheoryId.of("fakeId")
             shouldThrow<NotFoundException> {
                 repository.updateByName(fakeId, exampleTheory.data)
+            }
+        }
+    }
+
+    context("When a theory is deleted by name") {
+        val createdTheory = repository.create(exampleTheory.name, exampleTheory.data)
+        test("must return the deleted theory") {
+            repository.findAll().size shouldBeExactly 1
+            val deletedTheory = repository.deleteByName(exampleTheory.name)
+            deletedTheory.data shouldBeEqualToComparingFields createdTheory.data
+            repository.findAll().size shouldBeExactly 0
+        }
+
+        test("should thrown if name doesn't exist") {
+            val fakeId = TheoryId.of("fakeId")
+            shouldThrow<NotFoundException> {
+                repository.deleteByName(fakeId)
             }
         }
     }

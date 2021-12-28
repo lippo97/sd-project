@@ -7,11 +7,11 @@ import it.unibo.lpaas.domain.Version
  * A non-negative progressive integer representing the version of the resource.
  */
 @JvmInline
-value class IncrementalVersionImpl private constructor (val value: Int) : IncrementalVersion {
-    override fun next(): IncrementalVersion = IncrementalVersionImpl(value + 1)
+value class IntegerIncrementalVersion private constructor (val value: Int) : IncrementalVersion {
+    override fun next(): IncrementalVersion = IntegerIncrementalVersion(value + 1)
 
     override fun compareTo(other: Version): Int {
-        if (other !is IncrementalVersionImpl) {
+        if (other !is IntegerIncrementalVersion) {
             throw IllegalArgumentException("Passed argument was not a SemanticVersion.")
         }
         return value.compareTo(other.value)
@@ -19,11 +19,11 @@ value class IncrementalVersionImpl private constructor (val value: Int) : Increm
 
     companion object {
         @Throws(IllegalArgumentException::class)
-        fun unsafeMake(value: Int): IncrementalVersion {
+        fun unsafeMake(value: Int): IntegerIncrementalVersion {
             require(value >= 0)
-            return IncrementalVersionImpl(value)
+            return IntegerIncrementalVersion(value)
         }
 
-        val zero: IncrementalVersion = IncrementalVersionImpl(0)
+        val zero: IntegerIncrementalVersion = IntegerIncrementalVersion(0)
     }
 }

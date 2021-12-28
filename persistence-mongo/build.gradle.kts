@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":serialization"))
 
     implementation("it.unibo.tuprolog", "serialize-core", "0.20.4")
+    implementation("it.unibo.tuprolog", "serialize-theory", "0.20.4")
     implementation("org.litote.kmongo:kmongo:4.4.0")
     implementation("org.litote.kmongo:kmongo-async:4.4.0")
     implementation("org.litote.kmongo:kmongo-coroutine:4.4.0")

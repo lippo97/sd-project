@@ -3,9 +3,9 @@ package it.unibo.lpaas.core
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Functor
+import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
-import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.getFactsByFunctor
 
 @Suppress("all")
@@ -103,17 +103,21 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
             }
         }
 
-    fun getTheoryByNameAndVersion(name: TheoryId, version: Version): UseCase<Theory> =
+    fun getTheoryByNameAndVersion(name: TheoryId, version: IncrementalVersion): UseCase<Theory> =
         UseCase.of(Tags.getTheoryByVersion) {
             theoryRepository.findByNameAndVersion(name, version)
         }
 
-    fun deleteTheoryByVersion(name: TheoryId, version: Version): UseCase<Theory> =
+    fun deleteTheoryByVersion(name: TheoryId, version: IncrementalVersion): UseCase<Theory> =
         UseCase.of(Tags.deleteTheoryByVersion) {
             theoryRepository.deleteByNameAndVersion(name, version)
         }
 
-    fun getFactsInTheoryByNameAndVersion(name: TheoryId, functor: Functor, version: Version): UseCase<List<Fact>> =
+    fun getFactsInTheoryByNameAndVersion(
+        name: TheoryId,
+        functor: Functor,
+        version: IncrementalVersion
+    ): UseCase<List<Fact>> =
         UseCase.of(Tags.getFactsInTheoryByNameAndVersion) {
             theoryRepository.findByNameAndVersion(name, version).data.value.getFactsByFunctor(functor)
         }

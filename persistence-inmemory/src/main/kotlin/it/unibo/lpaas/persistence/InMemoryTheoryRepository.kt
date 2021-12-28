@@ -5,7 +5,6 @@ import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
-import it.unibo.lpaas.domain.Version
 
 class InMemoryTheoryRepository(
     memory: Map<TheoryId, List<Theory>> = mapOf(),
@@ -41,11 +40,11 @@ class InMemoryTheoryRepository(
     override suspend fun deleteByName(name: TheoryId): Theory =
         baseMemoryRepository.deleteByName(name).first()
 
-    override suspend fun findByNameAndVersion(name: TheoryId, version: Version): Theory =
+    override suspend fun findByNameAndVersion(name: TheoryId, version: IncrementalVersion): Theory =
         baseMemoryRepository.findByName(name).firstOrNull { it.version == version }
             ?: throw NotFoundException(Pair(name, version), "Theory")
 
-    override suspend fun deleteByNameAndVersion(name: TheoryId, version: Version): Theory {
+    override suspend fun deleteByNameAndVersion(name: TheoryId, version: IncrementalVersion): Theory {
         return findByNameAndVersion(name, version).also {
             baseMemoryRepository.updateByName(
                 name,

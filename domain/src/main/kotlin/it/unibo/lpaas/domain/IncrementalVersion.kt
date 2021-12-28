@@ -1,6 +1,6 @@
 package it.unibo.lpaas.domain
 
-import it.unibo.lpaas.domain.impl.IncrementalVersionImpl
+import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 
 interface IncrementalVersion : Version {
     fun next(): IncrementalVersion
@@ -9,14 +9,14 @@ interface IncrementalVersion : Version {
 
         @JvmStatic
         @Throws(IllegalArgumentException::class)
-        fun unsafeMake(value: Int): IncrementalVersion = IncrementalVersionImpl.unsafeMake(value)
+        fun unsafeMakeInteger(value: Int): IntegerIncrementalVersion = IntegerIncrementalVersion.unsafeMake(value)
 
         @JvmStatic
-        fun of(value: Int): IncrementalVersion? =
-            runCatching { unsafeMake(value) }
+        fun of(value: Int): IntegerIncrementalVersion? =
+            runCatching { unsafeMakeInteger(value) }
                 .getOrNull()
 
         @JvmStatic
-        val zero: IncrementalVersion = IncrementalVersionImpl.zero
+        val zero: IncrementalVersion = IntegerIncrementalVersion.zero
     }
 }

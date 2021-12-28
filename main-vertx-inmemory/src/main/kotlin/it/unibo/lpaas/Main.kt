@@ -21,7 +21,7 @@ import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.databind.DomainSerializationModule
 import it.unibo.lpaas.domain.databind.configureMappers
-import it.unibo.lpaas.domain.impl.IncrementalVersionImpl
+import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.ext.inMemory
 
@@ -39,7 +39,7 @@ fun main() {
         registerModule(DomainSerializationModule())
         registerModule(
             SimpleModule().apply {
-                addAbstractTypeMapping(Version::class.java, IncrementalVersionImpl::class.java)
+                addAbstractTypeMapping(Version::class.java, IntegerIncrementalVersion::class.java)
                 addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
             }
         )

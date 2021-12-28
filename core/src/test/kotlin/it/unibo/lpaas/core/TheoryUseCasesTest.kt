@@ -17,9 +17,9 @@ import it.unibo.lpaas.core.exception.ValidationException
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Functor
+import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
-import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.getFactsByFunctor
 import it.unibo.tuprolog.core.Clause
 import it.unibo.tuprolog.core.Struct
@@ -35,7 +35,7 @@ internal class TheoryUseCasesTest : FunSpec({
     val theory = mockk<Theory>()
     val someData = mockk<Theory.Data>()
     val invalidData = mockk<Theory.Data>()
-    val defaultVersion = mockk<Version>()
+    val defaultVersion = mockk<IncrementalVersion>()
     val functor = Functor("default")
 
     afterContainer {
@@ -195,7 +195,7 @@ internal class TheoryUseCasesTest : FunSpec({
         )
 
         context("it should return the updated theory") {
-            val theory = Theory(realId, Theory.Data(theory2P), Version.incrementalZero)
+            val theory = Theory(realId, Theory.Data(theory2P), IncrementalVersion.zero)
             val updatedTheory = mockk<Theory>()
             coEvery { theoryRepository.findByName(realId) } returns theory
             coEvery { theoryRepository.updateByName(realId, any()) } returns updatedTheory

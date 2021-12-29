@@ -40,7 +40,7 @@ interface TheoryController : Controller {
                         .authenticationHandler()
                         .useCaseHandler {
                             theoryUseCase.getAllTheoriesIndex.map { list ->
-                                list.map { "/theories/${it.show()}" }
+                                list.map { (id, version) -> "/theories/$id/version/$version" }
                             }
                         }
 
@@ -78,15 +78,17 @@ interface TheoryController : Controller {
                             theoryUseCase.deleteTheory(name).void()
                         }
 
+                    data class FactInTheoryDTO(val fact: Fact)
                     post("/:name/facts")
                         .produces(mimeMap.availableTypes)
                         .authenticationHandler()
                         .handler(BodyHandler.create())
                         .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
-                            val fact = decodeJson(ctx.body, Fact::class.java)
-                            val beginning = ctx.queryParam("beginning") // TODO handle beginning
-                            theoryUseCase.addFactToTheory(name, fact, beginning = true)
+                            val (fact) = decodeJson(ctx.body, FactInTheoryDTO::class.java)
+                            val beginning = ctx.queryParam("beginning")
+                                .firstOrNull() != "false"
+                            theoryUseCase.addFactToTheory(name, fact, beginning)
                         }
 
                     put("/:name/facts")
@@ -95,9 +97,10 @@ interface TheoryController : Controller {
                         .handler(BodyHandler.create())
                         .useCaseHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
-                            val fact = decodeJson(ctx.body, Fact::class.java)
-                            val beginning = ctx.queryParam("beginning") // TODO handle beginning
-                            theoryUseCase.updateFactInTheory(name, fact, beginning = true)
+                            val (fact) = decodeJson(ctx.body, FactInTheoryDTO::class.java)
+                            val beginning = ctx.queryParam("beginning")
+                                .firstOrNull() != "false"
+                            theoryUseCase.updateFactInTheory(name, fact, beginning)
                         }
 
                     get("/:name/facts/:functor")

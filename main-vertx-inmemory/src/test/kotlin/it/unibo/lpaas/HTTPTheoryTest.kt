@@ -229,4 +229,142 @@ class HTTPTheoryTest : FunSpec({
             }
             .await()
     }
+
+    context("When a fact is added to a theory") {
+        test("it should be added at the beginning by default") {
+            client.post("$theoryBaseUrl/default/facts", port = 8081) {
+                obj(
+                    "fact" to "super(mario)"
+                )
+            }
+                .tap { it.statusCode() shouldBeExactly 201 }
+                .flatMap { it.body() }
+                .map {
+                    val first = it.toJsonObject()
+                        .getJsonObject("data")
+                        .getString("value")
+                        .split("\n")
+                        .first()
+                    first shouldContain "super(mario)"
+                }
+                .await()
+        }
+        test("it should be added at the beginning if specified explicitly") {
+            client.post("$theoryBaseUrl/default/facts?beginning=true", port = 8081) {
+                obj(
+                    "fact" to "super(mario)"
+                )
+            }
+                .tap { it.statusCode() shouldBeExactly 201 }
+                .flatMap { it.body() }
+                .map {
+                    val first = it.toJsonObject()
+                        .getJsonObject("data")
+                        .getString("value")
+                        .split("\n")
+                        .first()
+                    first shouldContain "super(mario)"
+                }
+                .await()
+        }
+        test("it should be added at the end if specified explicitly") {
+            client.post("$theoryBaseUrl/default/facts?beginning=false", port = 8081) {
+                obj(
+                    "fact" to "super(mario)"
+                )
+            }
+                .tap { it.statusCode() shouldBeExactly 201 }
+                .flatMap { it.body() }
+                .map {
+                    val last = it.toJsonObject()
+                        .getJsonObject("data")
+                        .getString("value")
+                        .split("\n")
+                        .filter { it.isNotBlank() }
+                        .last()
+                    last shouldContain "super(mario)"
+                }
+                .await()
+        }
+    }
+
+    context("When a fact is replaced in a theory") {
+        test("it should retract all the existing fact with the same name and arity") {
+            test("it should add the fact at the beginning of the theory") {
+                client.put("$theoryBaseUrl/default", port = 8081) {
+                    obj(
+                        "value" to """
+                    super(mario).
+                    super(luigi).
+                    not(super(peach)).
+                        """.trimIndent()
+                    )
+                }
+                    .map { it.statusCode() shouldBeExactly 200 }
+                    .await()
+
+                client.put("$theoryBaseUrl/default/facts", port = 8081) {
+                    obj(
+                        "fact" to "super(luigi)"
+                    )
+                }
+                    .flatMap { it.body() }
+                    .map {
+                        it.toJsonObject()
+                            .getJsonObject("data")
+                            .getString("value")
+                            .split("\n")
+                            .filter { s -> s.contains("""^super\(\w+\)""".toRegex()) }
+                            .apply {
+                                println(this)
+                                size shouldBeExactly 1
+                                first() shouldContain "super(luigi)"
+                            }
+                    }
+                    .await()
+            }
+
+            test("it should add the fact at the end of the theory") {
+                client.put("$theoryBaseUrl/default", port = 8081) {
+                    obj(
+                        "value" to """
+                    super(mario).
+                    super(luigi).
+                    not(super(peach)).
+                        """.trimIndent()
+                    )
+                }
+                    .map { it.statusCode() shouldBeExactly 200 }
+                    .await()
+
+                client.put("$theoryBaseUrl/default/facts", port = 8081) {
+                    obj(
+                        "fact" to "super(wario)"
+                    )
+                }
+                    .flatMap { it.body() }
+                    .map {
+                        it.toJsonObject()
+                            .getJsonObject("data")
+                            .getString("value")
+                            .split("\n")
+                            .apply {
+                                filter { s -> s.contains("""^super\(\w+\)""".toRegex()) }
+                                    .size shouldBeExactly 1
+                                first() shouldContain "super(wario)"
+                            }
+                    }
+                    .await()
+            }
+        }
+    }
+
+    context("When a specific version of a theory is provided") {
+        test("it should return all the versions") {
+            client.get("$theoryBaseUrl", port = 8081)
+                .flatMap { it.body() }
+                .map { println(it) }
+                .await()
+        }
+    }
 })

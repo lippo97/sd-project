@@ -6,6 +6,7 @@ import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
+import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.getFactsByFunctor
 
 @Suppress("all")
@@ -61,8 +62,8 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         val getFactsInTheoryByNameAndVersion = Tag("getFactsInTheoryByNameAndVersion")
     }
 
-    val getAllTheoriesIndex: UseCase<List<TheoryId>> = UseCase.of(Tags.getAllTheoriesIndex) {
-        theoryRepository.findAll().map { it.name }
+    val getAllTheoriesIndex: UseCase<List<Pair<TheoryId, Version>>> = UseCase.of(Tags.getAllTheoriesIndex) {
+        theoryRepository.findAll().map { Pair(it.name, it.version) }
     }
 
     fun getTheoryByName(name: TheoryId): UseCase<Theory> = UseCase.of(Tags.getTheoryByName) {

@@ -18,6 +18,6 @@ interface IncrementalVersion : Version {
                 .getOrNull()
 
         @JvmStatic
-        val zero: IncrementalVersion = IntegerIncrementalVersion.zero
+        val zero: IntegerIncrementalVersion = IntegerIncrementalVersion.zero
     }
 }

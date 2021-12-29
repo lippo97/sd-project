@@ -15,14 +15,9 @@ interface AuthorizationProvider {
 
         @JvmStatic
         fun default(): AuthorizationProvider = configureRoleBased {
-            addPermissions(Role.CLIENT, listOf("getAllGoals", "getAllGoalsIndex", "getGoalByName").map { Tag(it) })
-            addPermissions(
-                Role.CONFIGURATOR,
-                listOf(
-                    "getAllGoals", "getAllGoalsIndex", "getGoalByName", "createGoal", "replaceGoal", "deleteGoal",
-                    "appendSubgoal", "getSubgoalByIndex", "replaceSubgoal", "deleteSubgoal"
-                ).map { Tag(it) }
-            )
+            Permissions.default().entries.forEach { (role, tags) ->
+                addPermissions(role, tags)
+            }
         }
 
         @JvmStatic

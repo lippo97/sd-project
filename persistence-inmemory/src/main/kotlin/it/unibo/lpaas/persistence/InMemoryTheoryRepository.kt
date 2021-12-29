@@ -1,5 +1,8 @@
 package it.unibo.lpaas.persistence
 
+import it.unibo.lpaas.collections.NonEmptyList
+import it.unibo.lpaas.collections.nonEmptyListOf
+import it.unibo.lpaas.collections.sortedWith
 import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -7,11 +10,11 @@ import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 
 class InMemoryTheoryRepository(
-    memory: Map<TheoryId, List<Theory>> = mapOf(),
+    memory: Map<TheoryId, NonEmptyList<Theory>> = mapOf(),
     private val incrementalVersionFactory: () -> IncrementalVersion,
 ) : TheoryRepository {
 
-    private val baseMemoryRepository: BaseMemoryRepository<TheoryId, List<Theory>, List<Theory>> =
+    private val baseMemoryRepository: BaseMemoryRepository<TheoryId, NonEmptyList<Theory>, List<Theory>> =
         BaseMemoryRepository(memory, "Theory") { _, theories -> theories }
 
     private fun make(theoryId: TheoryId, data: Theory.Data): Theory =
@@ -25,13 +28,13 @@ class InMemoryTheoryRepository(
 
     override suspend fun create(name: TheoryId, data: Theory.Data): Theory {
         return make(name, data).also {
-            baseMemoryRepository.create(name, listOf(it)).first()
+            baseMemoryRepository.create(name, nonEmptyListOf(it)).first()
         }
     }
 
     override suspend fun updateByName(name: TheoryId, data: Theory.Data): Theory {
         return make(name, data).also {
-            val updatedList = (listOf(it) + baseMemoryRepository.findByName(name))
+            val updatedList = (nonEmptyListOf(it) + baseMemoryRepository.findByName(name))
                 .sortedWith { x, y -> x.version.compareTo(y.version) }
             baseMemoryRepository.updateByName(name, updatedList)
         }
@@ -46,10 +49,12 @@ class InMemoryTheoryRepository(
 
     override suspend fun deleteByNameAndVersion(name: TheoryId, version: IncrementalVersion): Theory {
         return findByNameAndVersion(name, version).also {
-            baseMemoryRepository.updateByName(
-                name,
-                baseMemoryRepository.findByName(name).filter { it.version != version }
-            )
+            val updated = NonEmptyList.fromList(baseMemoryRepository.findByName(name).filter { it.version != version })
+            if (updated != null) {
+                baseMemoryRepository.updateByName(name, updated)
+            } else {
+                deleteByName(name)
+            }
         }
     }
 }

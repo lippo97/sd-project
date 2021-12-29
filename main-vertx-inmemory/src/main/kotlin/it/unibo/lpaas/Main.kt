@@ -15,6 +15,7 @@ import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
 import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.TheoryId
@@ -61,7 +62,9 @@ fun main() {
             ),
             theoryDependencies = TheoryDependencies(
                 theoryRepository = TheoryRepository.inMemory { IncrementalVersion.zero },
-                theoryIdParser = TheoryId::of
+                theoryIdParser = TheoryId::of,
+                functorParser = { Functor(it) },
+                incrementalVersionParser = { IncrementalVersion.of(Integer.parseInt(it))!! },
             ),
         )
     )

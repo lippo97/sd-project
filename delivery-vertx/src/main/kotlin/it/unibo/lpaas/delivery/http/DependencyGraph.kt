@@ -6,7 +6,9 @@ import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.delivery.StringParser
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
 import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
+import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.TheoryId
 
 class GoalDependencies(
@@ -16,7 +18,9 @@ class GoalDependencies(
 
 class TheoryDependencies(
     val theoryRepository: TheoryRepository,
-    val theoryIdParser: StringParser<TheoryId>
+    val theoryIdParser: StringParser<TheoryId>,
+    val functorParser: StringParser<Functor>,
+    val incrementalVersionParser: StringParser<IncrementalVersion>,
 )
 
 data class DependencyGraph(

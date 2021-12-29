@@ -33,6 +33,7 @@ import it.unibo.lpaas.delivery.http.patch
 import it.unibo.lpaas.delivery.http.post
 import it.unibo.lpaas.delivery.http.put
 import it.unibo.lpaas.delivery.http.tap
+import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -99,7 +100,9 @@ class HTTPGoalTest : FunSpec({
                     ),
                     theoryDependencies = TheoryDependencies(
                         theoryRepository = TheoryRepository.inMemory { IncrementalVersion.zero },
-                        theoryIdParser = TheoryId::of
+                        theoryIdParser = TheoryId::of,
+                        functorParser = { Functor(it) },
+                        incrementalVersionParser = { IncrementalVersion.of(Integer.parseInt(it))!! },
                     ),
                 )
             )

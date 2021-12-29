@@ -42,13 +42,13 @@ interface GoalController : Controller {
                             }
                         }
 
-                    get("/")
+                    post("/")
                         .produces(mimeMap.availableTypes)
                         .authenticationHandler()
-                        .useCaseHandler {
-                            goalUseCases.getAllGoalsIndex.map { list ->
-                                list.map { "/goal/${it.show()}" }
-                            }
+                        .handler(BodyHandler.create())
+                        .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
+                            val (name, subgoals) = decodeJson(ctx.body, CreateGoalDTO::class.java)
+                            goalUseCases.createGoal(name, Goal.Data(subgoals))
                         }
 
                     get("/:name")
@@ -57,15 +57,6 @@ interface GoalController : Controller {
                         .useCaseHandler { ctx ->
                             val name = ctx.pathParam("name")
                             goalUseCases.getGoalByName(goalIdParser.parse(name))
-                        }
-
-                    post("/")
-                        .produces(mimeMap.availableTypes)
-                        .authenticationHandler()
-                        .handler(BodyHandler.create())
-                        .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
-                            val (name, subgoals) = decodeJson(ctx.body, CreateGoalDTO::class.java)
-                            goalUseCases.createGoal(name, Goal.Data(subgoals))
                         }
 
                     put("/:name")

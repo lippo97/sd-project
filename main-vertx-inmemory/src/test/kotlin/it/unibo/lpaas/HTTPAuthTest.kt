@@ -25,6 +25,7 @@ import it.unibo.lpaas.delivery.http.databind.MimeMap
 import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.delivery.http.get
+import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.TheoryId
@@ -77,7 +78,9 @@ class HTTPAuthTest : FunSpec({
             ),
             theoryDependencies = TheoryDependencies(
                 theoryRepository = TheoryRepository.inMemory { IncrementalVersion.zero },
-                theoryIdParser = TheoryId::of
+                theoryIdParser = TheoryId::of,
+                functorParser = { Functor(it) },
+                incrementalVersionParser = { IncrementalVersion.of(Integer.parseInt(it))!! },
             ),
         ),
     )

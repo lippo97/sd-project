@@ -14,7 +14,7 @@ class InMemoryTheoryRepository(
     private val incrementalVersionFactory: () -> IncrementalVersion,
 ) : TheoryRepository {
 
-    private val baseMemoryRepository: BaseMemoryRepository<TheoryId, NonEmptyList<Theory>, List<Theory>> =
+    private val baseMemoryRepository: BaseMemoryRepository<TheoryId, NonEmptyList<Theory>, NonEmptyList<Theory>> =
         BaseMemoryRepository(memory, "Theory") { _, theories -> theories }
 
     private fun make(theoryId: TheoryId, data: Theory.Data): Theory =
@@ -33,8 +33,10 @@ class InMemoryTheoryRepository(
     }
 
     override suspend fun updateByName(name: TheoryId, data: Theory.Data): Theory {
-        return make(name, data).also {
-            val updatedList = (nonEmptyListOf(it) + baseMemoryRepository.findByName(name))
+        val (current, otherVersions) = baseMemoryRepository.findByName(name).snoc
+
+        return Theory(name, data, current.version.next()).also {
+            val updatedList = (nonEmptyListOf(it, current) + otherVersions)
                 .sortedWith { x, y -> x.version.compareTo(y.version) }
             baseMemoryRepository.updateByName(name, updatedList)
         }

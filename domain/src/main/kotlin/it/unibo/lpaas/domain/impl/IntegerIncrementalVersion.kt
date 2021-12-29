@@ -9,6 +9,8 @@ import it.unibo.lpaas.domain.Version
 class IntegerIncrementalVersion private constructor (val value: Int) : IncrementalVersion {
     override fun next(): IncrementalVersion = IntegerIncrementalVersion(value + 1)
 
+    override fun show(): String = value.toString()
+
     override fun compareTo(other: Version): Int {
         if (other !is IntegerIncrementalVersion) {
             throw IllegalArgumentException("Passed argument was not a SemanticVersion.")

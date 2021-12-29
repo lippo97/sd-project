@@ -51,11 +51,15 @@ internal class TheoryUseCasesTest : FunSpec({
         }
 
         every { theory.name } returns realId
+        every { theory.version } returns defaultVersion
         coEvery { theoryRepository.findAll() } returns listOf(theory, theory, theory)
         test("it should return all the theories") {
-            theoryUseCases.getAllTheoriesIndex.execute() shouldContainInOrder
-                (listOf(theory, theory, theory).map { it.name })
-
+            theoryUseCases.getAllTheoriesIndex.execute().shouldContainInOrder(
+                Pair(realId, defaultVersion),
+                Pair(realId, defaultVersion),
+                Pair(realId, defaultVersion),
+            )
+            
             coVerify { theoryRepository.findAll() }
         }
     }

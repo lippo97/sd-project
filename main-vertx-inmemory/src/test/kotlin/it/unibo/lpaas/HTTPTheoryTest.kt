@@ -7,6 +7,7 @@ import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.vertx.core.Vertx
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.kotlin.core.json.array
@@ -26,8 +27,10 @@ import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
 import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.delivery.http.delete
 import it.unibo.lpaas.delivery.http.get
 import it.unibo.lpaas.delivery.http.post
+import it.unibo.lpaas.delivery.http.put
 import it.unibo.lpaas.delivery.http.tap
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
@@ -175,7 +178,6 @@ class HTTPTheoryTest : FunSpec({
         test("it can be retrieved at its URI") {
             client.get("$theoryBaseUrl/myTheory", port = 8081)
                 .flatMap { it.body() }
-                .tap { println(it) }
                 .map {
                     it.toJsonObject().apply {
                         getString("name") shouldBe "myTheory"
@@ -184,5 +186,47 @@ class HTTPTheoryTest : FunSpec({
                 }
                 .await()
         }
+    }
+    context("When an existing theory is replaced") {
+        test("it should return the updated record") {
+            client.put("$theoryBaseUrl/default", port = 8081) {
+                obj(
+                    "value" to """
+                    another(valid, theory).
+                    """.trimIndent()
+                )
+            }
+                .tap { it.statusCode() shouldBeExactly 200 }
+                .flatMap { it.body() }
+                .map {
+                    it.toJsonObject().apply {
+                        getString("name") shouldBe "default"
+                        getJsonObject("data")
+                            .getString("value") shouldContain "another(valid, theory)"
+                    }
+                }
+                .await()
+        }
+    }
+
+    context("When a theory is deleted") {
+        test("request should complete successfully") {
+            client.delete("$theoryBaseUrl/myTheory", port = 8081)
+                .map {
+                    it.statusCode() shouldBeExactly 204
+                }
+                .await()
+        }
+        test("you shouldn't be able to retrieve it") {
+            client.get("$theoryBaseUrl/myTheory")
+                .map { it.statusCode() shouldBeExactly 404 }
+        }
+    }
+    test("You shouldn't be able to delete a non-existing theory") {
+        client.delete("$theoryBaseUrl/nonExisting", port = 8081)
+            .map {
+                it.statusCode() shouldBeExactly 404
+            }
+            .await()
     }
 })

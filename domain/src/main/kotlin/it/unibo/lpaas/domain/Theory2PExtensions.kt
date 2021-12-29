@@ -10,11 +10,5 @@ fun Theory.getFactsByFunctor(functor: Functor): List<Fact> =
         .map { it.head }
         .filterNotNull()
         .filter { it.functor == functor.value }
-        .map {
-            println(it)
-            println(it.functor)
-            println(it.args)
-            it
-        }
         .map(Fact::of)
         .toList()

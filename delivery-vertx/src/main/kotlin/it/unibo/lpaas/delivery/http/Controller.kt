@@ -3,8 +3,10 @@ package it.unibo.lpaas.delivery.http
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.AuthenticationHandler
 import it.unibo.lpaas.auth.AuthorizationProvider
+import it.unibo.lpaas.core.exception.NonFatalError
 import it.unibo.lpaas.delivery.http.handler.GoalController
 import it.unibo.lpaas.delivery.http.handler.TheoryController
+import it.unibo.lpaas.delivery.http.handler.handleNonFatal
 
 fun interface Controller {
     fun routes(): Router
@@ -45,6 +47,15 @@ fun interface Controller {
                         mimeMap = mimeMap
                     ).routes()
                 )
+
+                route("/*").failureHandler { ctx ->
+                    val throwable = ctx.failure()
+                    if (throwable is NonFatalError) {
+                        ctx.handleNonFatal(throwable)
+                    } else {
+                        ctx.next()
+                    }
+                }
             }
         }
     }

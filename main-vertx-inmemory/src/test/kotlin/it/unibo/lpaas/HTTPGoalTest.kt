@@ -182,7 +182,7 @@ class HTTPGoalTest : FunSpec({
         }
     }
 
-    context("When an existing theory is replaced") {
+    context("When an existing goal is replaced") {
         test("it should return the updated record") {
             client.put("$goalBaseUrl/default") {
                 obj(

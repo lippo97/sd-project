@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -284,6 +285,36 @@ class HTTPTheoryTest : FunSpec({
                         .last()
                     last shouldContain "super(mario)"
                 }
+                .await()
+        }
+    }
+
+    context("When a fact is already present in a theory") {
+        val functor = "cousin"
+        val exampleFact = "$functor(luigi)"
+        client.post("$theoryBaseUrl/default/facts", port = 8081) {
+            obj(
+                "fact" to exampleFact
+            )
+        }.await()
+
+        test("it should be retrievable by functor") {
+            client.get("$theoryBaseUrl/default/facts/$functor", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 200 }
+                .flatMap { it.body() }
+                .map {
+                    it.toJsonArray().apply {
+                        shouldNotBeEmpty()
+                        getString(0) shouldBe exampleFact
+                    }
+                }
+                .await()
+        }
+
+        test("it should throw if the functor is not present") {
+            val fakeFunctor = "fakeFunctor"
+            client.get("$theoryBaseUrl/default/facts/$fakeFunctor", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 404 }
                 .await()
         }
     }

@@ -109,7 +109,8 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
 
     fun getTheoryByNameAndVersion(name: TheoryId, version: IncrementalVersion): UseCase<Theory> =
         UseCase.of(Tags.getTheoryByVersion) {
-            theoryRepository.findByNameAndVersion(name, version)
+            val theory = theoryRepository.findByNameAndVersion(name, version)
+            theory
         }
 
     fun deleteTheoryByVersion(name: TheoryId, version: IncrementalVersion): UseCase<Theory> =
@@ -123,6 +124,8 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         version: IncrementalVersion
     ): UseCase<List<Fact>> =
         UseCase.of(Tags.getFactsInTheoryByNameAndVersion) {
-            theoryRepository.findByNameAndVersion(name, version).data.value.getFactsByFunctor(functor)
+            theoryRepository.findByNameAndVersion(name, version).data.value.getFactsByFunctor(functor).ifEmpty {
+                throw NotFoundException(functor, "Fact")
+            }
         }
 }

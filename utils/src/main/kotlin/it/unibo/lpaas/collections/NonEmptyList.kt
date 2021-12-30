@@ -21,6 +21,8 @@ class NonEmptyList<T>(
 
     fun toList(): List<T> = listOf(head) + tail
 
+    val snoc: Pair<T, List<T>> = Pair(head, tail)
+
     companion object {
         fun <T> fromListUnsafe(list: List<T>): NonEmptyList<T> {
             require(list.isNotEmpty())

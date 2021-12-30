@@ -2,7 +2,7 @@ package it.unibo.lpaas.domain
 
 import it.unibo.lpaas.domain.impl.SemanticVersion
 
-interface Version : Comparable<Version> {
+interface Version : Comparable<Version>, Printable {
     companion object {
         @JvmStatic
         fun incremental(startingAt: Int = 0): Version? = IncrementalVersion.of(startingAt)

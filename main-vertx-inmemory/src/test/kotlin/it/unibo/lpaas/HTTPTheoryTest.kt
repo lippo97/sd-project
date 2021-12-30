@@ -135,7 +135,7 @@ class HTTPTheoryTest : FunSpec({
             .map {
                 it.toJsonArray().apply {
                     size() shouldBeExactly 1
-                    getString(0) shouldBe "/theories/default"
+                    getString(0) shouldBe "/theories/default/version/0"
                 }
             }
             .await()
@@ -168,8 +168,8 @@ class HTTPTheoryTest : FunSpec({
                 .map {
                     it.toJson() shouldBe json {
                         array(
-                            "/theories/default",
-                            "/theories/myTheory"
+                            "/theories/default/version/0",
+                            "/theories/myTheory/version/0"
                         )
                     }
                 }
@@ -436,6 +436,44 @@ class HTTPTheoryTest : FunSpec({
         test("it should return 404 if the version is not present") {
             val fakeVersion = IncrementalVersion.of(5)!!.value
             client.get("$theoryBaseUrl/$theoryName/history/$fakeVersion", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 404 }
+                .await()
+        }
+    }
+
+    context("When a specific a theory is deleted by version") {
+        val theoryName = "exampleTheory"
+        val version = IntegerIncrementalVersion.zero
+        client.post(theoryBaseUrl, port = 8081) {
+            obj(
+                "name" to theoryName,
+                "value" to exampleTheory,
+            )
+        }.await()
+
+        client.put("$theoryBaseUrl/$theoryName", port = 8081) {
+            obj(
+                "value" to """
+                    another(valid, theory).
+                """.trimIndent()
+            )
+        }
+
+        test("it should delete the first version") {
+            client.delete("$theoryBaseUrl/$theoryName/history/${version.value}", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 204 }
+                .await()
+        }
+
+        val nextVersion = version.next() as IntegerIncrementalVersion
+        test("it should delete the second version") {
+            client.delete("$theoryBaseUrl/$theoryName/history/${nextVersion.value}", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 204 }
+                .await()
+        }
+        test("it should return 404 if the version is not present") {
+            val fakeVersion = IncrementalVersion.of(5)!!.value
+            client.delete("$theoryBaseUrl/$theoryName/history/$fakeVersion", port = 8081)
                 .tap { it.statusCode() shouldBeExactly 404 }
                 .await()
         }

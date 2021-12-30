@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
@@ -457,7 +458,7 @@ class HTTPTheoryTest : FunSpec({
                     another(valid, theory).
                 """.trimIndent()
             )
-        }
+        }.await()
 
         test("it should delete the first version") {
             client.delete("$theoryBaseUrl/$theoryName/history/${version.value}", port = 8081)
@@ -476,6 +477,68 @@ class HTTPTheoryTest : FunSpec({
             client.delete("$theoryBaseUrl/$theoryName/history/$fakeVersion", port = 8081)
                 .tap { it.statusCode() shouldBeExactly 404 }
                 .await()
+        }
+    }
+
+    context("When facts are retrieved by version and name") {
+        val theoryName = "exampleTheory"
+        val version = IntegerIncrementalVersion.zero
+        val functor = "parent"
+        val anotherFunctor = "another"
+        val exampleTheory2 = """
+                    another(valid, theory).
+        """.trimIndent()
+        client.post(theoryBaseUrl, port = 8081) {
+            obj(
+                "name" to theoryName,
+                "value" to exampleTheory,
+            )
+        }.await()
+
+        client.put("$theoryBaseUrl/$theoryName", port = 8081) {
+            obj(
+                "value" to exampleTheory2
+            )
+        }.await()
+
+        test("it should return the specific facts") {
+            client.get("$theoryBaseUrl/$theoryName/history/${version.value}/facts/$functor", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 200 }
+                .flatMap { it.body() }
+                .map { b ->
+                    b.toJsonArray().map { "$it." } shouldContainInOrder (exampleTheory.split("\n"))
+                }
+                .await()
+
+            val nextVersion = version.next() as IntegerIncrementalVersion
+            client.get("$theoryBaseUrl/$theoryName/history/${nextVersion.value}/facts/$anotherFunctor", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 200 }
+                .flatMap { it.body() }
+                .map { b ->
+                    b.toJsonArray().map { "$it." } shouldContainInOrder (exampleTheory2.split("\n"))
+                }
+                .await()
+        }
+
+        context("it should return 404") {
+            val fakeTheoryName = "fakeTheory"
+            val fakeVersion = IncrementalVersion.of(5)
+            val fakeFunctor = "fakeFunctor"
+            test("if the theory's name is not present") {
+                client.get("$theoryBaseUrl/$fakeTheoryName/history/${version.value}/facts/$functor", port = 8081)
+                    .tap { it.statusCode() shouldBeExactly 404 }
+                    .await()
+            }
+            test("if the theory's version is not present") {
+                client.get("$theoryBaseUrl/$theoryName/history/${fakeVersion!!.value}/facts/$functor", port = 8081)
+                    .tap { it.statusCode() shouldBeExactly 404 }
+                    .await()
+            }
+            test("if the functor's name is not present") {
+                client.get("$theoryBaseUrl/$theoryName/history/${version.value}/facts/$fakeFunctor", port = 8081)
+                    .tap { it.statusCode() shouldBeExactly 404 }
+                    .await()
+            }
         }
     }
 })

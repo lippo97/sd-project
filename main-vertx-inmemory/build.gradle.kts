@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":utils"))
     implementation(project(":domain"))
     implementation(project(":serialization"))
     implementation(project(":core"))
@@ -15,7 +16,7 @@ dependencies {
     implementation("io.vertx:vertx-core:4.2.1")
     implementation("io.vertx:vertx-web:4.2.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0")
-    implementation("io.insert-koin:koin-core:3.1.4")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0")
 
     testImplementation(testFixtures(project(":test-lib-vertx")))
     testImplementation("io.vertx:vertx-lang-kotlin:4.2.1")

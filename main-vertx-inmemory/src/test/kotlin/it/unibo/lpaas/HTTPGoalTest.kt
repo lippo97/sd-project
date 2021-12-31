@@ -16,10 +16,12 @@ import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
+import it.unibo.lpaas.core.persistence.GoalRepository
+import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
-import it.unibo.lpaas.delivery.http.Parsers
-import it.unibo.lpaas.delivery.http.Repositories
+import it.unibo.lpaas.delivery.http.GoalDependencies
+import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
 import it.unibo.lpaas.delivery.http.databind.MimeMap
@@ -31,15 +33,18 @@ import it.unibo.lpaas.delivery.http.patch
 import it.unibo.lpaas.delivery.http.post
 import it.unibo.lpaas.delivery.http.put
 import it.unibo.lpaas.delivery.http.tap
+import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
+import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Subgoal
+import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.databind.DomainSerializationModule
 import it.unibo.lpaas.domain.databind.configureMappers
-import it.unibo.lpaas.domain.impl.IncrementalVersion
+import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
-import it.unibo.lpaas.persistence.InMemoryGoalRepository
+import it.unibo.lpaas.persistence.ext.inMemory
 import it.unibo.tuprolog.core.Struct
 import kotlinx.coroutines.test.runTest
 
@@ -59,7 +64,7 @@ class HTTPGoalTest : FunSpec({
         registerModule(DomainSerializationModule())
         registerModule(
             SimpleModule().apply {
-                addAbstractTypeMapping(Version::class.java, IncrementalVersion::class.java)
+                addAbstractTypeMapping(Version::class.java, IntegerIncrementalVersion::class.java)
                 addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
             }
         )
@@ -83,18 +88,22 @@ class HTTPGoalTest : FunSpec({
                         MimeType.JSON to jsonSerializer,
                         MimeType.YAML to yamlSerializer
                     ),
-                    authenticationHandler = AuthenticationHandlerTestFactory.alwaysGrantAndMockGroups(Role.CLIENT),
-                    repositories = Repositories(
-                        goalRepository = InMemoryGoalRepository(
-                            mapOf(
-                                StringId("default") to Goal.Data(listOf(Subgoal(Struct.of("parent"))))
-                            )
+                    authOptions = Controller.AuthOptions(
+                        authenticationHandler = AuthenticationHandlerTestFactory.alwaysGrantAndMockGroups(Role.CLIENT),
+                        authorizationProvider = AuthorizationProvider.alwaysGrant(),
+                    ),
+                    goalDependencies = GoalDependencies(
+                        goalRepository = GoalRepository.inMemory(
+                            StringId("default") to Goal.Data(listOf(Subgoal(Struct.of("parent"))))
                         ),
+                        goalIdParser = GoalId::of,
                     ),
-                    parsers = Parsers(
-                        goalIdParser = GoalId::of
+                    theoryDependencies = TheoryDependencies(
+                        theoryRepository = TheoryRepository.inMemory { IncrementalVersion.zero },
+                        theoryIdParser = TheoryId::of,
+                        functorParser = { Functor(it) },
+                        incrementalVersionParser = { IncrementalVersion.of(Integer.parseInt(it))!! },
                     ),
-                    authorizationProvider = AuthorizationProvider.alwaysGrant()
                 )
             )
             server
@@ -173,7 +182,7 @@ class HTTPGoalTest : FunSpec({
         }
     }
 
-    context("When an existing theory is replaced") {
+    context("When an existing goal is replaced") {
         test("it should return the updated record") {
             client.put("$goalBaseUrl/default") {
                 obj(

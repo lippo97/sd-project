@@ -10,6 +10,8 @@ import it.unibo.lpaas.domain.Version
  */
 class SemanticVersion private constructor (val x: Int, val y: Int, val z: Int) : Version {
 
+    override fun show(): String = "$x.$y.$z"
+
     override fun compareTo(other: Version): Int {
         if (other !is SemanticVersion) {
             throw IllegalArgumentException("Passed argument was not a SemanticVersion.")

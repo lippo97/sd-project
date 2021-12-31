@@ -12,10 +12,12 @@ import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.core.GoalUseCases
+import it.unibo.lpaas.core.persistence.GoalRepository
+import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
-import it.unibo.lpaas.delivery.http.Parsers
-import it.unibo.lpaas.delivery.http.Repositories
+import it.unibo.lpaas.delivery.http.GoalDependencies
+import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerFactory
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
@@ -23,13 +25,16 @@ import it.unibo.lpaas.delivery.http.databind.MimeMap
 import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
 import it.unibo.lpaas.delivery.http.get
+import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
+import it.unibo.lpaas.domain.IncrementalVersion
+import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.databind.DomainSerializationModule
 import it.unibo.lpaas.domain.databind.configureMappers
-import it.unibo.lpaas.domain.impl.IncrementalVersion
+import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
-import it.unibo.lpaas.persistence.InMemoryGoalRepository
+import it.unibo.lpaas.persistence.ext.inMemory
 
 @Tags("HTTP")
 class HTTPAuthTest : FunSpec({
@@ -44,7 +49,7 @@ class HTTPAuthTest : FunSpec({
         registerModule(DomainSerializationModule())
         registerModule(
             SimpleModule().apply {
-                addAbstractTypeMapping(Version::class.java, IncrementalVersion::class.java)
+                addAbstractTypeMapping(Version::class.java, IntegerIncrementalVersion::class.java)
                 addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
             }
         )
@@ -63,15 +68,21 @@ class HTTPAuthTest : FunSpec({
             mimeMap = MimeMap.of(
                 MimeType.JSON to jsonSerializer,
             ),
-            authenticationHandler = authenticationHandler,
-            repositories = Repositories(
-                goalRepository = InMemoryGoalRepository(),
+            authOptions = Controller.AuthOptions(
+                authenticationHandler = authenticationHandler,
+                authorizationProvider = authorizationProvider,
             ),
-            parsers = Parsers(
-                goalIdParser = GoalId::of
+            goalDependencies = GoalDependencies(
+                goalRepository = GoalRepository.inMemory(),
+                goalIdParser = GoalId::of,
             ),
-            authorizationProvider = authorizationProvider,
-        )
+            theoryDependencies = TheoryDependencies(
+                theoryRepository = TheoryRepository.inMemory { IncrementalVersion.zero },
+                theoryIdParser = TheoryId::of,
+                functorParser = { Functor(it) },
+                incrementalVersionParser = { IncrementalVersion.of(Integer.parseInt(it))!! },
+            ),
+        ),
     )
 
     suspend fun withHttpServerOf(controller: Controller, fn: suspend () -> Unit) {

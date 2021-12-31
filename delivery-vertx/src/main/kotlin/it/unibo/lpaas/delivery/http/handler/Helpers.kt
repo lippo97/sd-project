@@ -44,23 +44,29 @@ internal fun <T> decodeJson(buffer: Buffer, clazz: Class<T>): T =
  */
 internal fun Route.suspendHandler(fn: suspend (RoutingContext) -> Unit): Route =
     handler { ctx ->
+        // Since apparently exceptions thrown inside this handler aren't
+        // propagated to the vertx error handler automatically, we had to do it
+        // manually.
         GlobalScope.launch(ctx.vertx().dispatcher()) {
-            fn(ctx)
+            runCatching {
+                fn(ctx)
+            }
+                .getOrElse { ctx.fail(it) }
         }
     }
 
-internal fun handleNonFatal(ctx: RoutingContext, error: NonFatalError) {
+internal fun RoutingContext.handleNonFatal(error: NonFatalError) {
     when (error) {
-        is NotFoundException -> ctx.response()
+        is NotFoundException -> response()
             .setStatusCode(HTTPStatusCode.NOT_FOUND)
             .end(error.message)
-        is DuplicateIdentifierException -> ctx.response()
+        is DuplicateIdentifierException -> response()
             .setStatusCode(HTTPStatusCode.CONFLICT)
             .end(error.message)
-        is ValidationException -> ctx.response()
+        is ValidationException -> response()
             .setStatusCode(HTTPStatusCode.BAD_REQUEST)
             .end(error.message)
-        else -> ctx.response()
+        else -> response()
             .setStatusCode(HTTPStatusCode.INTERNAL_SERVER_ERROR)
             .end(error.message)
     }

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.databind.impl.incrementalVersionDeserializer
-import it.unibo.lpaas.domain.impl.IncrementalVersion
 
 internal class IncrementalVersionDeserializerKtTest : FunSpec({
 

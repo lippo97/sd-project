@@ -27,7 +27,7 @@ class DomainSerializationModule : Module() {
         context.apply {
             addSerializers(
                 SimpleSerializers().apply {
-                    addSerializer(Theory2P::class.java, Theory2PSerializer())
+                    addSerializer(Theory2P::class.java, Theory2PSerializer(Theory2PPrinter.prettyPrinter()))
                     addSerializer(Fact::class.java, FactSerializer())
                     addSerializer(StringId::class.java, StringIDSerializer())
                     addSerializer(Struct::class.java, StructToStringSerializer())

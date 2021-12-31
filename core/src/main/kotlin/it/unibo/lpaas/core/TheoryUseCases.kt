@@ -92,7 +92,6 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
     }
 
     fun getFactsInTheory(name: TheoryId, functor: Functor): UseCase<List<Fact>> = UseCase.of(Tags.getFactsInTheory) {
-        println(theoryRepository.findByName(name).data.value)
         theoryRepository.findByName(name).data.value.getFactsByFunctor(functor).ifEmpty {
             throw NotFoundException(functor, "Fact")
         }
@@ -103,9 +102,7 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
             theoryRepository.run {
                 val theory = findByName(name)
                 val f = if (beginning) Theory.Data::assertA else Theory.Data::assertZ
-                val theo = updateByName(name, f(theory.data, fact))
-                println(theo)
-                theo
+                updateByName(name, f(theory.data, fact))
             }
         }
 

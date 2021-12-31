@@ -16,29 +16,25 @@ internal class TheoryTest : FunSpec({
         Clause.of(Struct.of("peach")),
     )
 
+    val myFact = Fact.of(Functor("bowser"))
+
     context("Theory assertion (prepend)") {
         test("it should prepend the fact") {
             val data = Theory.Data(theory2p)
-            data.assertA(Fact.of(Functor("bowser")))
+            data.assertA(myFact)
                 .value
                 .clauses
-                .first()
-                // take the head of the clause
-                .head shouldBe
-                Fact.of(Functor("bowser")).fact
+                .first() shouldBe myFact.fact
         }
     }
 
     context("Theory assertion (append)") {
         test("it should append the fact") {
             val data = Theory.Data(theory2p)
-            data.assertZ(Fact.of(Functor("bowser")))
+            data.assertZ(myFact)
                 .value
                 .clauses
-                .last()
-                // take the head of the clause
-                .head shouldBe
-                Fact.of(Functor("bowser")).fact
+                .last() shouldBe myFact.fact
         }
     }
 
@@ -48,7 +44,6 @@ internal class TheoryTest : FunSpec({
             data.retract(Functor("mario"), 0)
                 .value
                 .clauses
-                .map(Clause::head)
                 .shouldContainInOrder(
                     Fact.of(Functor("luigi")).fact,
                     Fact.of(Functor("daisy")).fact,

@@ -55,9 +55,9 @@ internal class TheoryUseCasesTest : FunSpec({
         coEvery { theoryRepository.findAll() } returns listOf(theory, theory, theory)
         test("it should return all the theories") {
             theoryUseCases.getAllTheoriesIndex.execute().shouldContainInOrder(
-                Pair(realId, defaultVersion),
-                Pair(realId, defaultVersion),
-                Pair(realId, defaultVersion),
+                realId,
+                realId,
+                realId,
             )
 
             coVerify { theoryRepository.findAll() }
@@ -206,13 +206,13 @@ internal class TheoryUseCasesTest : FunSpec({
 
             test("it should prepend on beginning = true") {
                 theoryUseCases.addFactToTheory(realId, Fact.of(Functor("wario"))).execute() shouldBe updatedTheory
-                verify { theory2P.assertA(Struct.of("wario")) }
+                verify { theory2P.assertA(Clause.of(Struct.of("wario"))) }
             }
 
             test("it should append on beginning = false") {
                 theoryUseCases.addFactToTheory(realId, Fact.of(Functor("wario")), beginning = false)
                     .execute() shouldBe updatedTheory
-                verify { theory2P.assertA(Struct.of("wario")) }
+                verify { theory2P.assertZ(Clause.of(Struct.of("wario"))) }
             }
         }
 

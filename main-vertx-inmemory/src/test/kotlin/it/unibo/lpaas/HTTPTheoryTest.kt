@@ -292,7 +292,7 @@ class HTTPTheoryTest : FunSpec({
 
     context("When a fact is already present in a theory") {
         val functor = "cousin"
-        val exampleFact = "$functor(luigi) :- false"
+        val exampleFact = "$functor(luigi)"
 
         client.post("$theoryBaseUrl/default/facts", port = 8081) {
             obj(
@@ -351,7 +351,6 @@ class HTTPTheoryTest : FunSpec({
                             .split("\n")
                             .filter { s -> s.contains("""^super\(\w+\)""".toRegex()) }
                             .apply {
-                                println(this)
                                 size shouldBeExactly 1
                                 first() shouldContain "super(luigi)"
                             }
@@ -509,7 +508,7 @@ class HTTPTheoryTest : FunSpec({
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
                 .map { b ->
-                    b.toJsonArray() shouldContainInOrder (exampleTheory.split("\n"))
+                    b.toJsonArray() shouldContainInOrder (exampleTheory.split("\n").map { it.dropLast(1) })
                 }
                 .await()
 
@@ -518,7 +517,7 @@ class HTTPTheoryTest : FunSpec({
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
                 .map { b ->
-                    b.toJsonArray() shouldContainInOrder (exampleTheory2.split("\n"))
+                    b.toJsonArray() shouldContainInOrder (exampleTheory2.split("\n").map { it.dropLast(1) })
                 }
                 .await()
         }

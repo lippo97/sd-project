@@ -2,6 +2,7 @@ package it.unibo.lpaas.domain
 
 import it.unibo.lpaas.domain.impl.FromFunctorFact
 import it.unibo.lpaas.domain.impl.SimpleFact
+import it.unibo.tuprolog.core.Clause
 import it.unibo.tuprolog.core.Struct
 import it.unibo.tuprolog.core.Fact as Fact2P
 
@@ -23,9 +24,16 @@ interface Fact {
 
         @Throws(IllegalArgumentException::class)
         fun of(fact2p: Fact2P): Fact {
-//            val head = clause.head
-//            require(clause.isFact && head != null) { "The provided Struct is not a fact." }
             return SimpleFact(fact2p)
+        }
+
+        @Throws(IllegalArgumentException::class)
+        fun of(clause: Clause): Fact {
+            require(clause.isFact)
+            return SimpleFact(
+                clause.asFact()
+                    ?: throw IllegalArgumentException("The passed clause: $clause must be a Fact.")
+            )
         }
 
         fun of(struct: Struct): Fact {

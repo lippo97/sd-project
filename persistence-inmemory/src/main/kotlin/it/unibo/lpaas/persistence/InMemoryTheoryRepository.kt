@@ -24,7 +24,7 @@ class InMemoryTheoryRepository(
         baseMemoryRepository.findAll().flatten()
 
     override suspend fun findByName(name: TheoryId): Theory =
-        baseMemoryRepository.findByName(name).first()
+        baseMemoryRepository.findByName(name).maxByOrNull(Theory::version)!!
 
     override suspend fun create(name: TheoryId, data: Theory.Data): Theory {
         return make(name, data).also {

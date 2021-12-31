@@ -59,7 +59,7 @@ internal class TheoryUseCasesTest : FunSpec({
                 Pair(realId, defaultVersion),
                 Pair(realId, defaultVersion),
             )
-            
+
             coVerify { theoryRepository.findAll() }
         }
     }

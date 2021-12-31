@@ -1,5 +1,6 @@
 package it.unibo.lpaas.core
 
+import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Functor
@@ -83,7 +84,9 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
     }
 
     fun getFactsInTheory(name: TheoryId, functor: Functor): UseCase<List<Fact>> = UseCase.of(Tags.getFactsInTheory) {
-        theoryRepository.findByName(name).data.value.getFactsByFunctor(functor)
+        theoryRepository.findByName(name).data.value.getFactsByFunctor(functor).ifEmpty {
+            throw NotFoundException(functor, "Fact")
+        }
     }
 
     fun addFactToTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): UseCase<Theory> =
@@ -106,7 +109,8 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
 
     fun getTheoryByNameAndVersion(name: TheoryId, version: IncrementalVersion): UseCase<Theory> =
         UseCase.of(Tags.getTheoryByVersion) {
-            theoryRepository.findByNameAndVersion(name, version)
+            val theory = theoryRepository.findByNameAndVersion(name, version)
+            theory
         }
 
     fun deleteTheoryByVersion(name: TheoryId, version: IncrementalVersion): UseCase<Theory> =
@@ -120,6 +124,8 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         version: IncrementalVersion
     ): UseCase<List<Fact>> =
         UseCase.of(Tags.getFactsInTheoryByNameAndVersion) {
-            theoryRepository.findByNameAndVersion(name, version).data.value.getFactsByFunctor(functor)
+            theoryRepository.findByNameAndVersion(name, version).data.value.getFactsByFunctor(functor).ifEmpty {
+                throw NotFoundException(functor, "Fact")
+            }
         }
 }

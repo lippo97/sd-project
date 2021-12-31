@@ -5,6 +5,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContainInOrder
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -134,7 +136,7 @@ class HTTPTheoryTest : FunSpec({
             .map {
                 it.toJsonArray().apply {
                     size() shouldBeExactly 1
-                    getString(0) shouldBe "/theories/default"
+                    getString(0) shouldBe "/theories/default/version/0"
                 }
             }
             .await()
@@ -167,8 +169,8 @@ class HTTPTheoryTest : FunSpec({
                 .map {
                     it.toJson() shouldBe json {
                         array(
-                            "/theories/default",
-                            "/theories/myTheory"
+                            "/theories/default/version/0",
+                            "/theories/myTheory/version/0"
                         )
                     }
                 }
@@ -288,6 +290,36 @@ class HTTPTheoryTest : FunSpec({
         }
     }
 
+    context("When a fact is already present in a theory") {
+        val functor = "cousin"
+        val exampleFact = "$functor(luigi)"
+        client.post("$theoryBaseUrl/default/facts", port = 8081) {
+            obj(
+                "fact" to exampleFact
+            )
+        }.await()
+
+        test("it should be retrievable by functor") {
+            client.get("$theoryBaseUrl/default/facts/$functor", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 200 }
+                .flatMap { it.body() }
+                .map {
+                    it.toJsonArray().apply {
+                        shouldNotBeEmpty()
+                        getString(0) shouldBe exampleFact
+                    }
+                }
+                .await()
+        }
+
+        test("it should return 404 if the functor is not present") {
+            val fakeFunctor = "fakeFunctor"
+            client.get("$theoryBaseUrl/default/facts/$fakeFunctor", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 404 }
+                .await()
+        }
+    }
+
     context("When a fact is replaced in a theory") {
         test("it should retract all the existing fact with the same name and arity") {
             test("it should add the fact at the beginning of the theory") {
@@ -360,11 +392,153 @@ class HTTPTheoryTest : FunSpec({
     }
 
     context("When a specific version of a theory is provided") {
-        test("it should return all the versions") {
-            client.get("$theoryBaseUrl", port = 8081)
+        val theoryName = "exampleTheory"
+        val version = IntegerIncrementalVersion.zero
+        client.post(theoryBaseUrl, port = 8081) {
+            obj(
+                "name" to theoryName,
+                "value" to exampleTheory,
+            )
+        }.await()
+        test("it should return the selected theory") {
+            client.get("$theoryBaseUrl/$theoryName/history/${version.value}", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
-                .map { println(it) }
+                .map {
+                    it.toJsonObject()
+                        .getJsonObject("version")
+                        .getInteger("value")
+                        .shouldBeExactly(version.value)
+                }
                 .await()
+
+            client.put("$theoryBaseUrl/$theoryName", port = 8081) {
+                obj(
+                    "value" to """
+                    another(valid, theory).
+                    """.trimIndent()
+                )
+            }
+                .await()
+
+            val nextVersion = version.next() as IntegerIncrementalVersion
+            client.get("$theoryBaseUrl/$theoryName/history/${nextVersion.value}", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 200 }
+                .flatMap { it.body() }
+                .map {
+                    IncrementalVersion.of(
+                        it.toJsonObject()
+                            .getJsonObject("version")
+                            .getInteger("value")
+                    ).shouldBe(version.next())
+                }
+                .await()
+        }
+        test("it should return 404 if the version is not present") {
+            val fakeVersion = IncrementalVersion.of(5)!!.value
+            client.get("$theoryBaseUrl/$theoryName/history/$fakeVersion", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 404 }
+                .await()
+        }
+    }
+
+    context("When a specific a theory is deleted by version") {
+        val theoryName = "exampleTheory"
+        val version = IntegerIncrementalVersion.zero
+        client.post(theoryBaseUrl, port = 8081) {
+            obj(
+                "name" to theoryName,
+                "value" to exampleTheory,
+            )
+        }.await()
+
+        client.put("$theoryBaseUrl/$theoryName", port = 8081) {
+            obj(
+                "value" to """
+                    another(valid, theory).
+                """.trimIndent()
+            )
+        }.await()
+
+        test("it should delete the first version") {
+            client.delete("$theoryBaseUrl/$theoryName/history/${version.value}", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 204 }
+                .await()
+        }
+
+        val nextVersion = version.next() as IntegerIncrementalVersion
+        test("it should delete the second version") {
+            client.delete("$theoryBaseUrl/$theoryName/history/${nextVersion.value}", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 204 }
+                .await()
+        }
+        test("it should return 404 if the version is not present") {
+            val fakeVersion = IncrementalVersion.of(5)!!.value
+            client.delete("$theoryBaseUrl/$theoryName/history/$fakeVersion", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 404 }
+                .await()
+        }
+    }
+
+    context("When facts are retrieved by version and name") {
+        val theoryName = "exampleTheory"
+        val version = IntegerIncrementalVersion.zero
+        val functor = "parent"
+        val anotherFunctor = "another"
+        val exampleTheory2 = """
+                    another(valid, theory).
+        """.trimIndent()
+        client.post(theoryBaseUrl, port = 8081) {
+            obj(
+                "name" to theoryName,
+                "value" to exampleTheory,
+            )
+        }.await()
+
+        client.put("$theoryBaseUrl/$theoryName", port = 8081) {
+            obj(
+                "value" to exampleTheory2
+            )
+        }.await()
+
+        test("it should return the specific facts") {
+            client.get("$theoryBaseUrl/$theoryName/history/${version.value}/facts/$functor", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 200 }
+                .flatMap { it.body() }
+                .map { b ->
+                    b.toJsonArray().map { "$it." } shouldContainInOrder (exampleTheory.split("\n"))
+                }
+                .await()
+
+            val nextVersion = version.next() as IntegerIncrementalVersion
+            client.get("$theoryBaseUrl/$theoryName/history/${nextVersion.value}/facts/$anotherFunctor", port = 8081)
+                .tap { it.statusCode() shouldBeExactly 200 }
+                .flatMap { it.body() }
+                .map { b ->
+                    b.toJsonArray().map { "$it." } shouldContainInOrder (exampleTheory2.split("\n"))
+                }
+                .await()
+        }
+
+        context("it should return 404") {
+            val fakeTheoryName = "fakeTheory"
+            val fakeVersion = IncrementalVersion.of(5)
+            val fakeFunctor = "fakeFunctor"
+            test("if the theory's name is not present") {
+                client.get("$theoryBaseUrl/$fakeTheoryName/history/${version.value}/facts/$functor", port = 8081)
+                    .tap { it.statusCode() shouldBeExactly 404 }
+                    .await()
+            }
+            test("if the theory's version is not present") {
+                client.get("$theoryBaseUrl/$theoryName/history/${fakeVersion!!.value}/facts/$functor", port = 8081)
+                    .tap { it.statusCode() shouldBeExactly 404 }
+                    .await()
+            }
+            test("if the functor's name is not present") {
+                client.get("$theoryBaseUrl/$theoryName/history/${version.value}/facts/$fakeFunctor", port = 8081)
+                    .tap { it.statusCode() shouldBeExactly 404 }
+                    .await()
+            }
         }
     }
 })

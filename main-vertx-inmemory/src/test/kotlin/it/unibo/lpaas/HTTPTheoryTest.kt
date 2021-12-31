@@ -136,7 +136,7 @@ class HTTPTheoryTest : FunSpec({
             .map {
                 it.toJsonArray().apply {
                     size() shouldBeExactly 1
-                    getString(0) shouldBe "/theories/default/version/0"
+                    getString(0) shouldBe "/theories/default"
                 }
             }
             .await()
@@ -169,8 +169,8 @@ class HTTPTheoryTest : FunSpec({
                 .map {
                     it.toJson() shouldBe json {
                         array(
-                            "/theories/default/version/0",
-                            "/theories/myTheory/version/0"
+                            "/theories/default",
+                            "/theories/myTheory"
                         )
                     }
                 }
@@ -292,12 +292,15 @@ class HTTPTheoryTest : FunSpec({
 
     context("When a fact is already present in a theory") {
         val functor = "cousin"
-        val exampleFact = "$functor(luigi)"
+        val exampleFact = "$functor(luigi) :- false"
+
         client.post("$theoryBaseUrl/default/facts", port = 8081) {
             obj(
                 "fact" to exampleFact
             )
-        }.await()
+        }
+            .map { it.statusCode() shouldBeExactly 201 }
+            .await()
 
         test("it should be retrievable by functor") {
             client.get("$theoryBaseUrl/default/facts/$functor", port = 8081)
@@ -481,7 +484,7 @@ class HTTPTheoryTest : FunSpec({
     }
 
     context("When facts are retrieved by version and name") {
-        val theoryName = "exampleTheory"
+        val theoryName = "someTheory"
         val version = IntegerIncrementalVersion.zero
         val functor = "parent"
         val anotherFunctor = "another"
@@ -502,20 +505,20 @@ class HTTPTheoryTest : FunSpec({
         }.await()
 
         test("it should return the specific facts") {
-            client.get("$theoryBaseUrl/$theoryName/history/${version.value}/facts/$functor", port = 8081)
+            client.get("$theoryBaseUrl/$theoryName/history/${version.show()}/facts/$functor", port = 8081)
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
                 .map { b ->
-                    b.toJsonArray().map { "$it." } shouldContainInOrder (exampleTheory.split("\n"))
+                    b.toJsonArray() shouldContainInOrder (exampleTheory.split("\n"))
                 }
                 .await()
 
             val nextVersion = version.next() as IntegerIncrementalVersion
-            client.get("$theoryBaseUrl/$theoryName/history/${nextVersion.value}/facts/$anotherFunctor", port = 8081)
+            client.get("$theoryBaseUrl/$theoryName/history/${nextVersion.show()}/facts/$anotherFunctor", port = 8081)
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
                 .map { b ->
-                    b.toJsonArray().map { "$it." } shouldContainInOrder (exampleTheory2.split("\n"))
+                    b.toJsonArray() shouldContainInOrder (exampleTheory2.split("\n"))
                 }
                 .await()
         }

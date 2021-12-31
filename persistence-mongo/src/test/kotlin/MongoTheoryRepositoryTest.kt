@@ -8,6 +8,7 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.ints.shouldBeExactly
+import io.kotest.matchers.shouldNotBe
 import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Theory
@@ -168,7 +169,7 @@ class MongoTheoryRepositoryTest : FunSpec({
         val updatedTheory = repository.updateByName(createdTheory.name, Theory.Data(Theory2P.of(emptyList())))
 
         test("must return the deleted theory") {
-            repository.findAll().size shouldBeExactly 2
+            repository.findAll() shouldNotBe emptyList<Theory>()
             val deletedTheory = repository.deleteByNameAndVersion(createdTheory.name, createdTheory.version)
             deletedTheory.version shouldBeEqualToComparingFields createdTheory.version
             repository.findAll().size shouldBeExactly 1

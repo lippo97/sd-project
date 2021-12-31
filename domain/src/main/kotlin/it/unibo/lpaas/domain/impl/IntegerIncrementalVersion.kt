@@ -27,6 +27,8 @@ class IntegerIncrementalVersion private constructor (val value: Int) : Increment
 
     override fun hashCode(): Int = value
 
+    override fun toString(): String = "IntegerIncrementalVersion(value=$value)"
+
     companion object {
         @Throws(IllegalArgumentException::class)
         fun unsafeMake(value: Int): IntegerIncrementalVersion {

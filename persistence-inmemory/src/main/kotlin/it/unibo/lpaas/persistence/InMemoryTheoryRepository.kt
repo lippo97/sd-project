@@ -2,7 +2,6 @@ package it.unibo.lpaas.persistence
 
 import it.unibo.lpaas.collections.NonEmptyList
 import it.unibo.lpaas.collections.nonEmptyListOf
-import it.unibo.lpaas.collections.sortedWith
 import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -21,14 +20,17 @@ class InMemoryTheoryRepository(
         Theory(theoryId, data, incrementalVersionFactory())
 
     override suspend fun findAll(): List<Theory> =
+        baseMemoryRepository.findAll().map { it.head }
+
+    override suspend fun findAllWithVersion(): List<Theory> =
         baseMemoryRepository.findAll().flatten()
 
     override suspend fun findByName(name: TheoryId): Theory =
-        baseMemoryRepository.findByName(name).maxByOrNull(Theory::version)!!
+        baseMemoryRepository.findByName(name).head
 
     override suspend fun create(name: TheoryId, data: Theory.Data): Theory {
         return make(name, data).also {
-            baseMemoryRepository.create(name, nonEmptyListOf(it)).first()
+            baseMemoryRepository.create(name, nonEmptyListOf(it)).head
         }
     }
 
@@ -37,13 +39,12 @@ class InMemoryTheoryRepository(
 
         return Theory(name, data, current.version.next()).also {
             val updatedList = (nonEmptyListOf(it, current) + otherVersions)
-                .sortedWith { x, y -> x.version.compareTo(y.version) }
             baseMemoryRepository.updateByName(name, updatedList)
         }
     }
 
     override suspend fun deleteByName(name: TheoryId): Theory =
-        baseMemoryRepository.deleteByName(name).first()
+        baseMemoryRepository.deleteByName(name).head
 
     override suspend fun findByNameAndVersion(name: TheoryId, version: IncrementalVersion): Theory =
         baseMemoryRepository.findByName(name).firstOrNull { it.version == version }

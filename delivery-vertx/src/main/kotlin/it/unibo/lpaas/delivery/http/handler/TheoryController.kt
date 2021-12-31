@@ -40,7 +40,7 @@ interface TheoryController : Controller {
                         .authenticationHandler()
                         .useCaseHandler {
                             theoryUseCase.getAllTheoriesIndex.map { list ->
-                                list.map { (id, version) -> "/theories/${id.show()}/version/${version.show()}" }
+                                list.map { "/theories/${it.show()}" }
                             }
                         }
 

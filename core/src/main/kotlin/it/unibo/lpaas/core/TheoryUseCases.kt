@@ -23,6 +23,10 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         val getAllTheoriesIndex = Tag("getAllTheoriesIndex")
 
         @JvmStatic
+        @get:JvmName("getAllTheoriesWithVersionIndex")
+        val getAllTheoriesWithVersionIndex = Tag("getAllTheoriesWithVersionIndex")
+
+        @JvmStatic
         @get:JvmName("getTheoryByName")
         val getTheoryByName = Tag("getTheoryByName")
 
@@ -63,8 +67,12 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         val getFactsInTheoryByNameAndVersion = Tag("getFactsInTheoryByNameAndVersion")
     }
 
-    val getAllTheoriesIndex: UseCase<List<Pair<TheoryId, Version>>> = UseCase.of(Tags.getAllTheoriesIndex) {
-        theoryRepository.findAll().map { Pair(it.name, it.version) }
+    val getAllTheoriesWithVersionIndex: UseCase<List<Pair<TheoryId, Version>>> = UseCase.of(Tags.getAllTheoriesIndex) {
+        theoryRepository.findAllWithVersion().map { Pair(it.name, it.version) }
+    }
+
+    val getAllTheoriesIndex: UseCase<List<TheoryId>> = UseCase.of(Tags.getAllTheoriesIndex) {
+        theoryRepository.findAll().map(Theory::name)
     }
 
     fun getTheoryByName(name: TheoryId): UseCase<Theory> = UseCase.of(Tags.getTheoryByName) {
@@ -84,6 +92,7 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
     }
 
     fun getFactsInTheory(name: TheoryId, functor: Functor): UseCase<List<Fact>> = UseCase.of(Tags.getFactsInTheory) {
+        println(theoryRepository.findByName(name).data.value)
         theoryRepository.findByName(name).data.value.getFactsByFunctor(functor).ifEmpty {
             throw NotFoundException(functor, "Fact")
         }
@@ -94,7 +103,9 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
             theoryRepository.run {
                 val theory = findByName(name)
                 val f = if (beginning) Theory.Data::assertA else Theory.Data::assertZ
-                updateByName(name, f(theory.data, fact))
+                val theo = updateByName(name, f(theory.data, fact))
+                println(theo)
+                theo
             }
         }
 

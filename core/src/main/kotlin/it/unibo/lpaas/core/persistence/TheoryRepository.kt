@@ -6,6 +6,7 @@ import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 
 interface TheoryRepository : Repository<TheoryId, Theory.Data, Theory> {
+    suspend fun findAllWithVersion(): List<Theory>
 
     @Throws(NotFoundException::class)
     suspend fun findByNameAndVersion(name: TheoryId, version: IncrementalVersion): Theory

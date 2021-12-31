@@ -2,20 +2,13 @@ package it.unibo.lpaas.domain.databind
 
 import it.unibo.tuprolog.theory.Theory as Theory2P
 
-fun interface Theory2PPrinter {
-    fun display(theory2P: Theory2P): String
+object Theory2PPrinter {
+    fun usingDefault(): Printer<Theory2P> = Printer {
+        it.toString(true)
+    }
 
-    companion object {
-        fun usingDefault(): Theory2PPrinter = Theory2PPrinter {
-            it.toString(true)
-        }
-
-        fun prettyPrinter(): Theory2PPrinter = Theory2PPrinter { theory ->
-            theory.clauses.map {
-                if (it.isFact) it.head.toString()
-                else it.toString()
-            }
-                .fold("") { acc, value -> "$acc$value.\n" }
-        }
+    fun prettyPrinter(): Printer<Theory2P> = Printer { theory ->
+        theory.clauses.map(ClausePrinter.prettyPrinter()::display)
+            .fold("") { acc, value -> "$acc$value.\n" }
     }
 }

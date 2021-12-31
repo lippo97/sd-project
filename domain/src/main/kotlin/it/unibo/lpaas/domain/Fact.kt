@@ -2,34 +2,34 @@ package it.unibo.lpaas.domain
 
 import it.unibo.lpaas.domain.impl.FromFunctorFact
 import it.unibo.lpaas.domain.impl.SimpleFact
-import it.unibo.tuprolog.core.Clause
 import it.unibo.tuprolog.core.Struct
+import it.unibo.tuprolog.core.Fact as Fact2P
 
 /**
  * A Prolog fact that can hold only compound terms and simple atoms.
  */
 interface Fact {
-    val struct: Struct
+    val fact: Fact2P
 
     val functor: Functor
-        get() = Functor(struct.functor)
+        get() = Functor(fact.head.functor)
 
     val arity: Int
-        get() = struct.arity
+        get() = fact.head.arity
 
     companion object {
         fun of(functor: Functor, vararg args: String): Fact =
             FromFunctorFact(functor, args.map { Argument(it) }.toList())
 
         @Throws(IllegalArgumentException::class)
-        fun of(clause: Clause): Fact {
-            val head = clause.head
-            require(clause.isFact && head != null) { "The provided Struct is not a fact." }
-            return SimpleFact(head)
+        fun of(fact2p: Fact2P): Fact {
+//            val head = clause.head
+//            require(clause.isFact && head != null) { "The provided Struct is not a fact." }
+            return SimpleFact(fact2p)
         }
 
         fun of(struct: Struct): Fact {
-            return SimpleFact(struct)
+            return SimpleFact(Fact2P.of(struct))
         }
     }
 }

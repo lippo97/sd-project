@@ -7,6 +7,6 @@ import it.unibo.lpaas.domain.Fact
 
 class FactSerializer : JsonSerializer<Fact>() {
     override fun serialize(value: Fact, gen: JsonGenerator, serializers: SerializerProvider) {
-        gen.writeString(value.struct.toString())
+        gen.writeString(value.fact.toString())
     }
 }

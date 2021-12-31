@@ -13,11 +13,11 @@ data class Theory(
 ) {
     data class Data(val value: Theory2P) {
         fun assertZ(fact: Fact): Data = copy(
-            value = value.assertZ(fact.struct)
+            value = value.assertZ(fact.fact)
         )
 
         fun assertA(fact: Fact): Data = copy(
-            value = value.assertA(fact.struct)
+            value = value.assertA(fact.fact)
         )
 
         fun retract(functor: Functor, arity: Int): Data {

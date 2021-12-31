@@ -25,7 +25,7 @@ internal class TheoryTest : FunSpec({
                 .first()
                 // take the head of the clause
                 .head shouldBe
-                Fact.of(Functor("bowser")).struct
+                Fact.of(Functor("bowser")).fact
         }
     }
 
@@ -38,7 +38,7 @@ internal class TheoryTest : FunSpec({
                 .last()
                 // take the head of the clause
                 .head shouldBe
-                Fact.of(Functor("bowser")).struct
+                Fact.of(Functor("bowser")).fact
         }
     }
 
@@ -50,9 +50,9 @@ internal class TheoryTest : FunSpec({
                 .clauses
                 .map(Clause::head)
                 .shouldContainInOrder(
-                    Fact.of(Functor("luigi")).struct,
-                    Fact.of(Functor("daisy")).struct,
-                    Fact.of(Functor("peach")).struct,
+                    Fact.of(Functor("luigi")).fact,
+                    Fact.of(Functor("daisy")).fact,
+                    Fact.of(Functor("peach")).fact,
                 )
         }
 

@@ -14,16 +14,16 @@ import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.core.UseCase
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-import it.unibo.lpaas.delivery.http.databind.MimeMap
 import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
+import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.handler.USE_CASE_CTX
 import it.unibo.lpaas.delivery.http.handler.suspendHandler
 import it.unibo.lpaas.delivery.http.setStatusCode
 
 internal interface UseCaseDSL {
 
-    val mimeMap: MimeMap<BufferSerializer>
+    val serializerCollection: SerializerCollection<BufferSerializer>
 
     val authorizationProvider: AuthorizationProvider
 
@@ -40,7 +40,7 @@ internal interface UseCaseDSL {
             val result = useCase.execute()
 
             // Default it with a Json factory in order to let it not crash
-            val serializer = mimeMap.serializerOrDefault(
+            val serializer = serializerCollection.serializerOrDefault(
                 contentType,
                 ObjectMapperSerializer.of(
                     ObjectMapper(JsonFactory()).enable(SerializationFeature.INDENT_OUTPUT)
@@ -89,9 +89,12 @@ internal interface UseCaseDSL {
         .getOrThrow()
 
     companion object {
-        fun of(mimeMap: MimeMap<BufferSerializer>, authorizationProvider: AuthorizationProvider): UseCaseDSL =
+        fun of(
+            serializerCollection: SerializerCollection<BufferSerializer>,
+            authorizationProvider: AuthorizationProvider
+        ): UseCaseDSL =
             object : UseCaseDSL {
-                override val mimeMap: MimeMap<BufferSerializer> = mimeMap
+                override val serializerCollection: SerializerCollection<BufferSerializer> = serializerCollection
 
                 override val authorizationProvider: AuthorizationProvider = authorizationProvider
             }

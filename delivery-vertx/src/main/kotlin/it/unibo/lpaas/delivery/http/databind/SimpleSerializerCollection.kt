@@ -1,8 +1,8 @@
 package it.unibo.lpaas.delivery.http.databind
 
-class SimpleMimeMap<out T : BufferSerializer>(
+class SimpleSerializerCollection<out T : BufferSerializer>(
     private val serializers: Map<MimeType, T>,
-) : MimeMap<T> {
+) : SerializerCollection<T> {
     override val availableTypes: Set<MimeType> = serializers.keys
 
     override val availableSerializers: Collection<T> = serializers.values

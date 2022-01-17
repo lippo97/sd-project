@@ -5,7 +5,7 @@ import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.delivery.StringParser
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -25,7 +25,7 @@ class TheoryDependencies(
 
 data class DependencyGraph(
     val vertx: Vertx,
-    val mimeMap: MimeMap<BufferSerializer>,
+    val serializerCollection: SerializerCollection<BufferSerializer>,
     val goalDependencies: GoalDependencies,
     val theoryDependencies: TheoryDependencies,
     val authOptions: Controller.AuthOptions,

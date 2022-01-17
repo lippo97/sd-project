@@ -35,7 +35,7 @@ fun interface Controller {
                         vertx = vertx,
                         goalDependencies = goalDependencies,
                         authOptions = authOptions,
-                        mimeMap = mimeMap,
+                        serializerCollection = mimeMap,
                     ).routes()
                 )
                 mountSubRouter(
@@ -44,9 +44,27 @@ fun interface Controller {
                         vertx = vertx,
                         theoryDependencies = theoryDependencies,
                         authOptions = authOptions,
-                        mimeMap = mimeMap
+                        serializerCollection = mimeMap
                     ).routes()
                 )
+
+                /***********************************
+                 interface TokenStorage {
+                 suspend fun getRole(token: String): Role
+                 }
+
+                 object TokenStorageInMemory : TokenStorage {
+                 val usersMap = HashMap<String, Role>()
+                 override suspend fun getRole(token: String): Role =
+                 usersMap.get(token) ?: throw RuntimeException("The key $token is not present")
+                 }
+
+                 route("/login")
+                 .handler(BodyHandler.create())
+                 .handler { ctx ->
+                 val token = ctx.bodyAsJson.getString("token")
+                 }
+                 ***********************************/
 
                 route("/*").failureHandler { ctx ->
                     val throwable = ctx.failure()

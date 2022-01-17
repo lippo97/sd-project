@@ -8,7 +8,7 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.handler.dsl.HandlerDSL
 import it.unibo.lpaas.delivery.http.handler.dto.CreateTheoryDTO
 import it.unibo.lpaas.delivery.http.handler.dto.ReplaceTheoryDTO
@@ -23,7 +23,7 @@ interface TheoryController : Controller {
         fun make(
             vertx: Vertx,
             theoryDependencies: TheoryDependencies,
-            mimeMap: MimeMap<BufferSerializer>,
+            serializerCollection: SerializerCollection<BufferSerializer>,
             authOptions: Controller.AuthOptions,
         ): TheoryController = object : TheoryController {
             val theoryRepository = theoryDependencies.theoryRepository
@@ -34,9 +34,15 @@ interface TheoryController : Controller {
 
             @Suppress("LongMethod")
             override fun routes(): Router = Router.router(vertx).apply {
-                with(HandlerDSL(mimeMap, authOptions.authenticationHandler, authOptions.authorizationProvider)) {
+                with(
+                    HandlerDSL(
+                        serializerCollection,
+                        authOptions.authenticationHandler,
+                        authOptions.authorizationProvider
+                    )
+                ) {
                     get("/")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .useCaseHandler {
                             theoryUseCase.getAllTheoriesIndex.map { list ->
@@ -45,7 +51,7 @@ interface TheoryController : Controller {
                         }
 
                     post("/")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .handler(BodyHandler.create())
                         .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
@@ -54,7 +60,7 @@ interface TheoryController : Controller {
                         }
 
                     get("/:name")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .useCaseHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
@@ -62,7 +68,7 @@ interface TheoryController : Controller {
                         }
 
                     put("/:name")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .handler(BodyHandler.create())
                         .useCaseHandler { ctx ->
@@ -80,7 +86,7 @@ interface TheoryController : Controller {
 
                     data class FactInTheoryDTO(val fact: Fact)
                     post("/:name/facts")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .handler(BodyHandler.create())
                         .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
@@ -92,7 +98,7 @@ interface TheoryController : Controller {
                         }
 
                     put("/:name/facts")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .handler(BodyHandler.create())
                         .useCaseHandler { ctx ->
@@ -104,7 +110,7 @@ interface TheoryController : Controller {
                         }
 
                     get("/:name/facts/:functor")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .useCaseHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
@@ -113,7 +119,7 @@ interface TheoryController : Controller {
                         }
 
                     get("/:name/history/:versionOrTimestamp")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .useCaseHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
@@ -130,7 +136,7 @@ interface TheoryController : Controller {
                         }
 
                     get("/:name/history/:versionOrTimestamp/facts/:functor")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .useCaseHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))

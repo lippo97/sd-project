@@ -8,7 +8,7 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.handler.dsl.HandlerDSL
 import it.unibo.lpaas.delivery.http.handler.dto.CreateGoalDTO
 import it.unibo.lpaas.delivery.http.handler.dto.ReplaceGoalDTO
@@ -23,7 +23,7 @@ interface GoalController : Controller {
             vertx: Vertx,
             goalDependencies: GoalDependencies,
             authOptions: Controller.AuthOptions,
-            mimeMap: MimeMap<BufferSerializer>,
+            serializerCollection: SerializerCollection<BufferSerializer>,
         ): GoalController = object : GoalController {
 
             val goalRepository = goalDependencies.goalRepository
@@ -32,9 +32,15 @@ interface GoalController : Controller {
 
             @Suppress("LongMethod")
             override fun routes(): Router = Router.router(vertx).apply {
-                with(HandlerDSL(mimeMap, authOptions.authenticationHandler, authOptions.authorizationProvider)) {
+                with(
+                    HandlerDSL(
+                        serializerCollection,
+                        authOptions.authenticationHandler,
+                        authOptions.authorizationProvider
+                    )
+                ) {
                     get("/")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .useCaseHandler {
                             goalUseCases.getAllGoalsIndex.map { list ->
@@ -43,7 +49,7 @@ interface GoalController : Controller {
                         }
 
                     post("/")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .handler(BodyHandler.create())
                         .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
@@ -52,7 +58,7 @@ interface GoalController : Controller {
                         }
 
                     get("/:name")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .useCaseHandler { ctx ->
                             val name = ctx.pathParam("name")
@@ -60,7 +66,7 @@ interface GoalController : Controller {
                         }
 
                     put("/:name")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .handler(BodyHandler.create())
                         .useCaseHandler { ctx ->
@@ -77,7 +83,7 @@ interface GoalController : Controller {
                         }
 
                     patch("/:name")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .handler(BodyHandler.create())
                         .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
@@ -87,7 +93,7 @@ interface GoalController : Controller {
                         }
 
                     get("/:name/:index")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .useCaseHandler { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
@@ -96,7 +102,7 @@ interface GoalController : Controller {
                         }
 
                     put("/:name/:index")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
                         .handler(BodyHandler.create())
                         .useCaseHandler { ctx ->

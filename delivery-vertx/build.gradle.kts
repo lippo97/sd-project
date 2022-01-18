@@ -20,6 +20,7 @@ dependencies {
     runtimeOnly("com.fasterxml.jackson.core:jackson-core:2.13.0")
     runtimeOnly("com.fasterxml.jackson.core:jackson-annotations:2.13.0")
 
+    testImplementation(testFixtures(project(":test-lib-vertx")))
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0")
     testImplementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0")
 }

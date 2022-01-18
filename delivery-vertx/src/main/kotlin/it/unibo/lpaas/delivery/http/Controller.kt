@@ -48,24 +48,6 @@ fun interface Controller {
                     ).routes()
                 )
 
-                /***********************************
-                 interface TokenStorage {
-                 suspend fun getRole(token: String): Role
-                 }
-
-                 object TokenStorageInMemory : TokenStorage {
-                 val usersMap = HashMap<String, Role>()
-                 override suspend fun getRole(token: String): Role =
-                 usersMap.get(token) ?: throw RuntimeException("The key $token is not present")
-                 }
-
-                 route("/login")
-                 .handler(BodyHandler.create())
-                 .handler { ctx ->
-                 val token = ctx.bodyAsJson.getString("token")
-                 }
-                 ***********************************/
-
                 route("/*").failureHandler { ctx ->
                     val throwable = ctx.failure()
                     if (throwable is NonFatalError) {

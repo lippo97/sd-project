@@ -72,6 +72,10 @@ internal fun RoutingContext.handleNonFatal(error: NonFatalError) {
     }
 }
 
+internal fun Route.produces(item: MimeType): Route = apply {
+    produces(listOf(item))
+}
+
 internal fun Route.produces(items: Collection<MimeType>): Route = apply {
     items.forEach { produces(it.value) }
 }

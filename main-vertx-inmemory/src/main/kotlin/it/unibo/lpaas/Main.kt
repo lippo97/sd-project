@@ -39,7 +39,6 @@ fun main() {
             authOptions = Controller.AuthOptions(
                 authenticationHandler = AuthenticationHandlerFactory.alwaysGrant(),
                 authorizationProvider = AuthorizationProvider.alwaysGrant(),
-
             ),
             goalDependencies = GoalDependencies(
                 goalRepository = GoalRepository.inMemory(),

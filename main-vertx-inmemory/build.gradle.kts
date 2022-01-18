@@ -15,6 +15,7 @@ dependencies {
 
     implementation("io.vertx:vertx-core:4.2.1")
     implementation("io.vertx:vertx-web:4.2.1")
+    implementation("io.vertx:vertx-auth-jwt:4.2.1")
 
     testImplementation(testFixtures(project(":test-lib-vertx")))
     testImplementation("io.vertx:vertx-lang-kotlin:4.2.1")

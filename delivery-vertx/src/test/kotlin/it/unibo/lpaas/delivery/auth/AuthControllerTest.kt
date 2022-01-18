@@ -1,5 +1,6 @@
 package it.unibo.lpaas.delivery.auth
 
+import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
@@ -21,6 +22,7 @@ import it.unibo.lpaas.delivery.http.auth.TokenStorage
 import it.unibo.lpaas.delivery.http.auth.UnauthorizedException
 import it.unibo.lpaas.delivery.http.handler.AuthController
 
+@Tags("HTTP")
 class AuthControllerTest : FunSpec({
 
     val vertx = Vertx.vertx()

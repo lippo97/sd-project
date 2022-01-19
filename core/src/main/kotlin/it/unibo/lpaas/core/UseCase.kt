@@ -5,9 +5,6 @@ import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.CoroutineContext
 
-@JvmInline
-value class Tag(val value: String)
-
 abstract class UseCase<T>(
     @get:JvmName("getTag") val tag: Tag,
 ) {

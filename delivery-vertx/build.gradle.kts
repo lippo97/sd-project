@@ -5,7 +5,7 @@ plugins {
 dependencies {
     implementation(project(":domain"))
     implementation(project(":core"))
-    implementation(project(":auth"))
+    implementation(project(":authorization"))
     implementation(project(":serialization"))
     implementation("io.vertx:vertx-core:4.2.1")
     implementation("io.vertx:vertx-web:4.2.1")

@@ -5,6 +5,22 @@ import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.CoroutineContext
 
+interface UseCase0<out R> : Tagged {
+    suspend fun execute(): R
+}
+
+interface UseCase1<in T1, out R> : Tagged {
+    suspend fun execute(t1: T1): R
+}
+
+interface UseCase2<in T1, in T2, out R> : Tagged {
+    suspend fun execute(t1: T1, t2: T2): R
+}
+
+interface UseCase3<in T1, in T2, in T3, out R> : Tagged {
+    suspend fun execute(t1: T1, t2: T2, t3: T3): R
+}
+
 abstract class UseCase<T>(
     @get:JvmName("getTag") val tag: Tag,
 ) {

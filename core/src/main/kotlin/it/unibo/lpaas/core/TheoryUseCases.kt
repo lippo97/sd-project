@@ -67,73 +67,55 @@ class TheoryUseCases(private val theoryRepository: TheoryRepository) {
         val getFactsInTheoryByNameAndVersion = Tag("getFactsInTheoryByNameAndVersion")
     }
 
-    val getAllTheoriesWithVersionIndex: UseCase<List<Pair<TheoryId, Version>>> = UseCase.of(Tags.getAllTheoriesIndex) {
+    suspend fun getAllTheoriesWithVersionIndex(): List<Pair<TheoryId, Version>> =
         theoryRepository.findAllWithVersion().map { Pair(it.name, it.version) }
-    }
 
-    val getAllTheoriesIndex: UseCase<List<TheoryId>> = UseCase.of(Tags.getAllTheoriesIndex) {
+    suspend fun getAllTheoriesIndex(): List<TheoryId> =
         theoryRepository.findAll().map(Theory::name)
-    }
 
-    fun getTheoryByName(name: TheoryId): UseCase<Theory> = UseCase.of(Tags.getTheoryByName) {
+    suspend fun getTheoryByName(name: TheoryId): Theory =
         theoryRepository.findByName(name)
-    }
 
-    fun createTheory(name: TheoryId, data: Theory.Data): UseCase<Theory> = UseCase.of(Tags.createTheory) {
+    suspend fun createTheory(name: TheoryId, data: Theory.Data): Theory =
         theoryRepository.create(name, data)
-    }
 
-    fun updateTheory(name: TheoryId, data: Theory.Data): UseCase<Theory> = UseCase.of(Tags.updateTheory) {
+    suspend fun updateTheory(name: TheoryId, data: Theory.Data): Theory =
         theoryRepository.updateByName(name, data)
-    }
 
-    fun deleteTheory(name: TheoryId): UseCase<Theory> = UseCase.of(Tags.deleteTheory) {
+    suspend fun deleteTheory(name: TheoryId): Theory =
         theoryRepository.deleteByName(name)
-    }
 
-    fun getFactsInTheory(name: TheoryId, functor: Functor): UseCase<List<Fact>> = UseCase.of(Tags.getFactsInTheory) {
+    suspend fun getFactsInTheory(name: TheoryId, functor: Functor): List<Fact> =
         theoryRepository.findByName(name).data.value.getFactsByFunctor(functor).ifEmpty {
             throw NotFoundException(functor, "Fact")
         }
-    }
 
-    fun addFactToTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): UseCase<Theory> =
-        UseCase.of(Tags.addFactToTheory) {
-            theoryRepository.run {
-                val theory = findByName(name)
-                val f = if (beginning) Theory.Data::assertA else Theory.Data::assertZ
-                updateByName(name, f(theory.data, fact))
-            }
+    suspend fun addFactToTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): Theory =
+        theoryRepository.run {
+            val theory = findByName(name)
+            val f = if (beginning) Theory.Data::assertA else Theory.Data::assertZ
+            updateByName(name, f(theory.data, fact))
         }
 
-    fun updateFactInTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): UseCase<Theory> =
-        UseCase.of(Tags.updateFactInTheory) {
-            theoryRepository.run {
-                val theoryData = findByName(name).data.retract(fact.functor, fact.arity)
-                val f = if (beginning) Theory.Data::assertA else Theory.Data::assertZ
-                updateByName(name, f(theoryData, fact))
-            }
+    suspend fun updateFactInTheory(name: TheoryId, fact: Fact, beginning: Boolean = true): Theory =
+        theoryRepository.run {
+            val theoryData = findByName(name).data.retract(fact.functor, fact.arity)
+            val f = if (beginning) Theory.Data::assertA else Theory.Data::assertZ
+            updateByName(name, f(theoryData, fact))
         }
 
-    fun getTheoryByNameAndVersion(name: TheoryId, version: IncrementalVersion): UseCase<Theory> =
-        UseCase.of(Tags.getTheoryByVersion) {
-            val theory = theoryRepository.findByNameAndVersion(name, version)
-            theory
-        }
+    suspend fun getTheoryByNameAndVersion(name: TheoryId, version: IncrementalVersion): Theory =
+        theoryRepository.findByNameAndVersion(name, version)
 
-    fun deleteTheoryByVersion(name: TheoryId, version: IncrementalVersion): UseCase<Theory> =
-        UseCase.of(Tags.deleteTheoryByVersion) {
-            theoryRepository.deleteByNameAndVersion(name, version)
-        }
+    suspend fun deleteTheoryByVersion(name: TheoryId, version: IncrementalVersion): Theory =
+        theoryRepository.deleteByNameAndVersion(name, version)
 
-    fun getFactsInTheoryByNameAndVersion(
+    suspend fun getFactsInTheoryByNameAndVersion(
         name: TheoryId,
         functor: Functor,
         version: IncrementalVersion
-    ): UseCase<List<Fact>> =
-        UseCase.of(Tags.getFactsInTheoryByNameAndVersion) {
-            theoryRepository.findByNameAndVersion(name, version).data.value.getFactsByFunctor(functor).ifEmpty {
-                throw NotFoundException(functor, "Fact")
-            }
+    ): List<Fact> =
+        theoryRepository.findByNameAndVersion(name, version).data.value.getFactsByFunctor(functor).ifEmpty {
+            throw NotFoundException(functor, "Fact")
         }
 }

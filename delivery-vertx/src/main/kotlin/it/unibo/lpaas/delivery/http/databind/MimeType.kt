@@ -6,7 +6,7 @@ enum class MimeType(val value: String) {
     XML("application/xml");
 
     companion object {
-        @Throws(NoSuchElementException::class)
+        @Throws(IllegalArgumentException::class)
         fun parse(input: String): MimeType = values().first { it.value == input }
     }
 }

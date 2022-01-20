@@ -50,49 +50,42 @@ class GoalUseCases(private val goalRepository: GoalRepository) {
         val deleteSubgoal = Tag("deleteSubgoal")
     }
 
-    val getAllGoals: UseCase<List<Goal>> = UseCase.of(Tags.getAllGoals) {
+    suspend fun getAllGoals(): List<Goal> =
         goalRepository.findAll()
-    }
 
-    val getAllGoalsIndex: UseCase<List<GoalId>> = UseCase.of(Tags.getAllGoalsIndex) {
+    suspend fun getAllGoalsIndex(): List<GoalId> =
         goalRepository.findAll().map { it.name }
-    }
 
-    fun getGoalByName(name: GoalId): UseCase<Goal> = UseCase.of(Tags.getGoalByName) {
+    suspend fun getGoalByName(name: GoalId): Goal =
         goalRepository.findByName(name)
-    }
 
-    fun createGoal(name: GoalId, data: Goal.Data): UseCase<Goal> = UseCase.of(Tags.createGoal) {
+    suspend fun createGoal(name: GoalId, data: Goal.Data): Goal =
         goalRepository.create(name, data)
-    }
 
-    fun replaceGoal(name: GoalId, data: Goal.Data): UseCase<Goal> = UseCase.of(Tags.replaceGoal) {
+    suspend fun replaceGoal(name: GoalId, data: Goal.Data): Goal =
         goalRepository.updateByName(name, data)
-    }
 
-    fun deleteGoal(name: GoalId): UseCase<Goal> = UseCase.of(Tags.deleteGoal) {
+    suspend fun deleteGoal(name: GoalId): Goal =
         goalRepository.deleteByName(name)
-    }
 
-    fun appendSubgoal(name: GoalId, subGoal: Subgoal): UseCase<Goal> = UseCase.of(Tags.appendSubgoal) {
+    suspend fun appendSubgoal(name: GoalId, subGoal: Subgoal): Goal {
         val updatedData = goalRepository.findByName(name).data.append(subGoal)
-        goalRepository.updateByName(name, updatedData)
+        return goalRepository.updateByName(name, updatedData)
     }
 
-    fun getSubgoalByIndex(name: GoalId, index: Int): UseCase<Subgoal> = UseCase.of(Tags.getSubgoalByIndex) {
+    suspend fun getSubgoalByIndex(name: GoalId, index: Int): Subgoal =
         goalRepository.findByName(name).data.subgoals.run {
             if (index < size) this[index]
             else throw NotFoundException("$name/$index", "Goal")
         }
-    }
 
-    fun replaceSubgoal(name: GoalId, index: Int, subGoal: Subgoal): UseCase<Goal> = UseCase.of(Tags.replaceSubgoal) {
+    suspend fun replaceSubgoal(name: GoalId, index: Int, subGoal: Subgoal): Goal {
         val updatedData = goalRepository.findByName(name).data.replace(index, subGoal)
-        goalRepository.updateByName(name, updatedData)
+        return goalRepository.updateByName(name, updatedData)
     }
 
-    fun deleteSubgoal(name: GoalId, index: Int): UseCase<Goal> = UseCase.of(Tags.deleteSubgoal) {
+    suspend fun deleteSubgoal(name: GoalId, index: Int): Goal {
         val updatedData = goalRepository.findByName(name).data.remove(index)
-        goalRepository.updateByName(name, updatedData)
+        return goalRepository.updateByName(name, updatedData)
     }
 }

@@ -1,7 +1,9 @@
 package it.unibo.lpaas.delivery.http
 
+import io.vertx.ext.web.Route
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.AuthenticationHandler
+import io.vertx.ext.web.handler.HttpException
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.core.exception.NonFatalError
 import it.unibo.lpaas.delivery.http.handler.GoalController
@@ -35,7 +37,7 @@ fun interface Controller {
                         vertx = vertx,
                         goalDependencies = goalDependencies,
                         authOptions = authOptions,
-                        mimeMap = mimeMap,
+                        serializerCollection = mimeMap,
                     ).routes()
                 )
                 mountSubRouter(
@@ -44,17 +46,33 @@ fun interface Controller {
                         vertx = vertx,
                         theoryDependencies = theoryDependencies,
                         authOptions = authOptions,
-                        mimeMap = mimeMap
+                        serializerCollection = mimeMap
                     ).routes()
                 )
 
-                route("/*").failureHandler { ctx ->
-                    val throwable = ctx.failure()
-                    if (throwable is NonFatalError) {
-                        ctx.handleNonFatal(throwable)
-                    } else {
-                        ctx.next()
+                route("/*")
+                    .nonFatalHandler()
+                    .failureHandler { ctx ->
+                        ctx.failure()?.printStackTrace()
+                        ctx.response()
+                            .setStatusCode(HTTPStatusCode.INTERNAL_SERVER_ERROR)
+                            .end()
                     }
+            }
+        }
+
+        private fun Route.nonFatalHandler(): Route = failureHandler { ctx ->
+            when (val failure = ctx.failure()) {
+                is NonFatalError -> ctx.handleNonFatal(failure)
+                is HttpException -> ctx.response()
+                    .setStatusCode(failure.statusCode)
+                    .end()
+                else -> if (ctx.statusCode() != HTTPStatusCode.INTERNAL_SERVER_ERROR.code)
+                    ctx.response()
+                        .setStatusCode(ctx.statusCode())
+                        .end()
+                else {
+                    ctx.fail(failure)
                 }
             }
         }

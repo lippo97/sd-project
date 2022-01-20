@@ -8,11 +8,11 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.handler.dsl.HandlerDSL
 import it.unibo.lpaas.delivery.http.handler.dto.CreateTheoryDTO
+import it.unibo.lpaas.delivery.http.handler.dto.FactInTheoryDTO
 import it.unibo.lpaas.delivery.http.handler.dto.ReplaceTheoryDTO
-import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Theory
 
 interface TheoryController : Controller {
@@ -23,7 +23,7 @@ interface TheoryController : Controller {
         fun make(
             vertx: Vertx,
             theoryDependencies: TheoryDependencies,
-            mimeMap: MimeMap<BufferSerializer>,
+            serializerCollection: SerializerCollection<BufferSerializer>,
             authOptions: Controller.AuthOptions,
         ): TheoryController = object : TheoryController {
             val theoryRepository = theoryDependencies.theoryRepository
@@ -34,38 +34,46 @@ interface TheoryController : Controller {
 
             @Suppress("LongMethod")
             override fun routes(): Router = Router.router(vertx).apply {
-                with(HandlerDSL(mimeMap, authOptions.authenticationHandler, authOptions.authorizationProvider)) {
+                with(
+                    HandlerDSL(
+                        serializerCollection,
+                        authOptions.authenticationHandler,
+                        authOptions.authorizationProvider
+                    )
+                ) {
                     get("/")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
-                        .useCaseHandler {
-                            theoryUseCase.getAllTheoriesIndex.map { list ->
-                                list.map { "/theories/${it.show()}" }
-                            }
+                        .authorizationHandler(TheoryUseCases.Tags.getAllTheoriesIndex)
+                        .dataHandler {
+                            theoryUseCase.getAllTheoriesIndex().map { "/theories/${it.show()}" }
                         }
 
                     post("/")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.createTheory)
                         .handler(BodyHandler.create())
-                        .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
+                        .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                             val (name, theory) = decodeJson(ctx.body, CreateTheoryDTO::class.java)
                             theoryUseCase.createTheory(name, Theory.Data(theory))
                         }
 
                     get("/:name")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
-                        .useCaseHandler { ctx ->
+                        .authorizationHandler(TheoryUseCases.Tags.getTheoryByName)
+                        .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             theoryUseCase.getTheoryByName(name)
                         }
 
                     put("/:name")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.updateTheory)
                         .handler(BodyHandler.create())
-                        .useCaseHandler { ctx ->
+                        .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val (theory) = decodeJson(ctx.body, ReplaceTheoryDTO::class.java)
                             theoryUseCase.updateTheory(name, Theory.Data(theory))
@@ -73,29 +81,32 @@ interface TheoryController : Controller {
 
                     delete("/:name")
                         .authenticationHandler()
-                        .useCaseHandler { ctx ->
+                        .authorizationHandler(TheoryUseCases.Tags.deleteTheory)
+                        .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             theoryUseCase.deleteTheory(name).void()
                         }
 
-                    data class FactInTheoryDTO(val fact: Fact)
                     post("/:name/facts")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.addFactToTheory)
                         .handler(BodyHandler.create())
-                        .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
+                        .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val (fact) = decodeJson(ctx.body, FactInTheoryDTO::class.java)
-                            val beginning = ctx.queryParam("beginning")
+                            val beginning = ctx
+                                .queryParam("beginning")
                                 .firstOrNull() != "false"
                             theoryUseCase.addFactToTheory(name, fact, beginning)
                         }
 
                     put("/:name/facts")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.updateFactInTheory)
                         .handler(BodyHandler.create())
-                        .useCaseHandler { ctx ->
+                        .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val (fact) = decodeJson(ctx.body, FactInTheoryDTO::class.java)
                             val beginning = ctx.queryParam("beginning")
@@ -104,18 +115,20 @@ interface TheoryController : Controller {
                         }
 
                     get("/:name/facts/:functor")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
-                        .useCaseHandler { ctx ->
+                        .authorizationHandler(TheoryUseCases.Tags.getFactsInTheory)
+                        .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val functor = functorParser.parse(ctx.pathParam("functor"))
                             theoryUseCase.getFactsInTheory(name, functor)
                         }
 
                     get("/:name/history/:versionOrTimestamp")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
-                        .useCaseHandler { ctx ->
+                        .authorizationHandler(TheoryUseCases.Tags.getTheoryByVersion)
+                        .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val version = incrementalVersionParser.parse(ctx.pathParam("versionOrTimestamp"))
                             theoryUseCase.getTheoryByNameAndVersion(name, version)
@@ -123,16 +136,18 @@ interface TheoryController : Controller {
 
                     delete("/:name/history/:versionOrTimestamp")
                         .authenticationHandler()
-                        .useCaseHandler { ctx ->
+                        .authorizationHandler(TheoryUseCases.Tags.deleteTheoryByVersion)
+                        .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val version = incrementalVersionParser.parse(ctx.pathParam("versionOrTimestamp"))
                             theoryUseCase.deleteTheoryByVersion(name, version).void()
                         }
 
                     get("/:name/history/:versionOrTimestamp/facts/:functor")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
-                        .useCaseHandler { ctx ->
+                        .authorizationHandler(TheoryUseCases.Tags.getFactsInTheoryByNameAndVersion)
+                        .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val version = incrementalVersionParser.parse(ctx.pathParam("versionOrTimestamp"))
                             val functor = functorParser.parse(ctx.pathParam("functor"))

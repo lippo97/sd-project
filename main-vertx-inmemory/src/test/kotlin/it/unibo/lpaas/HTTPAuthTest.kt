@@ -1,12 +1,9 @@
 package it.unibo.lpaas
 
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.vertx.core.Vertx
-import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.handler.AuthenticationHandler
 import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.AuthorizationProvider
@@ -18,20 +15,17 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.TheoryDependencies
+import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerFactory
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
-import it.unibo.lpaas.delivery.http.databind.MimeMap
-import it.unibo.lpaas.delivery.http.databind.MimeType
-import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
-import it.unibo.lpaas.delivery.http.get
+import it.unibo.lpaas.delivery.http.databind.SerializerCollection
+import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
-import it.unibo.lpaas.domain.databind.DomainSerializationModule
-import it.unibo.lpaas.domain.databind.configureMappers
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.ext.inMemory
@@ -39,24 +33,17 @@ import it.unibo.lpaas.persistence.ext.inMemory
 @Tags("HTTP")
 class HTTPAuthTest : FunSpec({
 
-    val jsonSerializer = ObjectMapperSerializer.json()
-    configureMappers(
-        DatabindCodec.mapper(),
-        DatabindCodec.prettyMapper(),
-        jsonSerializer.objectMapper,
-    ) {
-        registerKotlinModule()
-        registerModule(DomainSerializationModule())
-        registerModule(
-            SimpleModule().apply {
-                addAbstractTypeMapping(Version::class.java, IntegerIncrementalVersion::class.java)
-                addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
-            }
-        )
+    val serializerCollection = SerializerCollection.default()
+
+    SerializerConfiguration.defaultWithModule {
+        addAbstractTypeMapping(Version::class.java, IntegerIncrementalVersion::class.java)
+        addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
     }
+        .applyOnJacksonAndSerializers(serializerCollection)
 
     val vertx = Vertx.vertx()
-    val client = vertx.createHttpClient()
+    val port = 8082
+    val client = VertxHttpClient.make(vertx, "localhost", port)
     val goalBaseUrl = Controller.API_VERSION + Controller.GOAL_BASEURL
 
     fun makeControllerOf(
@@ -65,9 +52,7 @@ class HTTPAuthTest : FunSpec({
     ): Controller = Controller.make(
         DependencyGraph(
             vertx = vertx,
-            mimeMap = MimeMap.of(
-                MimeType.JSON to jsonSerializer,
-            ),
+            serializerCollection = serializerCollection,
             authOptions = Controller.AuthOptions(
                 authenticationHandler = authenticationHandler,
                 authorizationProvider = authorizationProvider,
@@ -90,7 +75,7 @@ class HTTPAuthTest : FunSpec({
             vertx.createHttpServer()
                 .bindAPIVersion(1, controller, vertx)
         ) {
-            listen(8080).await()
+            listen(port).await()
             fn()
             close().await()
         }

@@ -1,6 +1,6 @@
 package it.unibo.lpaas.delivery.http.databind
 
-interface MimeMap<out T : BufferSerializer> {
+interface SerializerCollection<out T : BufferSerializer> {
 
     val availableTypes: Set<MimeType>
 
@@ -16,15 +16,15 @@ interface MimeMap<out T : BufferSerializer> {
     companion object {
 
         @JvmStatic
-        fun <T : BufferSerializer> of(serializers: Map<MimeType, T>): MimeMap<T> =
-            SimpleMimeMap(serializers)
+        fun <T : BufferSerializer> of(serializers: Map<MimeType, T>): SerializerCollection<T> =
+            SimpleSerializerCollection(serializers)
 
         @JvmStatic
-        fun <T : BufferSerializer> of(vararg pairs: Pair<MimeType, T>): MimeMap<T> = of(pairs.toMap())
+        fun <T : BufferSerializer> of(vararg pairs: Pair<MimeType, T>): SerializerCollection<T> = of(pairs.toMap())
 
         @JvmStatic
         @JvmName("makeDefault")
-        fun default(): MimeMap<ObjectMapperSerializer> =
+        fun default(): SerializerCollection<ObjectMapperSerializer> =
             of(
                 MimeType.JSON to ObjectMapperSerializer.json(),
                 MimeType.YAML to ObjectMapperSerializer.yaml(),

@@ -10,3 +10,7 @@ fun HttpServer.bindAPIVersion(apiVersion: Int, controller: Controller, vertx: Ve
             mountSubRouter("/v$apiVersion", controller.routes())
         }
     )
+
+fun Router.bindApi(apiVersion: Int, controller: Controller) {
+    mountSubRouter("/v$apiVersion", controller.routes())
+}

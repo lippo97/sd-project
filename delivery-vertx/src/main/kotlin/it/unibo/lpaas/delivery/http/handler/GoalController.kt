@@ -8,7 +8,7 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.handler.dsl.HandlerDSL
 import it.unibo.lpaas.delivery.http.handler.dto.CreateGoalDTO
 import it.unibo.lpaas.delivery.http.handler.dto.ReplaceGoalDTO
@@ -23,7 +23,7 @@ interface GoalController : Controller {
             vertx: Vertx,
             goalDependencies: GoalDependencies,
             authOptions: Controller.AuthOptions,
-            mimeMap: MimeMap<BufferSerializer>,
+            serializerCollection: SerializerCollection<BufferSerializer>,
         ): GoalController = object : GoalController {
 
             val goalRepository = goalDependencies.goalRepository
@@ -32,38 +32,47 @@ interface GoalController : Controller {
 
             @Suppress("LongMethod")
             override fun routes(): Router = Router.router(vertx).apply {
-                with(HandlerDSL(mimeMap, authOptions.authenticationHandler, authOptions.authorizationProvider)) {
+                with(
+                    HandlerDSL(
+                        serializerCollection,
+                        authOptions.authenticationHandler,
+                        authOptions.authorizationProvider
+                    )
+                ) {
                     get("/")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
-                        .useCaseHandler {
-                            goalUseCases.getAllGoalsIndex.map { list ->
-                                list.map { "/goal/${it.show()}" }
-                            }
+                        .authorizationHandler(GoalUseCases.Tags.getAllGoalsIndex)
+                        .dataHandler {
+                            goalUseCases.getAllGoalsIndex()
+                                .map { "/goal/${it.show()}" }
                         }
 
                     post("/")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(GoalUseCases.Tags.createGoal)
                         .handler(BodyHandler.create())
-                        .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
+                        .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                             val (name, subgoals) = decodeJson(ctx.body, CreateGoalDTO::class.java)
                             goalUseCases.createGoal(name, Goal.Data(subgoals))
                         }
 
                     get("/:name")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
-                        .useCaseHandler { ctx ->
+                        .authorizationHandler(GoalUseCases.Tags.getGoalByName)
+                        .dataHandler { ctx ->
                             val name = ctx.pathParam("name")
                             goalUseCases.getGoalByName(goalIdParser.parse(name))
                         }
 
                     put("/:name")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(GoalUseCases.Tags.replaceGoal)
                         .handler(BodyHandler.create())
-                        .useCaseHandler { ctx ->
+                        .dataHandler { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
                             val (subgoals) = decodeJson(ctx.body, ReplaceGoalDTO::class.java)
                             goalUseCases.replaceGoal(name, Goal.Data(subgoals))
@@ -71,35 +80,39 @@ interface GoalController : Controller {
 
                     delete("/:name")
                         .authenticationHandler()
-                        .useCaseHandler { ctx ->
+                        .authorizationHandler(GoalUseCases.Tags.deleteGoal)
+                        .dataHandler { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
                             goalUseCases.deleteGoal(name).void()
                         }
 
                     patch("/:name")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(GoalUseCases.Tags.appendSubgoal)
                         .handler(BodyHandler.create())
-                        .useCaseHandler(HTTPStatusCode.CREATED) { ctx ->
+                        .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
                             val subgoal = decodeJson(ctx.body, Subgoal::class.java)
                             goalUseCases.appendSubgoal(name, subgoal)
                         }
 
                     get("/:name/:index")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
-                        .useCaseHandler { ctx ->
+                        .authorizationHandler(GoalUseCases.Tags.getSubgoalByIndex)
+                        .dataHandler { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
                             val index = ctx.pathParam("index").toInt()
                             goalUseCases.getSubgoalByIndex(name, index)
                         }
 
                     put("/:name/:index")
-                        .produces(mimeMap.availableTypes)
+                        .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(GoalUseCases.Tags.replaceSubgoal)
                         .handler(BodyHandler.create())
-                        .useCaseHandler { ctx ->
+                        .dataHandler { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
                             val index = ctx.pathParam("index").toInt()
                             val subgoal = decodeJson(ctx.body, Subgoal::class.java)
@@ -108,7 +121,8 @@ interface GoalController : Controller {
 
                     delete("/:name/:index")
                         .authenticationHandler()
-                        .useCaseHandler { ctx ->
+                        .authorizationHandler(GoalUseCases.Tags.deleteSubgoal)
+                        .dataHandler { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
                             val index = ctx.pathParam("index").toInt()
                             goalUseCases.deleteSubgoal(name, index).void()

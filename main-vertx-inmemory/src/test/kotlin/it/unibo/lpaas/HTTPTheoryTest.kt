@@ -1,8 +1,5 @@
 package it.unibo.lpaas
 
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainInOrder
@@ -11,7 +8,6 @@ import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.vertx.core.Vertx
-import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.kotlin.core.json.array
 import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
@@ -26,9 +22,11 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.TheoryDependencies
+import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
-import it.unibo.lpaas.delivery.http.databind.MimeMap
+import it.unibo.lpaas.delivery.http.databind.SerializerCollection
+import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
 import it.unibo.lpaas.delivery.http.delete
 import it.unibo.lpaas.delivery.http.get
 import it.unibo.lpaas.delivery.http.post
@@ -39,8 +37,6 @@ import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
-import it.unibo.lpaas.domain.databind.DomainSerializationModule
-import it.unibo.lpaas.domain.databind.configureMappers
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.ext.inMemory
@@ -51,7 +47,8 @@ import it.unibo.tuprolog.theory.Theory as Theory2P
 @Tags("HTTP")
 class HTTPTheoryTest : FunSpec({
     val vertx = Vertx.vertx()
-    val client = vertx.createHttpClient()
+    val port = 8081
+    val client = VertxHttpClient.make(vertx, "localhost", port)
 
     val exampleTheory = """
     parent(bardok, goku).
@@ -77,30 +74,20 @@ class HTTPTheoryTest : FunSpec({
         )
     )
 
-    val mimeMap = MimeMap.default()
+    val serializerCollection = SerializerCollection.default()
 
-    configureMappers(
-        DatabindCodec.mapper(),
-        DatabindCodec.prettyMapper(),
-        *mimeMap.availableSerializers.map { it.objectMapper }.toTypedArray(),
-    ) {
-        registerKotlinModule()
-        registerModule(DomainSerializationModule())
-        registerModule(JavaTimeModule())
-        registerModule(
-            SimpleModule().apply {
-                addAbstractTypeMapping(IncrementalVersion::class.java, IntegerIncrementalVersion::class.java)
-                addAbstractTypeMapping(TheoryId::class.java, StringId::class.java)
-            }
-        )
+    SerializerConfiguration.defaultWithModule {
+        addAbstractTypeMapping(IncrementalVersion::class.java, IntegerIncrementalVersion::class.java)
+        addAbstractTypeMapping(TheoryId::class.java, StringId::class.java)
     }
+        .applyOnJacksonAndSerializers(serializerCollection)
 
     beforeAny {
         val server = vertx.createHttpServer()
         val controller = Controller.make(
             DependencyGraph(
                 vertx = vertx,
-                mimeMap = mimeMap,
+                serializerCollection = serializerCollection,
                 authOptions = Controller.AuthOptions(
                     authenticationHandler = AuthenticationHandlerTestFactory.alwaysGrantAndMockGroups(Role.CLIENT),
                     authorizationProvider = AuthorizationProvider.alwaysGrant(),
@@ -119,19 +106,19 @@ class HTTPTheoryTest : FunSpec({
         )
         server
             .bindAPIVersion(1, controller, vertx)
-            .listen(8081)
+            .listen(port)
             .await()
     }
 
     test("The service should be running") {
-        client.get(theoryBaseUrl, port = 8081)
+        client.get(theoryBaseUrl)
             .map { it.statusCode() }
             .map { it shouldBeExactly 200 }
             .await()
     }
 
     test("The service should be initialized with a theory") {
-        client.get(theoryBaseUrl, port = 8081)
+        client.get(theoryBaseUrl)
             .flatMap { it.body() }
             .map {
                 it.toJsonArray().apply {
@@ -144,7 +131,7 @@ class HTTPTheoryTest : FunSpec({
 
     context("When a new theory is submitted") {
         test("a resource must be created successfully") {
-            client.post(theoryBaseUrl, port = 8081) {
+            client.post(theoryBaseUrl) {
                 obj(
                     "name" to "myTheory",
                     "value" to exampleTheory,
@@ -154,7 +141,7 @@ class HTTPTheoryTest : FunSpec({
                 .await()
         }
         test("the body should be validated") {
-            client.post(theoryBaseUrl, port = 8081) {
+            client.post(theoryBaseUrl) {
                 obj(
                     "name" to "myTheory",
                     "value" to "someWrong(.",
@@ -164,7 +151,7 @@ class HTTPTheoryTest : FunSpec({
                 .await()
         }
         test("the theories index must be updated") {
-            client.get(theoryBaseUrl, port = 8081)
+            client.get(theoryBaseUrl)
                 .flatMap { it.body() }
                 .map {
                     it.toJson() shouldBe json {
@@ -178,7 +165,7 @@ class HTTPTheoryTest : FunSpec({
         }
 
         test("it can be retrieved at its URI") {
-            client.get("$theoryBaseUrl/myTheory", port = 8081)
+            client.get("$theoryBaseUrl/myTheory")
                 .flatMap { it.body() }
                 .map {
                     it.toJsonObject().apply {
@@ -191,7 +178,7 @@ class HTTPTheoryTest : FunSpec({
     }
     context("When an existing theory is replaced") {
         test("it should return the updated record") {
-            client.put("$theoryBaseUrl/default", port = 8081) {
+            client.put("$theoryBaseUrl/default") {
                 obj(
                     "value" to """
                     another(valid, theory).
@@ -213,7 +200,7 @@ class HTTPTheoryTest : FunSpec({
 
     context("When a theory is deleted") {
         test("request should complete successfully") {
-            client.delete("$theoryBaseUrl/myTheory", port = 8081)
+            client.delete("$theoryBaseUrl/myTheory")
                 .map {
                     it.statusCode() shouldBeExactly 204
                 }
@@ -225,7 +212,7 @@ class HTTPTheoryTest : FunSpec({
         }
     }
     test("You shouldn't be able to delete a non-existing theory") {
-        client.delete("$theoryBaseUrl/nonExisting", port = 8081)
+        client.delete("$theoryBaseUrl/nonExisting")
             .map {
                 it.statusCode() shouldBeExactly 404
             }
@@ -234,7 +221,7 @@ class HTTPTheoryTest : FunSpec({
 
     context("When a fact is added to a theory") {
         test("it should be added at the beginning by default") {
-            client.post("$theoryBaseUrl/default/facts", port = 8081) {
+            client.post("$theoryBaseUrl/default/facts") {
                 obj(
                     "fact" to "super(mario)"
                 )
@@ -252,7 +239,7 @@ class HTTPTheoryTest : FunSpec({
                 .await()
         }
         test("it should be added at the beginning if specified explicitly") {
-            client.post("$theoryBaseUrl/default/facts?beginning=true", port = 8081) {
+            client.post("$theoryBaseUrl/default/facts?beginning=true") {
                 obj(
                     "fact" to "super(mario)"
                 )
@@ -270,7 +257,7 @@ class HTTPTheoryTest : FunSpec({
                 .await()
         }
         test("it should be added at the end if specified explicitly") {
-            client.post("$theoryBaseUrl/default/facts?beginning=false", port = 8081) {
+            client.post("$theoryBaseUrl/default/facts?beginning=false") {
                 obj(
                     "fact" to "super(mario)"
                 )
@@ -294,7 +281,7 @@ class HTTPTheoryTest : FunSpec({
         val functor = "cousin"
         val exampleFact = "$functor(luigi)"
 
-        client.post("$theoryBaseUrl/default/facts", port = 8081) {
+        client.post("$theoryBaseUrl/default/facts") {
             obj(
                 "fact" to exampleFact
             )
@@ -303,7 +290,7 @@ class HTTPTheoryTest : FunSpec({
             .await()
 
         test("it should be retrievable by functor") {
-            client.get("$theoryBaseUrl/default/facts/$functor", port = 8081)
+            client.get("$theoryBaseUrl/default/facts/$functor")
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
                 .map {
@@ -317,7 +304,7 @@ class HTTPTheoryTest : FunSpec({
 
         test("it should return 404 if the functor is not present") {
             val fakeFunctor = "fakeFunctor"
-            client.get("$theoryBaseUrl/default/facts/$fakeFunctor", port = 8081)
+            client.get("$theoryBaseUrl/default/facts/$fakeFunctor")
                 .tap { it.statusCode() shouldBeExactly 404 }
                 .await()
         }
@@ -326,7 +313,7 @@ class HTTPTheoryTest : FunSpec({
     context("When a fact is replaced in a theory") {
         test("it should retract all the existing fact with the same name and arity") {
             test("it should add the fact at the beginning of the theory") {
-                client.put("$theoryBaseUrl/default", port = 8081) {
+                client.put("$theoryBaseUrl/default") {
                     obj(
                         "value" to """
                     super(mario).
@@ -338,7 +325,7 @@ class HTTPTheoryTest : FunSpec({
                     .map { it.statusCode() shouldBeExactly 200 }
                     .await()
 
-                client.put("$theoryBaseUrl/default/facts", port = 8081) {
+                client.put("$theoryBaseUrl/default/facts") {
                     obj(
                         "fact" to "super(luigi)"
                     )
@@ -359,7 +346,7 @@ class HTTPTheoryTest : FunSpec({
             }
 
             test("it should add the fact at the end of the theory") {
-                client.put("$theoryBaseUrl/default", port = 8081) {
+                client.put("$theoryBaseUrl/default") {
                     obj(
                         "value" to """
                     super(mario).
@@ -371,7 +358,7 @@ class HTTPTheoryTest : FunSpec({
                     .map { it.statusCode() shouldBeExactly 200 }
                     .await()
 
-                client.put("$theoryBaseUrl/default/facts", port = 8081) {
+                client.put("$theoryBaseUrl/default/facts") {
                     obj(
                         "fact" to "super(wario)"
                     )
@@ -396,14 +383,14 @@ class HTTPTheoryTest : FunSpec({
     context("When a specific version of a theory is provided") {
         val theoryName = "exampleTheory"
         val version = IntegerIncrementalVersion.zero
-        client.post(theoryBaseUrl, port = 8081) {
+        client.post(theoryBaseUrl) {
             obj(
                 "name" to theoryName,
                 "value" to exampleTheory,
             )
         }.await()
         test("it should return the selected theory") {
-            client.get("$theoryBaseUrl/$theoryName/history/${version.value}", port = 8081)
+            client.get("$theoryBaseUrl/$theoryName/history/${version.value}")
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
                 .map {
@@ -414,7 +401,7 @@ class HTTPTheoryTest : FunSpec({
                 }
                 .await()
 
-            client.put("$theoryBaseUrl/$theoryName", port = 8081) {
+            client.put("$theoryBaseUrl/$theoryName") {
                 obj(
                     "value" to """
                     another(valid, theory).
@@ -424,7 +411,7 @@ class HTTPTheoryTest : FunSpec({
                 .await()
 
             val nextVersion = version.next() as IntegerIncrementalVersion
-            client.get("$theoryBaseUrl/$theoryName/history/${nextVersion.value}", port = 8081)
+            client.get("$theoryBaseUrl/$theoryName/history/${nextVersion.value}")
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
                 .map {
@@ -438,7 +425,7 @@ class HTTPTheoryTest : FunSpec({
         }
         test("it should return 404 if the version is not present") {
             val fakeVersion = IncrementalVersion.of(5)!!.value
-            client.get("$theoryBaseUrl/$theoryName/history/$fakeVersion", port = 8081)
+            client.get("$theoryBaseUrl/$theoryName/history/$fakeVersion")
                 .tap { it.statusCode() shouldBeExactly 404 }
                 .await()
         }
@@ -447,14 +434,14 @@ class HTTPTheoryTest : FunSpec({
     context("When a specific a theory is deleted by version") {
         val theoryName = "exampleTheory"
         val version = IntegerIncrementalVersion.zero
-        client.post(theoryBaseUrl, port = 8081) {
+        client.post(theoryBaseUrl) {
             obj(
                 "name" to theoryName,
                 "value" to exampleTheory,
             )
         }.await()
 
-        client.put("$theoryBaseUrl/$theoryName", port = 8081) {
+        client.put("$theoryBaseUrl/$theoryName") {
             obj(
                 "value" to """
                     another(valid, theory).
@@ -463,20 +450,20 @@ class HTTPTheoryTest : FunSpec({
         }.await()
 
         test("it should delete the first version") {
-            client.delete("$theoryBaseUrl/$theoryName/history/${version.value}", port = 8081)
+            client.delete("$theoryBaseUrl/$theoryName/history/${version.value}")
                 .tap { it.statusCode() shouldBeExactly 204 }
                 .await()
         }
 
         val nextVersion = version.next() as IntegerIncrementalVersion
         test("it should delete the second version") {
-            client.delete("$theoryBaseUrl/$theoryName/history/${nextVersion.value}", port = 8081)
+            client.delete("$theoryBaseUrl/$theoryName/history/${nextVersion.value}")
                 .tap { it.statusCode() shouldBeExactly 204 }
                 .await()
         }
         test("it should return 404 if the version is not present") {
             val fakeVersion = IncrementalVersion.of(5)!!.value
-            client.delete("$theoryBaseUrl/$theoryName/history/$fakeVersion", port = 8081)
+            client.delete("$theoryBaseUrl/$theoryName/history/$fakeVersion")
                 .tap { it.statusCode() shouldBeExactly 404 }
                 .await()
         }
@@ -490,21 +477,21 @@ class HTTPTheoryTest : FunSpec({
         val exampleTheory2 = """
                     another(valid, theory).
         """.trimIndent()
-        client.post(theoryBaseUrl, port = 8081) {
+        client.post(theoryBaseUrl) {
             obj(
                 "name" to theoryName,
                 "value" to exampleTheory,
             )
         }.await()
 
-        client.put("$theoryBaseUrl/$theoryName", port = 8081) {
+        client.put("$theoryBaseUrl/$theoryName") {
             obj(
                 "value" to exampleTheory2
             )
         }.await()
 
         test("it should return the specific facts") {
-            client.get("$theoryBaseUrl/$theoryName/history/${version.show()}/facts/$functor", port = 8081)
+            client.get("$theoryBaseUrl/$theoryName/history/${version.show()}/facts/$functor")
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
                 .map { b ->
@@ -513,7 +500,7 @@ class HTTPTheoryTest : FunSpec({
                 .await()
 
             val nextVersion = version.next() as IntegerIncrementalVersion
-            client.get("$theoryBaseUrl/$theoryName/history/${nextVersion.show()}/facts/$anotherFunctor", port = 8081)
+            client.get("$theoryBaseUrl/$theoryName/history/${nextVersion.show()}/facts/$anotherFunctor")
                 .tap { it.statusCode() shouldBeExactly 200 }
                 .flatMap { it.body() }
                 .map { b ->
@@ -527,17 +514,17 @@ class HTTPTheoryTest : FunSpec({
             val fakeVersion = IncrementalVersion.of(5)
             val fakeFunctor = "fakeFunctor"
             test("if the theory's name is not present") {
-                client.get("$theoryBaseUrl/$fakeTheoryName/history/${version.value}/facts/$functor", port = 8081)
+                client.get("$theoryBaseUrl/$fakeTheoryName/history/${version.value}/facts/$functor")
                     .tap { it.statusCode() shouldBeExactly 404 }
                     .await()
             }
             test("if the theory's version is not present") {
-                client.get("$theoryBaseUrl/$theoryName/history/${fakeVersion!!.value}/facts/$functor", port = 8081)
+                client.get("$theoryBaseUrl/$theoryName/history/${fakeVersion!!.value}/facts/$functor")
                     .tap { it.statusCode() shouldBeExactly 404 }
                     .await()
             }
             test("if the functor's name is not present") {
-                client.get("$theoryBaseUrl/$theoryName/history/${version.value}/facts/$fakeFunctor", port = 8081)
+                client.get("$theoryBaseUrl/$theoryName/history/${version.value}/facts/$fakeFunctor")
                     .tap { it.statusCode() shouldBeExactly 404 }
                     .await()
             }

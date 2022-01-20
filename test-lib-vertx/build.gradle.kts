@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    testFixturesImplementation(project(":auth"))
+    testFixturesImplementation(project(":authorization"))
     testFixturesImplementation("io.vertx:vertx-web:4.2.1")
     testFixturesImplementation("io.vertx:vertx-lang-kotlin:4.2.1")
     testFixturesImplementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.1")

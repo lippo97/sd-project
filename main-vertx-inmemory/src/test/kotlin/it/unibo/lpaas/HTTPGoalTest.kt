@@ -1,14 +1,11 @@
 package it.unibo.lpaas
 
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpHeaders
-import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.kotlin.core.json.array
 import io.vertx.kotlin.core.json.get
 import io.vertx.kotlin.core.json.json
@@ -22,11 +19,12 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.TheoryDependencies
+import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
-import it.unibo.lpaas.delivery.http.databind.MimeMap
 import it.unibo.lpaas.delivery.http.databind.MimeType
-import it.unibo.lpaas.delivery.http.databind.ObjectMapperSerializer
+import it.unibo.lpaas.delivery.http.databind.SerializerCollection
+import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
 import it.unibo.lpaas.delivery.http.delete
 import it.unibo.lpaas.delivery.http.get
 import it.unibo.lpaas.delivery.http.patch
@@ -40,8 +38,6 @@ import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Subgoal
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
-import it.unibo.lpaas.domain.databind.DomainSerializationModule
-import it.unibo.lpaas.domain.databind.configureMappers
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.ext.inMemory
@@ -51,27 +47,16 @@ import kotlinx.coroutines.test.runTest
 @Tags("HTTP")
 class HTTPGoalTest : FunSpec({
 
-    val jsonSerializer = ObjectMapperSerializer.json()
-    val yamlSerializer = ObjectMapperSerializer.yaml()
+    val serializerCollection = SerializerCollection.default()
 
-    configureMappers(
-        DatabindCodec.mapper(),
-        DatabindCodec.prettyMapper(),
-        jsonSerializer.objectMapper,
-        yamlSerializer.objectMapper
-    ) {
-        registerKotlinModule()
-        registerModule(DomainSerializationModule())
-        registerModule(
-            SimpleModule().apply {
-                addAbstractTypeMapping(Version::class.java, IntegerIncrementalVersion::class.java)
-                addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
-            }
-        )
+    SerializerConfiguration.defaultWithModule {
+        addAbstractTypeMapping(Version::class.java, IntegerIncrementalVersion::class.java)
+        addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
     }
-
+        .applyOnJacksonAndSerializers(serializerCollection)
     val vertx = Vertx.vertx()
-    val client = vertx.createHttpClient()
+    val port = 8082
+    val client = VertxHttpClient.make(vertx, "localhost", port)
 
     val exampleGoal = "parent(goku, gohan)"
     val anotherExampleGoal = "parent(vegeta, trunks)"
@@ -84,10 +69,7 @@ class HTTPGoalTest : FunSpec({
             val controller = Controller.make(
                 DependencyGraph(
                     vertx = vertx,
-                    mimeMap = MimeMap.of(
-                        MimeType.JSON to jsonSerializer,
-                        MimeType.YAML to yamlSerializer
-                    ),
+                    serializerCollection = serializerCollection,
                     authOptions = Controller.AuthOptions(
                         authenticationHandler = AuthenticationHandlerTestFactory.alwaysGrantAndMockGroups(Role.CLIENT),
                         authorizationProvider = AuthorizationProvider.alwaysGrant(),
@@ -108,7 +90,7 @@ class HTTPGoalTest : FunSpec({
             )
             server
                 .bindAPIVersion(1, controller, vertx)
-                .listen(8080)
+                .listen(port)
         }
     }
 

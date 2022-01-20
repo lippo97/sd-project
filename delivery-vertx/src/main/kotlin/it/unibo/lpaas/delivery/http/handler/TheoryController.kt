@@ -11,8 +11,8 @@ import it.unibo.lpaas.delivery.http.databind.BufferSerializer
 import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.handler.dsl.HandlerDSL
 import it.unibo.lpaas.delivery.http.handler.dto.CreateTheoryDTO
+import it.unibo.lpaas.delivery.http.handler.dto.FactInTheoryDTO
 import it.unibo.lpaas.delivery.http.handler.dto.ReplaceTheoryDTO
-import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Theory
 
 interface TheoryController : Controller {
@@ -52,8 +52,9 @@ interface TheoryController : Controller {
                     post("/")
                         .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.createTheory)
                         .handler(BodyHandler.create())
-                        .dataHandler (HTTPStatusCode.CREATED) { ctx ->
+                        .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                             val (name, theory) = decodeJson(ctx.body, CreateTheoryDTO::class.java)
                             theoryUseCase.createTheory(name, Theory.Data(theory))
                         }
@@ -61,6 +62,7 @@ interface TheoryController : Controller {
                     get("/:name")
                         .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.getTheoryByName)
                         .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             theoryUseCase.getTheoryByName(name)
@@ -69,6 +71,7 @@ interface TheoryController : Controller {
                     put("/:name")
                         .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.updateTheory)
                         .handler(BodyHandler.create())
                         .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
@@ -78,20 +81,22 @@ interface TheoryController : Controller {
 
                     delete("/:name")
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.deleteTheory)
                         .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             theoryUseCase.deleteTheory(name).void()
                         }
 
-                    data class FactInTheoryDTO(val fact: Fact)
                     post("/:name/facts")
                         .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.addFactToTheory)
                         .handler(BodyHandler.create())
                         .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val (fact) = decodeJson(ctx.body, FactInTheoryDTO::class.java)
-                            val beginning = ctx.queryParam("beginning")
+                            val beginning = ctx
+                                .queryParam("beginning")
                                 .firstOrNull() != "false"
                             theoryUseCase.addFactToTheory(name, fact, beginning)
                         }
@@ -99,6 +104,7 @@ interface TheoryController : Controller {
                     put("/:name/facts")
                         .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.updateFactInTheory)
                         .handler(BodyHandler.create())
                         .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
@@ -111,6 +117,7 @@ interface TheoryController : Controller {
                     get("/:name/facts/:functor")
                         .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.getFactsInTheory)
                         .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val functor = functorParser.parse(ctx.pathParam("functor"))
@@ -120,6 +127,7 @@ interface TheoryController : Controller {
                     get("/:name/history/:versionOrTimestamp")
                         .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.getTheoryByVersion)
                         .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val version = incrementalVersionParser.parse(ctx.pathParam("versionOrTimestamp"))
@@ -128,6 +136,7 @@ interface TheoryController : Controller {
 
                     delete("/:name/history/:versionOrTimestamp")
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.deleteTheoryByVersion)
                         .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val version = incrementalVersionParser.parse(ctx.pathParam("versionOrTimestamp"))
@@ -137,6 +146,7 @@ interface TheoryController : Controller {
                     get("/:name/history/:versionOrTimestamp/facts/:functor")
                         .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
+                        .authorizationHandler(TheoryUseCases.Tags.getFactsInTheoryByNameAndVersion)
                         .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val version = incrementalVersionParser.parse(ctx.pathParam("versionOrTimestamp"))

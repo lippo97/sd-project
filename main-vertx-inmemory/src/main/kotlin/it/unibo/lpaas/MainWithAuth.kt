@@ -1,9 +1,6 @@
 package it.unibo.lpaas
 
 import io.vertx.core.Vertx
-import io.vertx.ext.auth.PubSecKeyOptions
-import io.vertx.ext.auth.jwt.JWTAuth
-import io.vertx.ext.auth.jwt.JWTAuthOptions
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.JWTAuthHandler
 import it.unibo.lpaas.auth.AuthorizationProvider
@@ -14,6 +11,7 @@ import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.auth.InMemoryTokenStorage
+import it.unibo.lpaas.delivery.http.auth.JWTAuthFactory
 import it.unibo.lpaas.delivery.http.bindApi
 import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
@@ -41,16 +39,7 @@ class MainWithAuth private constructor() {
                 .applyOnJacksonAndSerializers(serializerCollection)
 
             val vertx = Vertx.vertx()
-
-            val jwtProvider = JWTAuth.create(
-                vertx,
-                JWTAuthOptions()
-                    .addPubSecKey(
-                        PubSecKeyOptions()
-                            .setAlgorithm("HS256")
-                            .setBuffer("keyboard cat")
-                    )
-            )
+            val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, "keyboard cat")
 
             val controller = Controller.make(
                 DependencyGraph(
@@ -84,7 +73,6 @@ class MainWithAuth private constructor() {
                         .requestHandler(
                             Router.router(vertx).apply {
                                 bindApi(1, controller)
-                                bindApi(2, controller)
                                 mountSubRouter(
                                     "/",
                                     AuthController.make(vertx, jwtProvider, tokenStorage).routes()

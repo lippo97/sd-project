@@ -79,7 +79,6 @@ class GoalUseCases(private val goalRepository: GoalRepository) {
             else throw NotFoundException("$name/$index", "Goal")
         }
 
-
     suspend fun replaceSubgoal(name: GoalId, index: Int, subGoal: Subgoal): Goal {
         val updatedData = goalRepository.findByName(name).data.replace(index, subGoal)
         return goalRepository.updateByName(name, updatedData)

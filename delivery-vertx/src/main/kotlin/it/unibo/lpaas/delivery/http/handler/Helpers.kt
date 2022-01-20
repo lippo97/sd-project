@@ -56,20 +56,17 @@ internal fun Route.suspendHandler(fn: suspend (RoutingContext) -> Unit): Route =
     }
 
 internal fun RoutingContext.handleNonFatal(error: NonFatalError) {
-    when (error) {
-        is NotFoundException -> response()
-            .setStatusCode(HTTPStatusCode.NOT_FOUND)
-            .end(error.message)
-        is DuplicateIdentifierException -> response()
-            .setStatusCode(HTTPStatusCode.CONFLICT)
-            .end(error.message)
-        is ValidationException -> response()
-            .setStatusCode(HTTPStatusCode.BAD_REQUEST)
-            .end(error.message)
-        else -> response()
-            .setStatusCode(HTTPStatusCode.INTERNAL_SERVER_ERROR)
-            .end(error.message)
+    val statusCode = when (error) {
+        is NotFoundException -> HTTPStatusCode.NOT_FOUND
+        is DuplicateIdentifierException -> HTTPStatusCode.CONFLICT
+        is ValidationException -> HTTPStatusCode.BAD_REQUEST
+        else -> HTTPStatusCode.INTERNAL_SERVER_ERROR
     }
+    val response = response()
+        .setStatusCode(statusCode)
+
+    if (error.message != null) response.end(error.message)
+    else response.end()
 }
 
 internal fun Route.produces(item: MimeType): Route = apply {

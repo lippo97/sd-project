@@ -1,9 +1,5 @@
 package it.unibo.lpaas.core.refactoring
 
-import it.unibo.lpaas.domain.IncrementalVersion
-import it.unibo.lpaas.domain.Theory
-import it.unibo.lpaas.domain.TheoryId
-
 fun interface UseCase<A> {
     suspend fun execute(): A
 

@@ -170,9 +170,9 @@ internal class TheoryUseCasesTest : FunSpec({
         )
 
         context("it should return the updated theory") {
-            val theory = Theory(realId, Theory.Data(theory2P), IncrementalVersion.zero)
+            val myTheory = Theory(realId, Theory.Data(theory2P), IncrementalVersion.zero)
             val updatedTheory = mockk<Theory>()
-            coEvery { theoryRepository.findByName(realId) } returns theory
+            coEvery { theoryRepository.findByName(realId) } returns myTheory
             coEvery { theoryRepository.updateByName(realId, any()) } returns updatedTheory
 
             test("it should prepend on beginning = true") {

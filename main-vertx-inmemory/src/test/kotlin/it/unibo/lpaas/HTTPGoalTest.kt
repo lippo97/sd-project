@@ -19,6 +19,7 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.TheoryDependencies
+import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
 import it.unibo.lpaas.delivery.http.databind.MimeType
@@ -54,7 +55,8 @@ class HTTPGoalTest : FunSpec({
     }
         .applyOnJacksonAndSerializers(serializerCollection)
     val vertx = Vertx.vertx()
-    val client = vertx.createHttpClient()
+    val port = 8082
+    val client = VertxHttpClient.make(vertx, "localhost", port)
 
     val exampleGoal = "parent(goku, gohan)"
     val anotherExampleGoal = "parent(vegeta, trunks)"
@@ -88,7 +90,7 @@ class HTTPGoalTest : FunSpec({
             )
             server
                 .bindAPIVersion(1, controller, vertx)
-                .listen(8080)
+                .listen(port)
         }
     }
 

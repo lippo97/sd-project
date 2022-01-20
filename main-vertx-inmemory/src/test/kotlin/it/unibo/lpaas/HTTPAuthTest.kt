@@ -15,12 +15,12 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.TheoryDependencies
+import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerFactory
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
 import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
-import it.unibo.lpaas.delivery.http.get
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -42,7 +42,8 @@ class HTTPAuthTest : FunSpec({
         .applyOnJacksonAndSerializers(serializerCollection)
 
     val vertx = Vertx.vertx()
-    val client = vertx.createHttpClient()
+    val port = 8082
+    val client = VertxHttpClient.make(vertx, "localhost", port)
     val goalBaseUrl = Controller.API_VERSION + Controller.GOAL_BASEURL
 
     fun makeControllerOf(
@@ -74,7 +75,7 @@ class HTTPAuthTest : FunSpec({
             vertx.createHttpServer()
                 .bindAPIVersion(1, controller, vertx)
         ) {
-            listen(8080).await()
+            listen(port).await()
             fn()
             close().await()
         }

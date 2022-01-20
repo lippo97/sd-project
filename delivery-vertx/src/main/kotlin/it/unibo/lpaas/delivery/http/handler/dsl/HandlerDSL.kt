@@ -10,4 +10,7 @@ internal class HandlerDSL(
     override val authHandler: AuthenticationHandler,
     override val authorizationProvider: AuthorizationProvider,
 ) : AuthenticationDSL,
-    UseCaseDSL
+    AuthorizationDSL,
+    SerializerDSL {
+    fun <A> A.void(): Unit = Unit
+}

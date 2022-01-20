@@ -7,9 +7,8 @@ interface TokenStorage {
     fun getRole(token: Token): Future<Role>
 
     companion object {
-        fun mock(): TokenStorage = object : TokenStorage {
-            override fun getRole(token: Token): Future<Role> =
-                Future.succeededFuture(Role.CONFIGURATOR)
-        }
+        fun inMemory(memory: Map<Token, Role>): TokenStorage = InMemoryTokenStorage(memory)
+
+        fun inMemory(vararg pairs: Pair<Token, Role>): TokenStorage = inMemory(pairs.toMap())
     }
 }

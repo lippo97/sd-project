@@ -46,52 +46,40 @@ internal class TheoryUseCasesTest : FunSpec({
     val theoryUseCases = TheoryUseCases(theoryRepository)
 
     context("getAllTheoriesIndex") {
-        test("it should have the right tag") {
-            theoryUseCases.getAllTheoriesIndex.tag shouldBe TheoryUseCases.Tags.getAllTheoriesIndex
-        }
-
         every { theory.name } returns realId
         every { theory.version } returns defaultVersion
         coEvery { theoryRepository.findAll() } returns listOf(theory, theory, theory)
         test("it should return all the theories") {
-            theoryUseCases.getAllTheoriesIndex.execute().shouldContainInOrder(
+            theoryUseCases.getAllTheoriesIndex().shouldContainInOrder(
                 realId,
                 realId,
                 realId,
             )
-
             coVerify { theoryRepository.findAll() }
         }
     }
 
     context("getTheoryByName") {
-        test("it should have the right tag") {
-            theoryUseCases.getTheoryByName(realId).tag shouldBe TheoryUseCases.Tags.getTheoryByName
-        }
 
         coEvery { theoryRepository.findByName(realId) } returns theory
         test("it should return the matching theory") {
-            theoryUseCases.getTheoryByName(realId).execute() shouldBe theory
+            theoryUseCases.getTheoryByName(realId) shouldBe theory
             coVerify { theoryRepository.findByName(realId) }
         }
 
         coEvery { theoryRepository.findByName(fakeId) } throws NotFoundException(fakeId, "Theory")
         test("it should throw not found") {
             assertThrows<NotFoundException> {
-                theoryUseCases.getTheoryByName(fakeId).execute()
+                theoryUseCases.getTheoryByName(fakeId)
             }
             coVerify { theoryRepository.findByName(fakeId) }
         }
     }
 
     context("createTheory") {
-        test("it should have the right tag") {
-            theoryUseCases.createTheory(realId, someData).tag shouldBe TheoryUseCases.Tags.createTheory
-        }
-
         coEvery { theoryRepository.create(realId, someData) } returns theory
         test("it should return the created theory") {
-            theoryUseCases.createTheory(realId, someData).execute() shouldBe theory
+            theoryUseCases.createTheory(realId, someData) shouldBe theory
             coVerify { theoryRepository.create(realId, someData) }
         }
 
@@ -99,7 +87,7 @@ internal class TheoryUseCasesTest : FunSpec({
             DuplicateIdentifierException(duplicateId, "Theory")
         test("it should throw duplicate identifier") {
             assertThrows<DuplicateIdentifierException> {
-                theoryUseCases.createTheory(duplicateId, someData).execute()
+                theoryUseCases.createTheory(duplicateId, someData)
             }
             coVerify { theoryRepository.create(duplicateId, someData) }
         }
@@ -108,27 +96,24 @@ internal class TheoryUseCasesTest : FunSpec({
             ValidationException()
         test("it should throw validation exception") {
             assertThrows<ValidationException> {
-                theoryUseCases.createTheory(realId, invalidData).execute()
+                theoryUseCases.createTheory(realId, invalidData)
             }
             coVerify { theoryRepository.create(realId, invalidData) }
         }
     }
 
     context("updateTheory") {
-        test("it should have the right tag") {
-            theoryUseCases.updateTheory(realId, someData).tag shouldBe TheoryUseCases.Tags.updateTheory
-        }
 
         coEvery { theoryRepository.updateByName(realId, someData) } returns theory
         test("it should return the updated theory") {
-            theoryUseCases.updateTheory(realId, someData).execute() shouldBe theory
+            theoryUseCases.updateTheory(realId, someData) shouldBe theory
         }
 
         coEvery { theoryRepository.updateByName(fakeId, someData) } throws
             NotFoundException(fakeId, "Theory")
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
-                theoryUseCases.updateTheory(fakeId, someData).execute()
+                theoryUseCases.updateTheory(fakeId, someData)
             }
         }
 
@@ -136,43 +121,34 @@ internal class TheoryUseCasesTest : FunSpec({
             ValidationException("Theory")
         test("it should throw validation exception") {
             assertThrows<ValidationException> {
-                theoryUseCases.updateTheory(realId, someData).execute()
+                theoryUseCases.updateTheory(realId, someData)
             }
         }
     }
 
     context("deleteTheory") {
-        test("it should have the right tag") {
-            theoryUseCases.deleteTheory(realId).tag shouldBe TheoryUseCases.Tags.deleteTheory
-        }
-
         coEvery { theoryRepository.deleteByName(realId) } returns theory
         test("it should return the deleted theory") {
-            theoryUseCases.deleteTheory(realId).execute() shouldBe theory
+            theoryUseCases.deleteTheory(realId) shouldBe theory
         }
 
         coEvery { theoryRepository.deleteByName(fakeId) } throws
             NotFoundException(fakeId, "Theory")
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
-                theoryUseCases.deleteTheory(fakeId).execute()
+                theoryUseCases.deleteTheory(fakeId)
             }
         }
     }
 
     context("getFactsInTheory") {
-        test("it should have the right tag") {
-            theoryUseCases.getFactsInTheory(realId, functor).tag shouldBe
-                TheoryUseCases.Tags.getFactsInTheory
-        }
-
         mockkStatic("it.unibo.lpaas.domain.Theory2PExtensionsKt")
         val theory2P = mockk<Theory2P>()
         coEvery { theory2P.getFactsByFunctor(functor) } returns listOf(Fact.of(functor))
         coEvery { theory.data } returns Theory.Data(theory2P)
         coEvery { theoryRepository.findByName(realId) } returns theory
         test("it should return the facts of the theory") {
-            theoryUseCases.getFactsInTheory(realId, functor).execute() shouldContainInOrder
+            theoryUseCases.getFactsInTheory(realId, functor) shouldContainInOrder
                 listOf(Fact.of(functor))
         }
 
@@ -180,17 +156,12 @@ internal class TheoryUseCasesTest : FunSpec({
             NotFoundException(fakeId, "Theory")
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
-                theoryUseCases.getFactsInTheory(fakeId, functor).execute()
+                theoryUseCases.getFactsInTheory(fakeId, functor)
             }
         }
     }
 
     context("addFactToTheory") {
-        test("it should have the right tag") {
-            theoryUseCases.addFactToTheory(realId, Fact.of(functor)).tag shouldBe
-                TheoryUseCases.Tags.addFactToTheory
-        }
-
         val theory2P = spyk(
             Theory2P.of(
                 Clause.of(Struct.of("mario")),
@@ -199,19 +170,19 @@ internal class TheoryUseCasesTest : FunSpec({
         )
 
         context("it should return the updated theory") {
-            val theory = Theory(realId, Theory.Data(theory2P), IncrementalVersion.zero)
+            val myTheory = Theory(realId, Theory.Data(theory2P), IncrementalVersion.zero)
             val updatedTheory = mockk<Theory>()
-            coEvery { theoryRepository.findByName(realId) } returns theory
+            coEvery { theoryRepository.findByName(realId) } returns myTheory
             coEvery { theoryRepository.updateByName(realId, any()) } returns updatedTheory
 
             test("it should prepend on beginning = true") {
-                theoryUseCases.addFactToTheory(realId, Fact.of(Functor("wario"))).execute() shouldBe updatedTheory
+                theoryUseCases.addFactToTheory(realId, Fact.of(Functor("wario"))) shouldBe updatedTheory
                 verify { theory2P.assertA(Clause.of(Struct.of("wario"))) }
             }
 
             test("it should append on beginning = false") {
                 theoryUseCases.addFactToTheory(realId, Fact.of(Functor("wario")), beginning = false)
-                    .execute() shouldBe updatedTheory
+                    .shouldBe(updatedTheory)
                 verify { theory2P.assertZ(Clause.of(Struct.of("wario"))) }
             }
         }
@@ -220,17 +191,12 @@ internal class TheoryUseCasesTest : FunSpec({
             NotFoundException(fakeId, "Theory")
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
-                theoryUseCases.addFactToTheory(fakeId, Fact.of(Functor("wario"))).execute()
+                theoryUseCases.addFactToTheory(fakeId, Fact.of(Functor("wario")))
             }
         }
     }
 
     context("updateFactInTheory") {
-        test("it should have the right tag") {
-            theoryUseCases.updateFactInTheory(realId, Fact.of(functor)).tag shouldBe
-                TheoryUseCases.Tags.updateFactInTheory
-        }
-
         coEvery { theoryRepository.findByName(realId) } returns theory
         every { theory.data } returns someData
         val updatedData = mockk<Theory.Data>()
@@ -240,7 +206,7 @@ internal class TheoryUseCasesTest : FunSpec({
         val updatedTheory = mockk<Theory>()
         coEvery { theoryRepository.updateByName(realId, updatedData2) } returns updatedTheory
         test("it should return the updated theory") {
-            theoryUseCases.updateFactInTheory(realId, Fact.of(Functor("temperature"), "30")).execute() shouldBe
+            theoryUseCases.updateFactInTheory(realId, Fact.of(Functor("temperature"), "30")) shouldBe
                 updatedTheory
 
             coVerify { theoryRepository.updateByName(realId, updatedData2) }
@@ -249,52 +215,37 @@ internal class TheoryUseCasesTest : FunSpec({
     }
 
     context("getTheoryByVersion") {
-        test("it should have the right tag") {
-            theoryUseCases.getTheoryByNameAndVersion(realId, defaultVersion).tag shouldBe
-                TheoryUseCases.Tags.getTheoryByVersion
-        }
-
         coEvery { theoryRepository.findByNameAndVersion(fakeId, defaultVersion) } throws
             NotFoundException(fakeId, "Theory")
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
-                theoryUseCases.getTheoryByNameAndVersion(fakeId, defaultVersion).execute()
+                theoryUseCases.getTheoryByNameAndVersion(fakeId, defaultVersion)
             }
         }
 
         coEvery { theoryRepository.findByNameAndVersion(realId, defaultVersion) } returns theory
         test("it should return the matching theory") {
-            theoryUseCases.getTheoryByNameAndVersion(realId, defaultVersion).execute() shouldBe theory
+            theoryUseCases.getTheoryByNameAndVersion(realId, defaultVersion) shouldBe theory
             coVerify { theoryRepository.findByNameAndVersion(realId, defaultVersion) }
         }
     }
 
     context("deleteTheoryByVersion") {
-        test("it should have the right tag") {
-            theoryUseCases.deleteTheoryByVersion(realId, defaultVersion).tag shouldBe
-                TheoryUseCases.Tags.deleteTheoryByVersion
-        }
-
         coEvery { theoryRepository.deleteByNameAndVersion(realId, defaultVersion) } returns theory
         test("it should return the deleted theory") {
-            theoryUseCases.deleteTheoryByVersion(realId, defaultVersion).execute() shouldBe theory
+            theoryUseCases.deleteTheoryByVersion(realId, defaultVersion) shouldBe theory
         }
 
         coEvery { theoryRepository.deleteByNameAndVersion(fakeId, defaultVersion) } throws
             NotFoundException(fakeId, "Theory")
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
-                theoryUseCases.deleteTheoryByVersion(fakeId, defaultVersion).execute()
+                theoryUseCases.deleteTheoryByVersion(fakeId, defaultVersion)
             }
         }
     }
 
     context("getFactsInTheoryByNameAndVersion") {
-        test("it should have the right tag") {
-            theoryUseCases.getFactsInTheoryByNameAndVersion(realId, functor, defaultVersion).tag shouldBe
-                TheoryUseCases.Tags.getFactsInTheoryByNameAndVersion
-        }
-
         mockkStatic("it.unibo.lpaas.domain.Theory2PExtensionsKt")
         val theory2P = mockk<Theory2P>()
         coEvery { theory2P.getFactsByFunctor(functor) } returns listOf(Fact.of(functor))
@@ -302,7 +253,7 @@ internal class TheoryUseCasesTest : FunSpec({
         coEvery { theoryRepository.findByNameAndVersion(realId, defaultVersion) } returns theory
         test("it should return the facts of the theory") {
             theoryUseCases.getFactsInTheoryByNameAndVersion(realId, functor, defaultVersion)
-                .execute() shouldContainInOrder listOf(Fact.of(functor))
+                .shouldContainInOrder(listOf(Fact.of(functor)))
             coVerify { theoryRepository.findByNameAndVersion(realId, defaultVersion) }
         }
 
@@ -310,7 +261,7 @@ internal class TheoryUseCasesTest : FunSpec({
             NotFoundException(fakeId, "Theory")
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
-                theoryUseCases.getFactsInTheoryByNameAndVersion(fakeId, functor, defaultVersion).execute()
+                theoryUseCases.getFactsInTheoryByNameAndVersion(fakeId, functor, defaultVersion)
             }
         }
     }

@@ -78,11 +78,11 @@ class SolutionUseCaseTest : FunSpec({
         }
     }
 
-    context("find solution") {
+    context("getSolution") {
         val solutionId = SolutionId.of("mySolution")
         val solutionData = mockk<Solution.Data>()
         val solution = Solution(solutionId, solutionData, IncrementalVersion.zero)
-        test("it should return the specified solution") {
+        test("it should return the requested solution") {
             coEvery { solutionRepository.findByName(solutionId) } returns solution
             solutionUseCases.getSolution(solutionId) shouldBe solution
         }
@@ -90,6 +90,24 @@ class SolutionUseCaseTest : FunSpec({
             coEvery { solutionRepository.findByName(solutionId) } throws NotFoundException(solutionId, "Solution")
             shouldThrow<NotFoundException> {
                 solutionUseCases.getSolution(solutionId)
+            }
+        }
+    }
+
+    context("getSolutionByVersion") {
+        val solutionId = SolutionId.of("mySolution")
+        val solutionData = mockk<Solution.Data>()
+        val versionOne = IncrementalVersion.zero.next()
+        val solution = Solution(solutionId, solutionData, versionOne)
+        coEvery { solutionRepository.findByNameAndVersion(solutionId, any()) } throws
+            NotFoundException(Any(), "Solution")
+        coEvery { solutionRepository.findByNameAndVersion(solutionId, versionOne) } returns solution
+        test("it should return the requested solution") {
+            solutionUseCases.getSolutionByVersion(solutionId, versionOne) shouldBe solution
+        }
+        test("it should throw not found") {
+            shouldThrow<NotFoundException> {
+                solutionUseCases.getSolutionByVersion(solutionId, IncrementalVersion.of(3)!!)
             }
         }
     }

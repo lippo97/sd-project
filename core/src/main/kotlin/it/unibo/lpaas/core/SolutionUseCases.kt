@@ -3,6 +3,7 @@ package it.unibo.lpaas.core
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
+import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Solution
 import it.unibo.lpaas.domain.SolutionId
 
@@ -21,7 +22,7 @@ class SolutionUseCases(
         val getSolutionByVersion = Tag("getSolutionByVersion")
     }
 
-    suspend fun createSolution(solutionId: SolutionId, data: Solution.Data): Solution {
+    suspend fun createSolution(name: SolutionId, data: Solution.Data): Solution {
         val (theoryOptions, goalId) = data
         val (theoryId, theoryVersion) = theoryOptions
 
@@ -31,8 +32,11 @@ class SolutionUseCases(
         else
             theoryRepository.unsafeExists(theoryId)
 
-        return solutionRepository.create(solutionId, data)
+        return solutionRepository.create(name, data)
     }
 
-    suspend fun getSolution(solutionId: SolutionId): Solution = solutionRepository.findByName(solutionId)
+    suspend fun getSolution(name: SolutionId): Solution = solutionRepository.findByName(name)
+
+    suspend fun getSolutionByVersion(name: SolutionId, version: IncrementalVersion): Solution =
+        solutionRepository.findByNameAndVersion(name, version)
 }

@@ -6,4 +6,3 @@ interface Repository<Id, Data, Resource> :
     Create<Id, Data, Resource>,
     UpdateByName<Id, Data, Resource>,
     DeleteByName<Id, Resource>
-

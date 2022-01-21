@@ -10,7 +10,6 @@ import it.unibo.lpaas.domain.SolutionId
 class SolutionUseCases(
     private val goalRepository: GoalRepository,
     private val theoryRepository: TheoryRepository,
-    private val theoryOptions: Solution.TheoryOptions,
     private val solutionRepository: SolutionRepository,
 ) {
 

@@ -1,5 +1,6 @@
 package it.unibo.lpaas.core.persistence
 
+import it.unibo.lpaas.core.persistence.repository.Repository
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 

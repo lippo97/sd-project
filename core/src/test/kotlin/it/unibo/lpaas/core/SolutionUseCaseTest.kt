@@ -1,5 +1,6 @@
 package it.unibo.lpaas.core
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -74,6 +75,22 @@ class SolutionUseCaseTest : FunSpec({
                 solutionUseCases.createSolution(solutionId, solutionData)
             }
             failure.message shouldContain "Solution"
+        }
+    }
+
+    context("find solution") {
+        val solutionId = SolutionId.of("mySolution")
+        val solutionData = mockk<Solution.Data>()
+        val solution = Solution(solutionId, solutionData, IncrementalVersion.zero)
+        test("it should return the specified solution") {
+            coEvery { solutionRepository.findByName(solutionId) } returns solution
+            solutionUseCases.getSolution(solutionId) shouldBe solution
+        }
+        test("it should throw NotFoundException") {
+            coEvery { solutionRepository.findByName(solutionId) } throws NotFoundException(solutionId, "Solution")
+            shouldThrow<NotFoundException> {
+                solutionUseCases.getSolution(solutionId)
+            }
         }
     }
 })

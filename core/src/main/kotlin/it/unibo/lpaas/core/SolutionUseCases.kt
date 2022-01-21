@@ -33,4 +33,6 @@ class SolutionUseCases(
 
         return solutionRepository.create(solutionId, data)
     }
+
+    suspend fun getSolution(solutionId: SolutionId): Solution = solutionRepository.findByName(solutionId)
 }

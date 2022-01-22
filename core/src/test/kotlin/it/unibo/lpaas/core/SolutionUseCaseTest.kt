@@ -2,8 +2,11 @@ package it.unibo.lpaas.core
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.mockk.InternalPlatformDsl.toStr
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -17,6 +20,7 @@ import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Solution
 import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.TheoryId
+import it.unibo.tuprolog.utils.dropLast
 import org.junit.jupiter.api.assertThrows
 
 class SolutionUseCaseTest : FunSpec({
@@ -66,7 +70,7 @@ class SolutionUseCaseTest : FunSpec({
             failure.message shouldContain "Theory"
         }
 
-        test("if the theoryId is not present it should throw") {
+        test("if the solutionId is already present it should throw") {
             coEvery { goalRepository.unsafeExists(goalId) } returns Unit
             coEvery { theoryRepository.unsafeExists(theoryId) } returns Unit
             coEvery { solutionRepository.create(solutionId, solutionData) } throws
@@ -109,6 +113,56 @@ class SolutionUseCaseTest : FunSpec({
             shouldThrow<NotFoundException> {
                 solutionUseCases.getSolutionByVersion(solutionId, IncrementalVersion.of(3)!!)
             }
+        }
+    }
+
+    context("getResults") {
+        val solutionId = SolutionId.of("mySolution")
+        val goalId = GoalId.of("myGoal")
+        val theoryId = TheoryId.of("myTheory")
+        val solutionData = Solution.Data(
+            theoryOptions = Solution.TheoryOptions(theoryId),
+            goalId,
+        )
+        val solution = Solution(solutionId, solutionData, IncrementalVersion.zero)
+
+        test("it should return all the moves learnt by Charmander") {
+            coEvery { solutionRepository.findByName(solutionId) } returns solution
+            coEvery { theoryRepository.findByName(theoryId) } returns Pokemon.theory
+            coEvery { goalRepository.findByName(goalId) } returns Pokemon.Goals.eventuallyLearns("charmander")
+            val results = solutionUseCases.getResults(solutionId)
+            results.map {
+                Pair(
+                    it.substitution.getByName("Pokemon")?.asAtom().toString(),
+                    it.substitution.getByName("Move")?.asAtom().toString(),
+                )
+            }
+                .dropLast()
+                .toList()
+                .shouldContainExactly(
+                    "charmander" to "scratch",
+                    "charmander" to "growl",
+                    "charmander" to "ember",
+                    "charmeleon" to "slash",
+                    "charizard" to "fly",
+                    "charizard" to "flamethrower",
+                )
+        }
+
+        test("it should return all the fully evolved pokemons") {
+            coEvery { solutionRepository.findByName(solutionId) } returns solution
+            coEvery { theoryRepository.findByName(theoryId) } returns Pokemon.theory
+            coEvery { goalRepository.findByName(goalId) } returns Pokemon.Goals.intermediateLevelPokemon
+            val results = solutionUseCases.getResults(solutionId)
+            results
+                .map { it.substitution.getByName("Pokemon")?.asAtom().toString() }
+                .dropLast()
+                .toList()
+                .shouldContainInOrder(
+                    "charmeleon",
+                    "wartortle",
+                    "ivysaur"
+                )
         }
     }
 })

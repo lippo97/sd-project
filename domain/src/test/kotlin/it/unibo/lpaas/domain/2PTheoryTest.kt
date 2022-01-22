@@ -10,6 +10,7 @@ import it.unibo.tuprolog.core.Clause
 import it.unibo.tuprolog.core.Struct
 import it.unibo.tuprolog.core.Terms
 import it.unibo.tuprolog.core.Var
+import it.unibo.tuprolog.core.parsing.parse
 import it.unibo.tuprolog.theory.RetractResult
 import it.unibo.tuprolog.theory.Theory
 
@@ -137,6 +138,12 @@ internal class `2PTheoryTest` : FunSpec({
                         Fact.of(Functor("marco"), "lino"),
                         Fact.of(Functor("marco"), "letto")
                     )
+            }
+        }
+        context("parsing composed goal") {
+            test("it should parse two goals") {
+                val struct = Struct.parse("parent(gohan, X), parent(videl, X), parent(videl, X)")
+                println(struct)
             }
         }
     }

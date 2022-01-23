@@ -6,7 +6,6 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.mockk.InternalPlatformDsl.toStr
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -17,9 +16,12 @@ import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
+import it.unibo.lpaas.domain.Result
 import it.unibo.lpaas.domain.Solution
 import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.TheoryId
+import it.unibo.lpaas.domain.Variable
+import it.unibo.tuprolog.solve.Solver
 import it.unibo.tuprolog.utils.dropLast
 import org.junit.jupiter.api.assertThrows
 
@@ -130,14 +132,16 @@ class SolutionUseCaseTest : FunSpec({
             coEvery { solutionRepository.findByName(solutionId) } returns solution
             coEvery { theoryRepository.findByName(theoryId) } returns Pokemon.theory
             coEvery { goalRepository.findByName(goalId) } returns Pokemon.Goals.eventuallyLearns("charmander")
-            val results = solutionUseCases.getResults(solutionId)
-            results.map {
-                Pair(
-                    it.substitution.getByName("Pokemon")?.asAtom().toString(),
-                    it.substitution.getByName("Move")?.asAtom().toString(),
-                )
-            }
+            val results = solutionUseCases.getResults(solutionId, Solver.prolog)
+            results
                 .dropLast()
+                .map { it as Result.Yes }
+                .map {
+                    Pair(
+                        it.variables[Variable("Pokemon")]?.asAtom().toString(),
+                        it.variables[Variable("Move")]?.asAtom().toString(),
+                    )
+                }
                 .toList()
                 .shouldContainExactly(
                     "charmander" to "scratch",
@@ -153,10 +157,11 @@ class SolutionUseCaseTest : FunSpec({
             coEvery { solutionRepository.findByName(solutionId) } returns solution
             coEvery { theoryRepository.findByName(theoryId) } returns Pokemon.theory
             coEvery { goalRepository.findByName(goalId) } returns Pokemon.Goals.intermediateLevelPokemon
-            val results = solutionUseCases.getResults(solutionId)
+            val results = solutionUseCases.getResults(solutionId, Solver.prolog)
             results
-                .map { it.substitution.getByName("Pokemon")?.asAtom().toString() }
                 .dropLast()
+                .map { it as Result.Yes }
+                .map { it.variables[Variable("Pokemon")]?.asAtom().toString() }
                 .toList()
                 .shouldContainInOrder(
                     "charmeleon",

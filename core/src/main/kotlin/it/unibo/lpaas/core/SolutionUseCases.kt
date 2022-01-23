@@ -4,12 +4,11 @@ import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.IncrementalVersion
+import it.unibo.lpaas.domain.Result
 import it.unibo.lpaas.domain.Solution
 import it.unibo.lpaas.domain.SolutionId
 import it.unibo.tuprolog.core.Tuple
-import it.unibo.tuprolog.solve.Solver
 import it.unibo.tuprolog.solve.SolverFactory
-import it.unibo.tuprolog.solve.Solution as Solution2P
 
 @Suppress("all")
 class SolutionUseCases(
@@ -44,7 +43,7 @@ class SolutionUseCases(
     suspend fun getSolutionByVersion(name: SolutionId, version: IncrementalVersion): Solution =
         solutionRepository.findByNameAndVersion(name, version)
 
-    suspend fun getResults(name: SolutionId): Sequence<Solution2P> {
+    suspend fun getResults(name: SolutionId, solverFactory: SolverFactory): Sequence<Result> {
         val (_, data) = solutionRepository.findByName(name)
         val (theoryId, theoryVersion) = data.theoryOptions
         val (_, goalId) = data
@@ -60,7 +59,9 @@ class SolutionUseCases(
         val composedGoal =
             if (subgoals.size > 1) Tuple.of(goal.data.subgoals.map { it.value })
             else subgoals[0]
-        val solver = Solver.prolog.solverOf(theory2p)
-        return solver.solve(composedGoal)
+        val solver = solverFactory.solverOf(theory2p)
+        return solver
+            .solve(composedGoal)
+            .map(Result::of)
     }
 }

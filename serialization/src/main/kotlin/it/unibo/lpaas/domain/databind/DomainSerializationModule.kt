@@ -5,14 +5,17 @@ import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.module.SimpleDeserializers
 import com.fasterxml.jackson.databind.module.SimpleSerializers
 import it.unibo.lpaas.domain.Fact
+import it.unibo.lpaas.domain.Variable
 import it.unibo.lpaas.domain.databind.impl.FactSerializer
 import it.unibo.lpaas.domain.databind.impl.StringIDSerializer
 import it.unibo.lpaas.domain.databind.impl.StructToStringSerializer
 import it.unibo.lpaas.domain.databind.impl.Theory2PSerializer
+import it.unibo.lpaas.domain.databind.impl.VariableSerializer
 import it.unibo.lpaas.domain.databind.impl.factDeserializer
 import it.unibo.lpaas.domain.databind.impl.stringIdDeserializer
 import it.unibo.lpaas.domain.databind.impl.structDeserializer
 import it.unibo.lpaas.domain.databind.impl.theory2PDeserializer
+import it.unibo.lpaas.domain.databind.impl.variableDeserializer
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.tuprolog.core.Struct
 import it.unibo.tuprolog.theory.Theory as Theory2P
@@ -31,6 +34,7 @@ class DomainSerializationModule : Module() {
                     addSerializer(Fact::class.java, FactSerializer(ClausePrinter.prettyPrinter()))
                     addSerializer(StringId::class.java, StringIDSerializer())
                     addSerializer(Struct::class.java, StructToStringSerializer())
+                    addSerializer(Variable::class.java, VariableSerializer())
                 }
             )
             addDeserializers(
@@ -39,6 +43,7 @@ class DomainSerializationModule : Module() {
                     addDeserializer(Fact::class.java, factDeserializer)
                     addDeserializer(StringId::class.java, stringIdDeserializer)
                     addDeserializer(Struct::class.java, structDeserializer)
+                    addDeserializer(Variable::class.java, variableDeserializer)
                 }
             )
         }

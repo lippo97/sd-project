@@ -7,17 +7,14 @@ import it.unibo.lpaas.domain.Subgoal
 import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.tuprolog.core.Struct
-import it.unibo.tuprolog.core.Term
-import it.unibo.tuprolog.core.Terms
-import it.unibo.tuprolog.core.Tuple
 import it.unibo.tuprolog.core.parsing.parse
 import it.unibo.tuprolog.theory.parsing.ClausesParser
-import it.unibo.tuprolog.utils.forceCast
 
 object Pokemon {
 
     val theoryId = TheoryId.of("pokemon")
-    val theory2p = ClausesParser.withDefaultOperators.parseTheory("""
+    val theory2p = ClausesParser.withDefaultOperators.parseTheory(
+        """
         type(Pokemon, Type) :- type(Pokemon, Type, _).
         type(Pokemon, Type) :- type(Pokemon, _, Type).
 
@@ -89,7 +86,8 @@ object Pokemon {
         % great_against(Move, charizard)
         % evolves(_, Pokemon), \+ evolves(Pokemon, _)
         % type(Pokemon, T1, T2), beats(Move_Type, T1), beats(Move_Type, T2)
-    """.trimIndent())
+        """.trimIndent()
+    )
     val theory = Theory(
         theoryId,
         Theory.Data(theory2p),

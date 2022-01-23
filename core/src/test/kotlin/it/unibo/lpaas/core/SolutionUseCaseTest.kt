@@ -14,6 +14,7 @@ import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
+import it.unibo.lpaas.core.timer.Timer
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Result
@@ -23,13 +24,15 @@ import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Variable
 import it.unibo.tuprolog.solve.Solver
 import it.unibo.tuprolog.utils.dropLast
+import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.assertThrows
 
 class SolutionUseCaseTest : FunSpec({
     val solutionRepository = mockk<SolutionRepository>()
     val goalRepository = mockk<GoalRepository>()
     val theoryRepository = mockk<TheoryRepository>()
-    val solutionUseCases = SolutionUseCases(goalRepository, theoryRepository, solutionRepository)
+    val timer = mockk<Timer<Int>>()
+    val solutionUseCases = SolutionUseCases(goalRepository, theoryRepository, solutionRepository, timer)
 
     afterContainer {
         clearMocks(solutionRepository)
@@ -134,7 +137,9 @@ class SolutionUseCaseTest : FunSpec({
             coEvery { goalRepository.findByName(goalId) } returns Pokemon.Goals.eventuallyLearns("charmander")
             val results = solutionUseCases.getResults(solutionId, Solver.prolog)
             results
-                .dropLast()
+                .toList()
+                .dropLast(1)
+                .map { println("mappone"); it }
                 .map { it as Result.Yes }
                 .map {
                     Pair(
@@ -159,7 +164,8 @@ class SolutionUseCaseTest : FunSpec({
             coEvery { goalRepository.findByName(goalId) } returns Pokemon.Goals.intermediateLevelPokemon
             val results = solutionUseCases.getResults(solutionId, Solver.prolog)
             results
-                .dropLast()
+                .toList()
+                .dropLast(1)
                 .map { it as Result.Yes }
                 .map { it.variables[Variable("Pokemon")]?.asAtom().toString() }
                 .toList()

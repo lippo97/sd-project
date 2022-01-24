@@ -4,6 +4,7 @@ import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.core.timer.Timer
+import it.unibo.lpaas.core.timer.TimerRepository
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Result
 import it.unibo.lpaas.domain.Solution
@@ -21,6 +22,7 @@ class SolutionUseCases<TimerID>(
     private val theoryRepository: TheoryRepository,
     private val solutionRepository: SolutionRepository,
     private val timer: Timer<TimerID>,
+    private val timerRepository: TimerRepository<SolutionId, TimerID>,
 ) {
 
     companion object Tags {
@@ -29,14 +31,19 @@ class SolutionUseCases<TimerID>(
         val getSolution = Tag("getSolution")
 
         val getSolutionByVersion = Tag("getSolutionByVersion")
+
+        val getResults = Tag("getResults")
+
+        val deleteByName = Tag("deleteByName")
     }
 
     suspend fun createSolution(name: SolutionId, data: Solution.Data, every: Long? = null): Solution {
         val solution = _createSolution(name, data)
         every?.let {
-            timer.setInterval(it) {
+            val timerId = timer.setInterval(it) {
                 _createSolution(name, data)
             }
+            timerRepository.append(name, timerId)
         }
         return solution
     }
@@ -88,5 +95,10 @@ class SolutionUseCases<TimerID>(
                         .updateTheory(theoryId, Theory.Data(solver.dynamicKb))
                 }
             }
+    }
+
+    suspend fun deleteSolution(name: SolutionId): Solution {
+        timerRepository.findByName(name).forEach(timer::clear)
+        return solutionRepository.deleteByName(name)
     }
 }

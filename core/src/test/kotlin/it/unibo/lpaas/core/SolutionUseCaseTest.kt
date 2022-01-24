@@ -15,6 +15,7 @@ import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.core.timer.Timer
+import it.unibo.lpaas.core.timer.TimerRepository
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.Result
@@ -31,8 +32,15 @@ class SolutionUseCaseTest : FunSpec({
     val solutionRepository = mockk<SolutionRepository>()
     val goalRepository = mockk<GoalRepository>()
     val theoryRepository = mockk<TheoryRepository>()
-    val timer = mockk<Timer<Int>>()
-    val solutionUseCases = SolutionUseCases(goalRepository, theoryRepository, solutionRepository, timer)
+    val timer = mockk<Timer<String>>()
+    val timerRepository = mockk<TimerRepository<SolutionId, String>>()
+    val solutionUseCases = SolutionUseCases(
+        goalRepository,
+        theoryRepository,
+        solutionRepository,
+        timer,
+        timerRepository,
+    )
 
     afterContainer {
         clearMocks(solutionRepository)
@@ -174,6 +182,31 @@ class SolutionUseCaseTest : FunSpec({
                     "wartortle",
                     "ivysaur"
                 )
+        }
+    }
+
+    context("deleteByName") {
+        val solutionId = SolutionId.of("mySolution")
+
+        test("it should return the deleted solution") {
+            val goalId = GoalId.of("myGoal")
+            val theoryId = TheoryId.of("myTheory")
+            val solutionData = Solution.Data(
+                theoryOptions = Solution.TheoryOptions(theoryId),
+                goalId,
+            )
+            val solution = Solution(solutionId, solutionData, IncrementalVersion.zero)
+            val timerId = "myTimer"
+            coEvery { solutionRepository.deleteByName(solutionId) } returns solution
+            coEvery { timerRepository.findByName(solutionId) } returns listOf(timerId)
+            coEvery { timer.clear(timerId) } returns Unit
+            solutionUseCases.deleteSolution(solutionId) shouldBe solution
+        }
+        test("it should throw NotFoundException on invalid id") {
+            coEvery { solutionRepository.deleteByName(solutionId) } throws NotFoundException(solutionId, "Solution")
+            shouldThrow<NotFoundException> {
+                solutionUseCases.deleteSolution(solutionId)
+            }
         }
     }
 })

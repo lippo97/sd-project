@@ -8,6 +8,7 @@ import it.unibo.lpaas.core.TheoryUseCases
 object Permissions {
     @JvmStatic
     @JvmName("defaultPermissions")
+    @SuppressWarnings("LongMethod")
     fun default(): Map<Role, List<Tag>> = mapOf(
         Role.CONFIGURATOR to GoalUseCases.Tags.run {
             listOf(

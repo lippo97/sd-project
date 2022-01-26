@@ -24,8 +24,6 @@ import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Variable
 import it.unibo.tuprolog.solve.Solver
-import it.unibo.tuprolog.utils.dropLast
-import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.assertThrows
 
 class SolutionUseCaseTest : FunSpec({
@@ -33,13 +31,14 @@ class SolutionUseCaseTest : FunSpec({
     val goalRepository = mockk<GoalRepository>()
     val theoryRepository = mockk<TheoryRepository>()
     val timer = mockk<Timer<String>>()
-    val timerRepository = mockk<TimerRepository<SolutionId, String>>()
+    val timerRepository = mockk<TimerRepository<String>>()
     val solutionUseCases = SolutionUseCases(
         goalRepository,
         theoryRepository,
         solutionRepository,
-        timer,
         timerRepository,
+        timer,
+        { SolutionId.of("0") }
     )
 
     afterContainer {
@@ -147,7 +146,6 @@ class SolutionUseCaseTest : FunSpec({
             results
                 .toList()
                 .dropLast(1)
-                .map { println("mappone"); it }
                 .map { it as Result.Yes }
                 .map {
                     Pair(

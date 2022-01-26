@@ -28,7 +28,7 @@ interface GoalController : Controller {
 
             val goalRepository = goalDependencies.goalRepository
             val goalIdParser = goalDependencies.goalIdParser
-            val goalUseCases: GoalUseCases = GoalUseCases(goalRepository)
+            val goalUseCases = GoalUseCases(goalRepository)
 
             @Suppress("LongMethod")
             override fun routes(): Router = Router.router(vertx).apply {

@@ -1,5 +1,6 @@
 package it.unibo.lpaas.core
 
+import it.unibo.lpaas.collections.onCompletion
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
@@ -12,17 +13,16 @@ import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.Theory
 import it.unibo.tuprolog.core.Tuple
 import it.unibo.tuprolog.solve.SolverFactory
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.onCompletion
+import kotlin.coroutines.coroutineContext
 
 @Suppress("all")
 class SolutionUseCases<TimerID>(
     private val goalRepository: GoalRepository,
     private val theoryRepository: TheoryRepository,
     private val solutionRepository: SolutionRepository,
+    private val timerRepository: TimerRepository<TimerID>,
     private val timer: Timer<TimerID>,
-    private val timerRepository: TimerRepository<SolutionId, TimerID>,
+    private val uuidGenerator: Generator<SolutionId>
 ) {
 
     companion object Tags {
@@ -37,13 +37,14 @@ class SolutionUseCases<TimerID>(
         val deleteByName = Tag("deleteByName")
     }
 
-    suspend fun createSolution(name: SolutionId, data: Solution.Data, every: Long? = null): Solution {
-        val solution = _createSolution(name, data)
+    suspend fun createSolution(name: SolutionId?, data: Solution.Data, every: Long? = null): Solution {
+        val refinedName = name ?: uuidGenerator.generateRandom()
+        val solution = _createSolution(refinedName, data)
         every?.let {
             val timerId = timer.setInterval(it) {
-                _createSolution(name, data)
+                _createSolution(refinedName, data)
             }
-            timerRepository.append(name, timerId)
+            timerRepository.append(refinedName, timerId)
         }
         return solution
     }
@@ -66,7 +67,7 @@ class SolutionUseCases<TimerID>(
     suspend fun getSolutionByVersion(name: SolutionId, version: IncrementalVersion): Solution =
         solutionRepository.findByNameAndVersion(name, version)
 
-    suspend fun getResults(name: SolutionId, solverFactory: SolverFactory): Flow<Result> {
+    suspend fun getResults(name: SolutionId, solverFactory: SolverFactory): Sequence<Result> {
         val (_, data) = solutionRepository.findByName(name)
         val (theoryId, theoryVersion) = data.theoryOptions
         val (_, goalId) = data
@@ -88,13 +89,14 @@ class SolutionUseCases<TimerID>(
         return solver
             .solve(composedGoal)
             .map(Result::of)
-            .asFlow()
-            .onCompletion {
+            .iterator()
+            .onCompletion(coroutineContext) {
                 if (solver.dynamicKb != prevKb) {
                     TheoryUseCases(theoryRepository)
                         .updateTheory(theoryId, Theory.Data(solver.dynamicKb))
                 }
             }
+            .asSequence()
     }
 
     suspend fun deleteSolution(name: SolutionId): Solution {

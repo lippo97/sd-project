@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":domain"))
+    implementation(project(":utils"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
     implementation("it.unibo.tuprolog", "solve", "0.20.4")
     runtimeOnly("it.unibo.tuprolog", "solve-classic", "0.20.4")

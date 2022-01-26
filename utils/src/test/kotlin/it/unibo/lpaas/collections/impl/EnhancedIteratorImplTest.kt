@@ -7,6 +7,7 @@ import kotlinx.coroutines.GlobalScope
 
 internal class EnhancedIteratorImplTest : FunSpec({
 
+    @Suppress("EmptyFunctionBlock", "UnusedPrivateMember")
     class Test {
         fun f(int: Int) { }
 

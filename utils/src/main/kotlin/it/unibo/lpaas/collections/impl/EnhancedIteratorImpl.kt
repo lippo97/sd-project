@@ -9,7 +9,7 @@ class EnhancedIteratorImpl<T>(
     private val iterator: Iterator<T>,
     private val coroutineContext: CoroutineContext
 ) : EnhancedIterator<T>, AbstractIterator<T>() {
-    var completionHandlers = listOf<suspend () -> Unit>()
+    private var completionHandlers = listOf<suspend () -> Unit>()
 
     override fun onCompletion(fn: suspend () -> Unit): EnhancedIterator<T> = this.apply {
         completionHandlers = completionHandlers + fn

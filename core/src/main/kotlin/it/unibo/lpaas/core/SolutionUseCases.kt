@@ -14,6 +14,15 @@ import it.unibo.lpaas.domain.Theory
 import it.unibo.tuprolog.core.Tuple
 import it.unibo.tuprolog.solve.SolverFactory
 import kotlin.coroutines.coroutineContext
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.DurationUnit
+
+data class GetResultsOptions(
+    val skip: Int? = null,
+    val limit: Int? = null,
+    val within: Duration? = null,
+)
 
 @Suppress("all")
 class SolutionUseCases<TimerID>(
@@ -24,6 +33,12 @@ class SolutionUseCases<TimerID>(
     private val timer: Timer<TimerID>,
     private val uuidGenerator: Generator<SolutionId>
 ) {
+
+    private val SOLUTION_MAX_TIMEOUT: Duration = 1.minutes
+
+    private val SOLUTION_DEFAULT_LIMIT: Int = 100
+
+    private val SOLUTION_DEFAULT_SKIP: Int = 0
 
     companion object Tags {
         val createSolution = Tag("createSolution")
@@ -67,10 +82,15 @@ class SolutionUseCases<TimerID>(
     suspend fun getSolutionByVersion(name: SolutionId, version: IncrementalVersion): Solution =
         solutionRepository.findByNameAndVersion(name, version)
 
-    suspend fun getResults(name: SolutionId, solverFactory: SolverFactory): Sequence<Result> {
+    suspend fun getResults(
+        name: SolutionId,
+        solverFactory: SolverFactory,
+        options: GetResultsOptions = GetResultsOptions()
+    ): Sequence<Result> {
         val (_, data) = solutionRepository.findByName(name)
         val (theoryId, theoryVersion) = data.theoryOptions
         val (_, goalId) = data
+        val (skip, limit, within) = options
 
         val theory =
             if (theoryVersion != null)
@@ -83,11 +103,13 @@ class SolutionUseCases<TimerID>(
         val composedGoal =
             if (subgoals.size > 1) Tuple.of(goal.data.subgoals.map { it.value })
             else subgoals[0]
+        val timeout = minOf(within ?: SOLUTION_MAX_TIMEOUT, SOLUTION_MAX_TIMEOUT)
+            .toLong(DurationUnit.MILLISECONDS)
 
         val solver = solverFactory.solverOf(theory2p)
         val prevKb = solver.dynamicKb
         return solver
-            .solve(composedGoal)
+            .solve(composedGoal, timeout = timeout)
             .map(Result::of)
             .iterator()
             .onCompletion(coroutineContext) {
@@ -97,6 +119,8 @@ class SolutionUseCases<TimerID>(
                 }
             }
             .asSequence()
+            .drop(skip ?: SOLUTION_DEFAULT_SKIP)
+            .take(limit ?: SOLUTION_DEFAULT_LIMIT)
     }
 
     suspend fun deleteSolution(name: SolutionId): Solution {

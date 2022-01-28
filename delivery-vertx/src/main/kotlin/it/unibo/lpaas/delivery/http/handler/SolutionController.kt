@@ -5,6 +5,7 @@ import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.coroutines.dispatcher
 import it.unibo.lpaas.core.Generator
+import it.unibo.lpaas.core.GetResultsOptions
 import it.unibo.lpaas.core.SolutionUseCases
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
@@ -26,11 +27,11 @@ import it.unibo.tuprolog.solve.SolverFactory
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlin.jvm.JvmStatic
+import kotlin.time.Duration
 
 interface SolutionController : Controller {
 
     companion object {
-        const val DEFAULT_RESULTS_LIMIT: Int = 100
 
         @JvmStatic
         @Suppress("LongParameterList")
@@ -93,10 +94,13 @@ interface SolutionController : Controller {
                             val name = solutionIdParser.parse(ctx.pathParam("name"))
                             val skip = ctx.queryParam("skip")
                                 .map(Integer::parseInt)
-                                .getOrElse(0) { 0 }
+                                .getOrNull(0)
                             val limit = ctx.queryParam("limit")
                                 .map(Integer::parseInt)
-                                .getOrElse(0) { DEFAULT_RESULTS_LIMIT }
+                                .getOrNull(0)
+                            val within = ctx.queryParam("within")
+                                .map(Duration::parse)
+                                .getOrNull(0)
                             val mimeType = MimeType.safeParse(ctx.acceptableContentType ?: "") ?: MimeType.JSON
 
                             val serializer = serializerCollection.serializerForMimeType(mimeType)
@@ -105,9 +109,14 @@ interface SolutionController : Controller {
                             fws
                                 .onSuccess { ws ->
                                     GlobalScope.launch(vertx.dispatcher()) {
-                                        val solutions = solutionUseCases.getResults(name, solverFactory)
-                                            .drop(skip)
-                                            .take(limit)
+                                        val solutions = solutionUseCases.getResults(
+                                            name, solverFactory,
+                                            GetResultsOptions(
+                                                skip,
+                                                limit,
+                                                within,
+                                            )
+                                        )
                                             .iterator()
 
                                         ws.onMessage("get") {

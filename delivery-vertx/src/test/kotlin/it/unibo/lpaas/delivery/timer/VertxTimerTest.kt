@@ -1,6 +1,5 @@
 package it.unibo.lpaas.delivery.timer
 
-import io.kotest.assertions.timing.eventually
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.longs.shouldBeGreaterThan
 import io.kotest.mpp.timeInMillis

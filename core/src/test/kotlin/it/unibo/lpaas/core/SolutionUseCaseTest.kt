@@ -196,7 +196,7 @@ class SolutionUseCaseTest : FunSpec({
             val solution = Solution(solutionId, solutionData, IncrementalVersion.zero)
             val timerId = "myTimer"
             coEvery { solutionRepository.deleteByName(solutionId) } returns solution
-            coEvery { timerRepository.findByName(solutionId) } returns listOf(timerId)
+            coEvery { timerRepository.safeFindByName(solutionId) } returns timerId
             coEvery { timer.clear(timerId) } returns Unit
             solutionUseCases.deleteSolution(solutionId) shouldBe solution
         }

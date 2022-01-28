@@ -5,7 +5,7 @@ import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 
 class InMemoryGoalRepository(
-    private var memory: Map<GoalId, Goal.Data> = mapOf()
+    memory: Map<GoalId, Goal.Data> = mapOf()
 ) : GoalRepository by
 GoalRepository.of(
     BaseMemoryRepository(
@@ -14,3 +14,11 @@ GoalRepository.of(
         { id, value -> Goal(id, value) },
     )
 )
+
+fun GoalRepository.Companion.inMemory(
+    memory: Map<GoalId, Goal.Data> = mapOf(),
+): GoalRepository =
+    InMemoryGoalRepository(memory)
+
+fun GoalRepository.Companion.inMemory(vararg tuples: Pair<GoalId, Goal.Data>): GoalRepository =
+    inMemory(tuples.toMap())

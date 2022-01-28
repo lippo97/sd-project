@@ -39,7 +39,7 @@ import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
-import it.unibo.lpaas.persistence.ext.inMemory
+import it.unibo.lpaas.persistence.inMemory
 import it.unibo.tuprolog.core.Clause
 import it.unibo.tuprolog.core.Struct
 import it.unibo.tuprolog.theory.Theory as Theory2P

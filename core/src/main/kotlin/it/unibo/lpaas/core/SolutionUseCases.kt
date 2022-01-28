@@ -44,7 +44,7 @@ class SolutionUseCases<TimerID>(
             val timerId = timer.setInterval(it) {
                 updateSolution(refinedName, data)
             }
-            timerRepository.append(refinedName, timerId)
+            timerRepository.create(refinedName, timerId)
         }
         return solution
     }
@@ -100,7 +100,9 @@ class SolutionUseCases<TimerID>(
     }
 
     suspend fun deleteSolution(name: SolutionId): Solution {
-        timerRepository.findByName(name).forEach(timer::clear)
+        timerRepository.safeFindByName(name)?.let {
+            timer.clear(it)
+        }
         return solutionRepository.deleteByName(name)
     }
 

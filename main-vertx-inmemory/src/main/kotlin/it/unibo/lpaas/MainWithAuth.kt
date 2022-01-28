@@ -23,7 +23,7 @@ import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
-import it.unibo.lpaas.persistence.ext.inMemory
+import it.unibo.lpaas.persistence.inMemory
 
 class MainWithAuth private constructor() {
     companion object {

@@ -23,6 +23,7 @@ import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.JWTAuthFactory
 import it.unibo.lpaas.delivery.http.auth.Token
 import it.unibo.lpaas.delivery.http.auth.TokenStorage
+import it.unibo.lpaas.delivery.http.auth.inMemory
 import it.unibo.lpaas.delivery.http.bindApi
 import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration

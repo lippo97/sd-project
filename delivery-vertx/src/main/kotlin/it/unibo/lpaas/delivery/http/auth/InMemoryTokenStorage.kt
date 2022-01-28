@@ -36,6 +36,6 @@ class InMemoryTokenStorage(private val memory: Map<Token, Role>) : TokenStorage 
     }
 }
 
-fun TokenStorage.inMemory(memory: Map<Token, Role>): TokenStorage = InMemoryTokenStorage(memory)
+fun TokenStorage.Companion.inMemory(memory: Map<Token, Role>): TokenStorage = InMemoryTokenStorage(memory)
 
-fun TokenStorage.inMemory(vararg pairs: Pair<Token, Role>): TokenStorage = inMemory(pairs.toMap())
+fun TokenStorage.Companion.inMemory(vararg pairs: Pair<Token, Role>): TokenStorage = inMemory(pairs.toMap())

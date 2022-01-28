@@ -16,4 +16,6 @@ interface SolutionRepository :
     UpdateByName<SolutionId, Solution.Data, Solution> {
     @Throws(NotFoundException::class)
     suspend fun findByNameAndVersion(name: SolutionId, version: IncrementalVersion): Solution
+
+    companion object
 }

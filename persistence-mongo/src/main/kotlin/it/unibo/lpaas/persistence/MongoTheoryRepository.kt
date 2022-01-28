@@ -50,16 +50,11 @@ class MongoTheoryRepository(
         create(name, data, incrementalVersionFactory())
 
     override suspend fun updateByName(name: TheoryId, data: Theory.Data): Theory =
-        theoryCollection.run {
-            val theory = findByName(name)
-            create(name, data, theory.version.next())
-        }
+        create(name, data, findByName(name).version.next())
 
     override suspend fun deleteByName(name: TheoryId): Theory =
-        theoryCollection.run {
-            val latestTheory = findByName(name)
-            deleteMany(Theory::name eq name)
-            latestTheory
+        findByName(name).also {
+            theoryCollection.deleteMany(Theory::name eq name)
         }
 
     override suspend fun deleteByNameAndVersion(name: TheoryId, version: IncrementalVersion): Theory =

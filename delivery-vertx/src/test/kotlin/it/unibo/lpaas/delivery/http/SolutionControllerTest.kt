@@ -1,4 +1,4 @@
-package it.unibo.lpaas.delivery.auth
+package it.unibo.lpaas.delivery.http
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainExactly
@@ -17,13 +17,9 @@ import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.core.timer.Timer
 import it.unibo.lpaas.core.timer.TimerRepository
 import it.unibo.lpaas.delivery.Pokemon
-import it.unibo.lpaas.delivery.http.Controller
-import it.unibo.lpaas.delivery.http.SolutionDependencies
-import it.unibo.lpaas.delivery.http.TimerDependencies
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
-import it.unibo.lpaas.delivery.http.get
 import it.unibo.lpaas.delivery.http.handler.SolutionController
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion

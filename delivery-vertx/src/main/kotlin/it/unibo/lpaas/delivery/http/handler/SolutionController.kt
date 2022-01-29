@@ -67,6 +67,20 @@ interface SolutionController : Controller {
                         authOptions.authorizationProvider
                     )
                 ) {
+
+                    post("/")
+                        .produces(serializerCollection.availableTypes)
+                        .authenticationHandler()
+                        .authorizationHandler(SolutionUseCases.Tags.createSolution)
+                        .handler(BodyHandler.create())
+                        .dataHandler(HTTPStatusCode.CREATED) { ctx ->
+                            val every = ctx.queryParam("every")
+                                .map(Duration::parse)
+                                .getOrNull(0)
+                            val (name, data) = decodeJson(ctx.body, CreateSolutionDTO::class.java)
+                            solutionUseCases.createSolution(name, data, every)
+                        }
+
                     get("/:name")
                         .produces(serializerCollection.availableTypes)
                         .authenticationHandler()
@@ -135,16 +149,6 @@ interface SolutionController : Controller {
                                     fail.printStackTrace()
                                     ctx.fail(HTTPStatusCode.BAD_REQUEST.code)
                                 }
-                        }
-
-                    post("/")
-                        .produces(serializerCollection.availableTypes)
-                        .authenticationHandler()
-                        .authorizationHandler(SolutionUseCases.Tags.createSolution)
-                        .handler(BodyHandler.create())
-                        .dataHandler(HTTPStatusCode.CREATED) { ctx ->
-                            val (name, data, every) = decodeJson(ctx.body, CreateSolutionDTO::class.java)
-                            solutionUseCases.createSolution(name, data, every)
                         }
 
                     delete("/:name")

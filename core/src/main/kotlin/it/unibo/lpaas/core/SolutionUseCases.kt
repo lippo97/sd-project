@@ -52,11 +52,11 @@ class SolutionUseCases<TimerID>(
         val deleteByName = Tag("deleteByName")
     }
 
-    suspend fun createSolution(name: SolutionId?, data: Solution.Data, every: Long? = null): Solution {
+    suspend fun createSolution(name: SolutionId?, data: Solution.Data, every: Duration? = null): Solution {
         val refinedName = name ?: uuidGenerator.generateRandom()
         val solution = _createSolution(refinedName, data)
         every?.let {
-            val timerId = timer.setInterval(it) {
+            val timerId = timer.setInterval(it.inWholeMilliseconds) {
                 updateSolution(refinedName, data)
             }
             timerRepository.create(refinedName, timerId)

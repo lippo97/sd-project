@@ -7,5 +7,4 @@ import it.unibo.lpaas.domain.SolutionId
 data class CreateSolutionDTO(
     val name: SolutionId? = null,
     val data: Solution.Data,
-    val every: Long?,
 )

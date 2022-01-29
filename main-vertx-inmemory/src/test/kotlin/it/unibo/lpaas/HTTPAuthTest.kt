@@ -10,25 +10,33 @@ import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.core.GoalUseCases
 import it.unibo.lpaas.core.persistence.GoalRepository
+import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
+import it.unibo.lpaas.core.timer.Timer
+import it.unibo.lpaas.core.timer.TimerRepository
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.DependencyGraph
 import it.unibo.lpaas.delivery.http.GoalDependencies
+import it.unibo.lpaas.delivery.http.SolutionDependencies
 import it.unibo.lpaas.delivery.http.TheoryDependencies
+import it.unibo.lpaas.delivery.http.TimerDependencies
 import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerFactory
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
 import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
+import it.unibo.lpaas.delivery.timer.vertx
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
+import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.inMemory
+import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
 
 @Tags("HTTP")
 class HTTPAuthTest : FunSpec({
@@ -42,6 +50,7 @@ class HTTPAuthTest : FunSpec({
         .applyOnJacksonAndSerializers(serializerCollection)
 
     val vertx = Vertx.vertx()
+    val timer = Timer.vertx(vertx)
     val port = 8082
     val client = VertxHttpClient.make(vertx, "localhost", port)
     val goalBaseUrl = Controller.API_VERSION + Controller.GOAL_BASEURL
@@ -52,6 +61,10 @@ class HTTPAuthTest : FunSpec({
     ): Controller = Controller.make(
         DependencyGraph(
             vertx = vertx,
+            timerDependencies = TimerDependencies(
+                timer = timer,
+                timerRepository = TimerRepository.inMemory(),
+            ),
             serializerCollection = serializerCollection,
             authOptions = Controller.AuthOptions(
                 authenticationHandler = authenticationHandler,
@@ -67,6 +80,12 @@ class HTTPAuthTest : FunSpec({
                 functorParser = { Functor(it) },
                 incrementalVersionParser = { IncrementalVersion.of(Integer.parseInt(it))!! },
             ),
+            solutionDependencies = SolutionDependencies(
+                solutionRepository = SolutionRepository.inMemory { IncrementalVersion.zero },
+                solutionIdParser = SolutionId::of,
+                solutionIdGenerator = StringId::uuid,
+                solverFactory = ClassicSolverFactory,
+            )
         ),
     )
 

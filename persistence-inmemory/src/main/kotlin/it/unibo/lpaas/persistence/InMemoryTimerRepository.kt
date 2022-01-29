@@ -13,5 +13,5 @@ class InMemoryTimerRepository<TimerID : Any>(
     )
 )
 
-fun <TimerID : Any> TimerRepository.Companion.inMemory(memory: Map<SolutionId, TimerID>) =
+fun <TimerID : Any> TimerRepository.Companion.inMemory(memory: Map<SolutionId, TimerID> = mapOf()) =
     InMemoryTimerRepository(memory)

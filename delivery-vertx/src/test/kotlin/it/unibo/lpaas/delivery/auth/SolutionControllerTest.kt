@@ -18,6 +18,8 @@ import it.unibo.lpaas.core.timer.Timer
 import it.unibo.lpaas.core.timer.TimerRepository
 import it.unibo.lpaas.delivery.Pokemon
 import it.unibo.lpaas.delivery.http.Controller
+import it.unibo.lpaas.delivery.http.SolutionDependencies
+import it.unibo.lpaas.delivery.http.TimerDependencies
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
@@ -55,21 +57,25 @@ class SolutionControllerTest : DescribeSpec({
     }
         .applyOnJacksonAndSerializers(serializerCollection)
     val solutionController = SolutionController.make(
-        vertx,
-        goalRepository,
-        theoryRepository,
-        solutionRepository,
-        timerRepository,
-        SolutionId::of,
-        { IncrementalVersion.of(Integer.parseInt(it))!! },
-        timer,
-        { SolutionId.of(UUID.randomUUID().toString()) },
-        Controller.AuthOptions(
+        vertx = vertx,
+        solutionDependencies = SolutionDependencies(
+            solutionRepository = solutionRepository,
+            solutionIdParser = SolutionId::of,
+            solutionIdGenerator = { SolutionId.of(UUID.randomUUID().toString()) },
+            solverFactory = ClassicSolverFactory,
+        ),
+        timerDependencies = TimerDependencies(
+            timer = timer,
+            timerRepository = timerRepository,
+        ),
+        goalRepository = goalRepository,
+        theoryRepository = theoryRepository,
+        incrementalVersionParser = { IncrementalVersion.of(Integer.parseInt(it))!! },
+        authOptions = Controller.AuthOptions(
             authenticationHandler = AuthenticationHandlerTestFactory.alwaysGrantAndMockGroups(Role.CLIENT),
             authorizationProvider = AuthorizationProvider.alwaysGrant(),
         ),
-        serializerCollection,
-        ClassicSolverFactory,
+        serializers = serializerCollection,
     )
 
     describe("Websocket tests") {

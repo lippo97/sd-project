@@ -23,7 +23,7 @@ interface TheoryController : Controller {
         fun make(
             vertx: Vertx,
             theoryDependencies: TheoryDependencies,
-            serializerCollection: SerializerCollection<BufferSerializer>,
+            serializers: SerializerCollection<BufferSerializer>,
             authOptions: Controller.AuthOptions,
         ): TheoryController = object : TheoryController {
             val theoryRepository = theoryDependencies.theoryRepository
@@ -36,13 +36,13 @@ interface TheoryController : Controller {
             override fun routes(): Router = Router.router(vertx).apply {
                 with(
                     HandlerDSL(
-                        serializerCollection,
+                        serializers,
                         authOptions.authenticationHandler,
                         authOptions.authorizationProvider
                     )
                 ) {
                     get("/")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.getAllTheoriesIndex)
                         .dataHandler {
@@ -50,7 +50,7 @@ interface TheoryController : Controller {
                         }
 
                     post("/")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.createTheory)
                         .handler(BodyHandler.create())
@@ -60,7 +60,7 @@ interface TheoryController : Controller {
                         }
 
                     get("/:name")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.getTheoryByName)
                         .dataHandler { ctx ->
@@ -69,7 +69,7 @@ interface TheoryController : Controller {
                         }
 
                     put("/:name")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.updateTheory)
                         .handler(BodyHandler.create())
@@ -88,7 +88,7 @@ interface TheoryController : Controller {
                         }
 
                     post("/:name/facts")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.addFactToTheory)
                         .handler(BodyHandler.create())
@@ -102,7 +102,7 @@ interface TheoryController : Controller {
                         }
 
                     put("/:name/facts")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.updateFactInTheory)
                         .handler(BodyHandler.create())
@@ -115,7 +115,7 @@ interface TheoryController : Controller {
                         }
 
                     get("/:name/facts/:functor")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.getFactsInTheory)
                         .dataHandler { ctx ->
@@ -125,7 +125,7 @@ interface TheoryController : Controller {
                         }
 
                     get("/:name/history/:versionOrTimestamp")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.getTheoryByVersion)
                         .dataHandler { ctx ->
@@ -144,7 +144,7 @@ interface TheoryController : Controller {
                         }
 
                     get("/:name/history/:versionOrTimestamp/facts/:functor")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.getFactsInTheoryByNameAndVersion)
                         .dataHandler { ctx ->

@@ -7,6 +7,7 @@ import io.vertx.ext.web.handler.HttpException
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.core.exception.NonFatalError
 import it.unibo.lpaas.delivery.http.handler.GoalController
+import it.unibo.lpaas.delivery.http.handler.SolutionController
 import it.unibo.lpaas.delivery.http.handler.TheoryController
 import it.unibo.lpaas.delivery.http.handler.handleNonFatal
 
@@ -26,9 +27,19 @@ fun interface Controller {
 
         const val THEORY_BASEURL = "/theories"
 
+        const val SOLUTION_BASEURL = "/solutions"
+
         @JvmStatic
-        fun make(dependencyGraph: DependencyGraph): Controller = Controller {
-            val (vertx, mimeMap, goalDependencies, theoryDependencies, authOptions) = dependencyGraph
+        fun <TimerID> make(dependencyGraph: DependencyGraph<TimerID>): Controller = Controller {
+            val (
+                vertx,
+                timerDependencies,
+                serializers,
+                goalDependencies,
+                theoryDependencies,
+                solutionDependencies,
+                authOptions
+            ) = dependencyGraph
 
             Router.router(vertx).apply {
                 mountSubRouter(
@@ -37,7 +48,7 @@ fun interface Controller {
                         vertx = vertx,
                         goalDependencies = goalDependencies,
                         authOptions = authOptions,
-                        serializerCollection = mimeMap,
+                        serializers = serializers,
                     ).routes()
                 )
                 mountSubRouter(
@@ -46,7 +57,21 @@ fun interface Controller {
                         vertx = vertx,
                         theoryDependencies = theoryDependencies,
                         authOptions = authOptions,
-                        serializerCollection = mimeMap
+                        serializers = serializers
+                    ).routes()
+                )
+
+                mountSubRouter(
+                    SOLUTION_BASEURL,
+                    SolutionController.make(
+                        vertx = vertx,
+                        solutionDependencies = solutionDependencies,
+                        timerDependencies = timerDependencies,
+                        goalRepository = goalDependencies.goalRepository,
+                        theoryRepository = theoryDependencies.theoryRepository,
+                        incrementalVersionParser = theoryDependencies.incrementalVersionParser,
+                        authOptions = authOptions,
+                        serializers = serializers,
                     ).routes()
                 )
 

@@ -2,7 +2,7 @@ package it.unibo.lpaas.persistence
 
 import it.unibo.lpaas.core.exception.DuplicateIdentifierException
 import it.unibo.lpaas.core.exception.NotFoundException
-import it.unibo.lpaas.core.persistence.Repository
+import it.unibo.lpaas.core.persistence.repository.Repository
 
 class BaseMemoryRepository<Id, Value, Resource>(
     private var memory: Map<Id, Value>,

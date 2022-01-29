@@ -23,24 +23,24 @@ interface GoalController : Controller {
             vertx: Vertx,
             goalDependencies: GoalDependencies,
             authOptions: Controller.AuthOptions,
-            serializerCollection: SerializerCollection<BufferSerializer>,
+            serializers: SerializerCollection<BufferSerializer>,
         ): GoalController = object : GoalController {
 
             val goalRepository = goalDependencies.goalRepository
             val goalIdParser = goalDependencies.goalIdParser
-            val goalUseCases: GoalUseCases = GoalUseCases(goalRepository)
+            val goalUseCases = GoalUseCases(goalRepository)
 
             @Suppress("LongMethod")
             override fun routes(): Router = Router.router(vertx).apply {
                 with(
                     HandlerDSL(
-                        serializerCollection,
+                        serializers,
                         authOptions.authenticationHandler,
                         authOptions.authorizationProvider
                     )
                 ) {
                     get("/")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.getAllGoalsIndex)
                         .dataHandler {
@@ -49,7 +49,7 @@ interface GoalController : Controller {
                         }
 
                     post("/")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.createGoal)
                         .handler(BodyHandler.create())
@@ -59,7 +59,7 @@ interface GoalController : Controller {
                         }
 
                     get("/:name")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.getGoalByName)
                         .dataHandler { ctx ->
@@ -68,7 +68,7 @@ interface GoalController : Controller {
                         }
 
                     put("/:name")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.replaceGoal)
                         .handler(BodyHandler.create())
@@ -87,7 +87,7 @@ interface GoalController : Controller {
                         }
 
                     patch("/:name")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.appendSubgoal)
                         .handler(BodyHandler.create())
@@ -98,7 +98,7 @@ interface GoalController : Controller {
                         }
 
                     get("/:name/:index")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.getSubgoalByIndex)
                         .dataHandler { ctx ->
@@ -108,7 +108,7 @@ interface GoalController : Controller {
                         }
 
                     put("/:name/:index")
-                        .produces(serializerCollection.availableTypes)
+                        .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.replaceSubgoal)
                         .handler(BodyHandler.create())

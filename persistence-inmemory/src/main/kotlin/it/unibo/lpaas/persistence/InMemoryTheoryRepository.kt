@@ -61,3 +61,9 @@ class InMemoryTheoryRepository(
         }
     }
 }
+
+fun TheoryRepository.Companion.inMemory(
+    memory: Map<TheoryId, NonEmptyList<Theory>> = mapOf(),
+    incrementalVersionFactory: () -> IncrementalVersion,
+): TheoryRepository =
+    InMemoryTheoryRepository(memory, incrementalVersionFactory)

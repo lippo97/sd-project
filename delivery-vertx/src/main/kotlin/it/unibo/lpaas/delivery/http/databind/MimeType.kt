@@ -8,5 +8,7 @@ enum class MimeType(val value: String) {
     companion object {
         @Throws(IllegalArgumentException::class)
         fun parse(input: String): MimeType = values().first { it.value == input }
+
+        fun safeParse(input: String): MimeType? = runCatching { parse(input) }.getOrNull()
     }
 }

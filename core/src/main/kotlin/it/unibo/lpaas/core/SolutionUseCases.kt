@@ -124,7 +124,7 @@ class SolutionUseCases<TimerID>(
     }
 
     suspend fun deleteSolution(name: SolutionId): Solution {
-        timerRepository.safeFindByName(name)?.let {
+        timerRepository.safeDeleteByName(name)?.let {
             timer.clear(it)
         }
         return solutionRepository.deleteByName(name)

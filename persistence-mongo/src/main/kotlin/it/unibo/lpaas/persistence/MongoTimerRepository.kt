@@ -20,4 +20,8 @@ class MongoTimerRepository<TimerID : Any> (
     override suspend fun findByName(name: SolutionId): TimerID =
         timerCollection.findOne(TimerRecord<TimerID>::name eq name)?.timerId
             ?: throw NotFoundException(name, "Timer")
+
+    override suspend fun deleteByName(name: SolutionId): TimerID =
+        timerCollection.findOneAndDelete(TimerRecord<TimerID>::name eq name)?.timerId
+            ?: throw NotFoundException(name, "Timer")
 }

@@ -56,11 +56,10 @@ class MongoTimerRepositoryTest : FunSpec({
         }
     }
 
-    context("When a timer is already present") {
-        val solutionId = SolutionId.of("mySolution")
-        val timerID = repository.create(solutionId, UUID.randomUUID())
-
+    context("When a timer record is already present") {
         test("it should return the specified timerID") {
+            val solutionId = SolutionId.of("mySolution")
+            val timerID = repository.create(solutionId, UUID.randomUUID())
             repository.findByName(solutionId) shouldBe timerID
             val solutionId2 = SolutionId.of("mySolution2")
             val timerID2 = repository.create(solutionId2, UUID.randomUUID())
@@ -70,6 +69,27 @@ class MongoTimerRepositoryTest : FunSpec({
         test("it should throw on fake solutionId") {
             shouldThrow<NotFoundException> {
                 repository.findByName(SolutionId.of("fakeSolutionId"))
+            }
+        }
+    }
+
+    context("When a timer record is deleted") {
+        test("it should return the deleted timerID") {
+            val solutionId = SolutionId.of("mySolution")
+            val timerID = repository.create(solutionId, UUID.randomUUID())
+            repository.deleteByName(solutionId) shouldBe timerID
+            shouldThrow<NotFoundException> {
+                repository.findByName(solutionId)
+            }
+        }
+        test("it should throw on fake solutionId") {
+            shouldThrow<NotFoundException> {
+                repository.deleteByName(SolutionId.of("fakeSolutionId"))
+            }
+        }
+        test("it should not throw on safe delete") {
+            shouldNotThrow<NotFoundException> {
+                repository.safeDeleteByName(SolutionId.of("fakeSolutionId"))
             }
         }
     }

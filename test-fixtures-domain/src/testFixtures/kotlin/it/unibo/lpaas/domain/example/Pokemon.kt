@@ -1,4 +1,4 @@
-package it.unibo.lpaas.core
+package it.unibo.lpaas.domain.example
 
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId

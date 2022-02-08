@@ -24,8 +24,6 @@ import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerFactory
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
-import it.unibo.lpaas.delivery.http.databind.SerializerCollection
-import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
 import it.unibo.lpaas.delivery.timer.vertx
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
@@ -35,6 +33,8 @@ import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
+import it.unibo.lpaas.http.databind.SerializerCollection
+import it.unibo.lpaas.http.databind.SerializerConfiguration
 import it.unibo.lpaas.persistence.inMemory
 import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
 

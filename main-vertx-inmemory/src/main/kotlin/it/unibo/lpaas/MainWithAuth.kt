@@ -18,8 +18,6 @@ import it.unibo.lpaas.delivery.http.TimerDependencies
 import it.unibo.lpaas.delivery.http.auth.InMemoryTokenStorage
 import it.unibo.lpaas.delivery.http.auth.JWTAuthFactory
 import it.unibo.lpaas.delivery.http.bindApi
-import it.unibo.lpaas.delivery.http.databind.SerializerCollection
-import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
 import it.unibo.lpaas.delivery.http.handler.AuthController
 import it.unibo.lpaas.delivery.timer.vertx
 import it.unibo.lpaas.domain.Functor
@@ -30,6 +28,8 @@ import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
+import it.unibo.lpaas.http.databind.SerializerCollection
+import it.unibo.lpaas.http.databind.SerializerConfiguration
 import it.unibo.lpaas.persistence.inMemory
 import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
 

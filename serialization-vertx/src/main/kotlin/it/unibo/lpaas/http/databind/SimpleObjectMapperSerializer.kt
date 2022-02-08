@@ -1,4 +1,4 @@
-package it.unibo.lpaas.delivery.http.databind
+package it.unibo.lpaas.http.databind
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import it.unibo.lpaas.domain.databind.Serializer

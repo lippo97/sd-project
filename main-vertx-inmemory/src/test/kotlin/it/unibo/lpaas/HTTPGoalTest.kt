@@ -27,14 +27,6 @@ import it.unibo.lpaas.delivery.http.TimerDependencies
 import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
-import it.unibo.lpaas.delivery.http.databind.MimeType
-import it.unibo.lpaas.delivery.http.databind.SerializerCollection
-import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
-import it.unibo.lpaas.delivery.http.delete
-import it.unibo.lpaas.delivery.http.get
-import it.unibo.lpaas.delivery.http.patch
-import it.unibo.lpaas.delivery.http.post
-import it.unibo.lpaas.delivery.http.put
 import it.unibo.lpaas.delivery.http.tap
 import it.unibo.lpaas.delivery.timer.vertx
 import it.unibo.lpaas.domain.Functor
@@ -47,6 +39,9 @@ import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
+import it.unibo.lpaas.http.databind.MimeType
+import it.unibo.lpaas.http.databind.SerializerCollection
+import it.unibo.lpaas.http.databind.SerializerConfiguration
 import it.unibo.lpaas.persistence.inMemory
 import it.unibo.tuprolog.core.Struct
 import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
@@ -137,7 +132,9 @@ class HTTPGoalTest : FunSpec({
             client.post(goalBaseUrl) {
                 obj(
                     "name" to "myGoal",
-                    "subgoals" to array(obj("value" to exampleGoal))
+                    "data" to obj(
+                        "subgoals" to array(obj("value" to exampleGoal))
+                    )
                 )
             }
                 .map { it.statusCode() }
@@ -148,7 +145,9 @@ class HTTPGoalTest : FunSpec({
             client.post(goalBaseUrl) {
                 obj(
                     "name" to "myGoal",
-                    "subgoals" to array(obj("value" to "someWrong("))
+                    "data" to obj(
+                        "subgoals" to array(obj("value" to "someWrong("))
+                    )
                 )
             }
                 .map { it.statusCode() }
@@ -187,7 +186,9 @@ class HTTPGoalTest : FunSpec({
         test("it should return the updated record") {
             client.put("$goalBaseUrl/default") {
                 obj(
-                    "subgoals" to array(obj("value" to anotherExampleGoal))
+                    "data" to obj(
+                        "subgoals" to array(obj("value" to anotherExampleGoal))
+                    )
                 )
             }
                 .tap {

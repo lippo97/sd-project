@@ -1,4 +1,4 @@
-package it.unibo.lpaas.delivery.http.databind
+package it.unibo.lpaas.http.databind
 
 enum class MimeType(val value: String) {
     JSON("application/json"),

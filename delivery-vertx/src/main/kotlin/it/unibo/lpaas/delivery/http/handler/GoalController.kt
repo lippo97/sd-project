@@ -7,13 +7,12 @@ import it.unibo.lpaas.core.GoalUseCases
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
-import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.handler.dsl.HandlerDSL
 import it.unibo.lpaas.delivery.http.handler.dto.CreateGoalDTO
 import it.unibo.lpaas.delivery.http.handler.dto.ReplaceGoalDTO
-import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.Subgoal
+import it.unibo.lpaas.http.databind.BufferSerializer
+import it.unibo.lpaas.http.databind.SerializerCollection
 
 interface GoalController : Controller {
 
@@ -54,8 +53,8 @@ interface GoalController : Controller {
                         .authorizationHandler(GoalUseCases.Tags.createGoal)
                         .handler(BodyHandler.create())
                         .dataHandler(HTTPStatusCode.CREATED) { ctx ->
-                            val (name, subgoals) = decodeJson(ctx.body, CreateGoalDTO::class.java)
-                            goalUseCases.createGoal(name, Goal.Data(subgoals))
+                            val (name, data) = decodeJson(ctx.body, CreateGoalDTO::class.java)
+                            goalUseCases.createGoal(name, data)
                         }
 
                     get("/:name")
@@ -74,8 +73,8 @@ interface GoalController : Controller {
                         .handler(BodyHandler.create())
                         .dataHandler { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
-                            val (subgoals) = decodeJson(ctx.body, ReplaceGoalDTO::class.java)
-                            goalUseCases.replaceGoal(name, Goal.Data(subgoals))
+                            val (data) = decodeJson(ctx.body, ReplaceGoalDTO::class.java)
+                            goalUseCases.replaceGoal(name, data)
                         }
 
                     delete("/:name")

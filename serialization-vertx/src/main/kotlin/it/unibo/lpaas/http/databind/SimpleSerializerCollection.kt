@@ -1,4 +1,4 @@
-package it.unibo.lpaas.delivery.http.databind
+package it.unibo.lpaas.http.databind
 
 class SimpleSerializerCollection<out T : BufferSerializer>(
     private val serializers: Map<MimeType, T>,

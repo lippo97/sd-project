@@ -1,4 +1,4 @@
-package it.unibo.lpaas.delivery.http.databind
+package it.unibo.lpaas.http.databind
 
 interface SerializerCollection<out T : BufferSerializer> {
 

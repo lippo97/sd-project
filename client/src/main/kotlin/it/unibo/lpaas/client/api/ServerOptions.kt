@@ -1,4 +1,4 @@
-package it.unibo.lpaas.client.mio
+package it.unibo.lpaas.client.api
 
 data class ServerOptions(
     val hostname: String,

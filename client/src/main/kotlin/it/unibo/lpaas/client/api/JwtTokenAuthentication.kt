@@ -6,7 +6,6 @@ import io.vertx.core.http.HttpClient
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.RequestOptions
 import it.unibo.lpaas.client.api.exception.UnauthorizedException
-import it.unibo.lpaas.client.mio.ServerOptions
 
 interface JwtTokenAuthentication {
     fun getValidToken(): Future<JwtToken>

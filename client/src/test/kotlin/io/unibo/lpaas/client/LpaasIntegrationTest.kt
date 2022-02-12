@@ -19,7 +19,7 @@ import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.client.api.JwtTokenAuthentication
 import it.unibo.lpaas.client.api.Lpaas
 import it.unibo.lpaas.client.api.exception.UnauthorizedException
-import it.unibo.lpaas.client.mio.ServerOptions
+import it.unibo.lpaas.client.api.ServerOptions
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository

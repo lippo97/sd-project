@@ -4,7 +4,6 @@ import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpClient
 import io.vertx.core.streams.ReadStream
-import it.unibo.lpaas.client.mio.ServerOptions
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.Result

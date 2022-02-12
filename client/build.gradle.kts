@@ -7,12 +7,10 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":serialization-vertx"))
     implementation("it.unibo.tuprolog", "solve", "0.20.4")
-
-    implementation("io.vertx:vertx-core:4.2.1")
-    implementation("io.vertx:vertx-lang-kotlin:4.2.1")
     implementation("it.unibo.tuprolog", "parser-core", "0.20.4")
     implementation("it.unibo.tuprolog", "parser-theory", "0.20.4")
-
+    implementation("io.vertx:vertx-core:4.2.1")
+    implementation("io.vertx:vertx-lang-kotlin:4.2.1")
 
     testImplementation(project(":delivery-vertx"))
     testImplementation(project(":core"))

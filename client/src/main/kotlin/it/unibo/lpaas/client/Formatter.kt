@@ -1,4 +1,4 @@
-package it.unibo.lpaas.client.mio
+package it.unibo.lpaas.client
 
 import it.unibo.lpaas.domain.Result
 import it.unibo.tuprolog.core.parsing.ParseException

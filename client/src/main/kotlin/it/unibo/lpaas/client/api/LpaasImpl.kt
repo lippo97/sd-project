@@ -11,7 +11,6 @@ import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.RequestOptions
 import io.vertx.core.json.Json
 import io.vertx.core.streams.ReadStream
-import it.unibo.lpaas.client.mio.ServerOptions
 import it.unibo.lpaas.client.streams.BoundedStream
 import it.unibo.lpaas.client.streams.map
 import it.unibo.lpaas.domain.Goal

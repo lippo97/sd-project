@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import it.unibo.lpaas.domain.Result
 import it.unibo.lpaas.domain.Variable
 import it.unibo.tuprolog.core.Struct
+import it.unibo.tuprolog.core.Term
 
 class ResultDeserializer : JsonDeserializer<Result>() {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Result {
@@ -19,9 +20,9 @@ class ResultDeserializer : JsonDeserializer<Result>() {
         val solvedQuery = node.get("solvedQuery")
             ?.traverse(p.codec)
             ?.readValueAs(Struct::class.java)
-        val variables: Map<Variable, Struct>? = node.findValue("variables")
+        val variables: Map<Variable, Term>? = node.findValue("variables")
             ?.traverse(p.codec)
-            ?.readValueAs(object : TypeReference<Map<Variable, Struct>>() {})
+            ?.readValueAs(object : TypeReference<Map<Variable, Term>>() {})
 
         val exception = node.findValue("exception")
             ?.traverse(p.codec)

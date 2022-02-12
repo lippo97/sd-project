@@ -1,12 +1,11 @@
 package it.unibo.lpaas.client
 
-import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
 import io.vertx.core.json.jackson.DatabindCodec
 import it.unibo.lpaas.client.api.Lpaas
-import it.unibo.lpaas.client.repl.LpaasRepl
 import it.unibo.lpaas.client.api.ServerOptions
+import it.unibo.lpaas.client.repl.LpaasRepl
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.SolutionId

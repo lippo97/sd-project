@@ -14,6 +14,7 @@ import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 
 interface Lpaas {
+
     fun createTheory(name: TheoryId, data: Theory.Data): Future<Theory>
 
     fun createGoal(name: GoalId, data: Goal.Data): Future<Goal>

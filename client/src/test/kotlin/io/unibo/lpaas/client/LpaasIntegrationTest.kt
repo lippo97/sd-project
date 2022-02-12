@@ -130,7 +130,7 @@ class LpaasIntegrationTest : FunSpec({
                 Router.router(vertx).apply {
                     bindApi(1, controller)
                     mountSubRouter(
-                        "/v1",
+                        "/",
                         AuthController.make(vertx, jwtProvider, tokenStorage).routes()
                     )
                 }

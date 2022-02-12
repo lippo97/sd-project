@@ -1,5 +1,6 @@
 plugins {
     id("kotlin-common-convention")
+    id("application")
 }
 
 dependencies {
@@ -9,6 +10,9 @@ dependencies {
 
     implementation("io.vertx:vertx-core:4.2.1")
     implementation("io.vertx:vertx-lang-kotlin:4.2.1")
+    implementation("it.unibo.tuprolog", "parser-core", "0.20.4")
+    implementation("it.unibo.tuprolog", "parser-theory", "0.20.4")
+
 
     testImplementation(project(":delivery-vertx"))
     testImplementation(project(":core"))
@@ -20,4 +24,8 @@ dependencies {
     testImplementation("io.vertx:vertx-lang-kotlin:4.2.1")
     testImplementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.1")
     testImplementation("it.unibo.tuprolog", "solve-classic", "0.20.4")
+}
+
+application {
+    mainClass.set("it.unibo.lpaas.client.MainKt")
 }

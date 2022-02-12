@@ -29,7 +29,7 @@ interface JwtTokenAuthentication {
                         host = serverOptions.hostname
                         port = serverOptions.port
                         method = HttpMethod.POST
-                        uri = "${serverOptions.baseUrl}/login"
+                        uri = "/login"
                     }
                 )
                     .flatMap { it.send(token) }

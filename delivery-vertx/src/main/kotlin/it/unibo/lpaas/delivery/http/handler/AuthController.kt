@@ -1,7 +1,6 @@
 package it.unibo.lpaas.delivery.http.handler
 
 import io.vertx.core.Vertx
-import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.jwt.JWTAuth
 import io.vertx.ext.web.Router
@@ -11,7 +10,6 @@ import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.auth.Token
 import it.unibo.lpaas.delivery.http.auth.TokenStorage
 import it.unibo.lpaas.delivery.http.auth.UnauthorizedException
-import it.unibo.lpaas.delivery.http.databind.MimeType
 import it.unibo.lpaas.delivery.http.setStatusCode
 
 interface AuthController : Controller {
@@ -22,24 +20,26 @@ interface AuthController : Controller {
                 override fun routes(): Router = Router.router(vertx).apply {
                     post("/login")
                         .handler(BodyHandler.create())
-                        .respond { ctx ->
+                        .handler { ctx ->
                             val token = Token(ctx.bodyAsString)
-                            ctx.response().headers()[HttpHeaders.CONTENT_TYPE] = MimeType.JSON.value
                             tokenStorage.getRole(token).map {
                                 jwtProvider.generateToken(
                                     JsonObject().put("groups", listOf(it.value))
                                 )
                             }
-                        }
-                        .failureHandler { ctx ->
-                            val throwable = ctx.failure()
-                            if (throwable is UnauthorizedException) {
-                                ctx.response()
-                                    .setStatusCode(HTTPStatusCode.UNAUTHORIZED)
-                                    .end()
-                            } else {
-                                ctx.next()
-                            }
+                                .onSuccess {
+                                    ctx.response()
+                                        .end(it)
+                                }
+                                .onFailure { failure ->
+                                    if (failure is UnauthorizedException) {
+                                        ctx.response()
+                                            .setStatusCode(HTTPStatusCode.UNAUTHORIZED)
+                                            .end()
+                                    } else {
+                                        ctx.next()
+                                    }
+                                }
                         }
                 }
             }

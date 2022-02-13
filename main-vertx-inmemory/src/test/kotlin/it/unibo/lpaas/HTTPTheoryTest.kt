@@ -30,8 +30,6 @@ import it.unibo.lpaas.delivery.http.TimerDependencies
 import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
 import it.unibo.lpaas.delivery.http.bindAPIVersion
-import it.unibo.lpaas.delivery.http.databind.SerializerCollection
-import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
 import it.unibo.lpaas.delivery.http.tap
 import it.unibo.lpaas.delivery.timer.vertx
 import it.unibo.lpaas.domain.Functor
@@ -42,6 +40,8 @@ import it.unibo.lpaas.domain.Theory
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
+import it.unibo.lpaas.http.databind.SerializerCollection
+import it.unibo.lpaas.http.databind.SerializerConfiguration
 import it.unibo.lpaas.persistence.inMemory
 import it.unibo.tuprolog.core.Clause
 import it.unibo.tuprolog.core.Struct
@@ -149,7 +149,9 @@ class HTTPTheoryTest : FunSpec({
             client.post(theoryBaseUrl) {
                 obj(
                     "name" to "myTheory",
-                    "value" to exampleTheory,
+                    "data" to obj(
+                        "value" to exampleTheory,
+                    )
                 )
             }
                 .map { it.statusCode() shouldBeExactly 201 }
@@ -159,7 +161,9 @@ class HTTPTheoryTest : FunSpec({
             client.post(theoryBaseUrl) {
                 obj(
                     "name" to "myTheory",
-                    "value" to "someWrong(.",
+                    "data" to obj(
+                        "value" to "someWrong(.",
+                    ),
                 )
             }
                 .map { it.statusCode() shouldBeExactly 400 }
@@ -195,9 +199,12 @@ class HTTPTheoryTest : FunSpec({
         test("it should return the updated record") {
             client.put("$theoryBaseUrl/default") {
                 obj(
-                    "value" to """
-                    another(valid, theory).
-                    """.trimIndent()
+                    "data" to obj(
+
+                        "value" to """
+                        another(valid, theory).
+                        """.trimIndent()
+                    ),
                 )
             }
                 .tap { it.statusCode() shouldBeExactly 200 }
@@ -330,11 +337,13 @@ class HTTPTheoryTest : FunSpec({
             test("it should add the fact at the beginning of the theory") {
                 client.put("$theoryBaseUrl/default") {
                     obj(
-                        "value" to """
-                    super(mario).
-                    super(luigi).
-                    not(super(peach)).
-                        """.trimIndent()
+                        "data" to obj(
+                            "value" to """
+                                super(mario).
+                                super(luigi).
+                                not(super(peach)).
+                            """.trimIndent()
+                        )
                     )
                 }
                     .map { it.statusCode() shouldBeExactly 200 }
@@ -363,11 +372,14 @@ class HTTPTheoryTest : FunSpec({
             test("it should add the fact at the end of the theory") {
                 client.put("$theoryBaseUrl/default") {
                     obj(
-                        "value" to """
-                    super(mario).
-                    super(luigi).
-                    not(super(peach)).
-                        """.trimIndent()
+                        "data" to obj(
+                            "value" to """
+                                super(mario).
+                                super(luigi).
+                                not(super(peach)).
+                            """.trimIndent()
+                        )
+
                     )
                 }
                     .map { it.statusCode() shouldBeExactly 200 }
@@ -401,7 +413,9 @@ class HTTPTheoryTest : FunSpec({
         client.post(theoryBaseUrl) {
             obj(
                 "name" to theoryName,
-                "value" to exampleTheory,
+                "data" to obj(
+                    "value" to exampleTheory,
+                ),
             )
         }.await()
         test("it should return the selected theory") {
@@ -418,9 +432,11 @@ class HTTPTheoryTest : FunSpec({
 
             client.put("$theoryBaseUrl/$theoryName") {
                 obj(
-                    "value" to """
-                    another(valid, theory).
-                    """.trimIndent()
+                    "data" to obj(
+                        "value" to """
+                        another(valid, theory).
+                        """.trimIndent()
+                    )
                 )
             }
                 .await()
@@ -495,13 +511,17 @@ class HTTPTheoryTest : FunSpec({
         client.post(theoryBaseUrl) {
             obj(
                 "name" to theoryName,
-                "value" to exampleTheory,
+                "data" to obj(
+                    "value" to exampleTheory,
+                )
             )
         }.await()
 
         client.put("$theoryBaseUrl/$theoryName") {
             obj(
-                "value" to exampleTheory2
+                "data" to obj(
+                    "value" to exampleTheory2
+                )
             )
         }.await()
 

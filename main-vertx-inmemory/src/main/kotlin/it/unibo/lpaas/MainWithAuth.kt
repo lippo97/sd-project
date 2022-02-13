@@ -18,8 +18,6 @@ import it.unibo.lpaas.delivery.http.TimerDependencies
 import it.unibo.lpaas.delivery.http.auth.InMemoryTokenStorage
 import it.unibo.lpaas.delivery.http.auth.JWTAuthFactory
 import it.unibo.lpaas.delivery.http.bindApi
-import it.unibo.lpaas.delivery.http.databind.SerializerCollection
-import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
 import it.unibo.lpaas.delivery.http.handler.AuthController
 import it.unibo.lpaas.delivery.timer.vertx
 import it.unibo.lpaas.domain.Functor
@@ -27,9 +25,10 @@ import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.TheoryId
-import it.unibo.lpaas.domain.Version
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
+import it.unibo.lpaas.http.databind.SerializerCollection
+import it.unibo.lpaas.http.databind.SerializerConfiguration
 import it.unibo.lpaas.persistence.inMemory
 import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
 
@@ -41,8 +40,10 @@ class MainWithAuth private constructor() {
             val serializerCollection = SerializerCollection.default()
 
             SerializerConfiguration.defaultWithModule {
-                addAbstractTypeMapping(Version::class.java, IntegerIncrementalVersion::class.java)
+                addAbstractTypeMapping(IncrementalVersion::class.java, IntegerIncrementalVersion::class.java)
                 addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
+                addAbstractTypeMapping(TheoryId::class.java, StringId::class.java)
+                addAbstractTypeMapping(SolutionId::class.java, StringId::class.java)
             }
                 .applyOnJacksonAndSerializers(serializerCollection)
 
@@ -67,7 +68,7 @@ class MainWithAuth private constructor() {
                         goalIdParser = GoalId::of,
                     ),
                     theoryDependencies = TheoryDependencies(
-                        theoryRepository = TheoryRepository.inMemory { IncrementalVersion.zero },
+                        theoryRepository = TheoryRepository.inMemory() { IncrementalVersion.zero },
                         theoryIdParser = TheoryId::of,
                         functorParser = { Functor(it) },
                         incrementalVersionParser = { IncrementalVersion.of(Integer.parseInt(it))!! },

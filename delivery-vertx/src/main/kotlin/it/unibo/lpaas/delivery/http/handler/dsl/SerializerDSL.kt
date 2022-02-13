@@ -4,12 +4,12 @@ import io.vertx.core.http.HttpHeaders
 import io.vertx.ext.web.Route
 import io.vertx.ext.web.RoutingContext
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
-import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-import it.unibo.lpaas.delivery.http.databind.MimeType
-import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.exception.UnsupportedMediaTypeException
 import it.unibo.lpaas.delivery.http.handler.suspendHandler
 import it.unibo.lpaas.delivery.http.setStatusCode
+import it.unibo.lpaas.http.databind.BufferSerializer
+import it.unibo.lpaas.http.databind.MimeType
+import it.unibo.lpaas.http.databind.SerializerCollection
 
 interface SerializerDSL {
 

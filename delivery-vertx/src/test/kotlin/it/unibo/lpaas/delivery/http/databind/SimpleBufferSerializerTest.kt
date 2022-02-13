@@ -8,6 +8,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.vertx.core.buffer.Buffer
 import it.unibo.lpaas.domain.databind.Serializer
+import it.unibo.lpaas.http.databind.ObjectMapperSerializer
 import java.io.StringWriter
 
 internal class SimpleBufferSerializerTest : FunSpec({

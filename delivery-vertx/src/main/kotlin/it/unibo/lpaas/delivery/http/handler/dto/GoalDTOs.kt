@@ -1,8 +1,8 @@
 package it.unibo.lpaas.delivery.http.handler.dto
 
+import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
-import it.unibo.lpaas.domain.Subgoal
 
-data class CreateGoalDTO(val name: GoalId, val subgoals: List<Subgoal>)
+data class CreateGoalDTO(val name: GoalId, val data: Goal.Data)
 
-data class ReplaceGoalDTO(val subgoals: List<Subgoal>)
+data class ReplaceGoalDTO(val data: Goal.Data)

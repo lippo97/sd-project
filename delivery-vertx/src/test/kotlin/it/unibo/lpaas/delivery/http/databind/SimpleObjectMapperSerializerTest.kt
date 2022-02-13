@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import it.unibo.lpaas.http.databind.ObjectMapperSerializer
 
 internal class SimpleObjectMapperSerializerTest : FunSpec({
 

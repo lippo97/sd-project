@@ -3,7 +3,6 @@ package it.unibo.lpaas.domain
 import it.unibo.tuprolog.core.Struct
 import it.unibo.tuprolog.core.Term
 import it.unibo.tuprolog.solve.Solution
-import it.unibo.tuprolog.solve.exception.ResolutionException
 
 sealed interface Result {
 
@@ -21,8 +20,12 @@ sealed interface Result {
 
     data class Halt(
         override val query: Struct,
-        val exception: ResolutionException
+        val exception: Error
     ) : Result
+
+    data class Error(
+        val body: String?
+    )
 
     companion object {
         fun of(result: Solution): Result =
@@ -35,7 +38,7 @@ sealed interface Result {
                 is Solution.No -> Result.No(result.query)
                 is Solution.Halt -> Result.Halt(
                     result.query,
-                    result.exception
+                    Error(result.exception.message)
                 )
             }
     }

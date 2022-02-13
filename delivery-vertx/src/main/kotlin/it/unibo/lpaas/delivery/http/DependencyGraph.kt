@@ -8,13 +8,13 @@ import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.core.timer.Timer
 import it.unibo.lpaas.core.timer.TimerRepository
 import it.unibo.lpaas.delivery.StringParser
-import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
 import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.TheoryId
+import it.unibo.lpaas.http.databind.BufferSerializer
+import it.unibo.lpaas.http.databind.SerializerCollection
 import it.unibo.tuprolog.solve.SolverFactory
 
 data class GoalDependencies(

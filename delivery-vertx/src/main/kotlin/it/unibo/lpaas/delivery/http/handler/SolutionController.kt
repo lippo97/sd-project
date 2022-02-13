@@ -14,14 +14,13 @@ import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.SolutionDependencies
 import it.unibo.lpaas.delivery.http.TimerDependencies
-import it.unibo.lpaas.delivery.http.databind.BufferSerializer
-import it.unibo.lpaas.delivery.http.databind.MimeType
-import it.unibo.lpaas.delivery.http.databind.SerializerCollection
 import it.unibo.lpaas.delivery.http.handler.dsl.HandlerDSL
 import it.unibo.lpaas.delivery.http.handler.dto.CreateSolutionDTO
 import it.unibo.lpaas.domain.IncrementalVersion
-import it.unibo.lpaas.domain.Result
 import it.unibo.lpaas.domain.SolutionId
+import it.unibo.lpaas.http.databind.BufferSerializer
+import it.unibo.lpaas.http.databind.MimeType
+import it.unibo.lpaas.http.databind.SerializerCollection
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlin.jvm.JvmStatic
@@ -149,7 +148,8 @@ interface SolutionController : Controller {
                 ): (ServerWebSocket) -> Unit = { ws ->
                     GlobalScope.launch(vertx.dispatcher()) {
                         val solutions = solutionUseCases.getResults(
-                            name, solverFactory,
+                            name,
+                            solverFactory,
                             GetResultsOptions(
                                 skip,
                                 limit,
@@ -162,10 +162,9 @@ interface SolutionController : Controller {
                             val next = if (solutions.hasNext()) solutions.next() else null
                             if (next != null) {
                                 ws.write(serializer.serializeToBuffer(next))
-                            }
-                            if (next == null || next is Result.No || next is Result.Halt) {
-                                ws.close()
-                                    .onSuccess { println("Connection closed") }
+                            } else {
+                                ws.write(serializer.serializeToBuffer(next))
+                                    .onSuccess { ws.close() }
                             }
                         }
                     }

@@ -16,10 +16,7 @@ import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.core.timer.Timer
 import it.unibo.lpaas.core.timer.TimerRepository
-import it.unibo.lpaas.delivery.Pokemon
 import it.unibo.lpaas.delivery.http.auth.AuthenticationHandlerTestFactory
-import it.unibo.lpaas.delivery.http.databind.SerializerCollection
-import it.unibo.lpaas.delivery.http.databind.SerializerConfiguration
 import it.unibo.lpaas.delivery.http.handler.SolutionController
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -27,8 +24,11 @@ import it.unibo.lpaas.domain.Solution
 import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Version
+import it.unibo.lpaas.domain.example.Pokemon
 import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
+import it.unibo.lpaas.http.databind.SerializerCollection
+import it.unibo.lpaas.http.databind.SerializerConfiguration
 import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
 import org.junit.jupiter.api.Tag
 import java.util.UUID

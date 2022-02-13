@@ -2,8 +2,7 @@ package it.unibo.lpaas.core
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.collections.shouldContainInOrder
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.clearMocks
@@ -23,6 +22,7 @@ import it.unibo.lpaas.domain.Solution
 import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.TheoryId
 import it.unibo.lpaas.domain.Variable
+import it.unibo.lpaas.domain.example.Pokemon
 import it.unibo.tuprolog.solve.Solver
 import org.junit.jupiter.api.assertThrows
 
@@ -145,16 +145,16 @@ class SolutionUseCaseTest : FunSpec({
             val results = solutionUseCases.getResults(solutionId, Solver.prolog)
             results
                 .toList()
-                .dropLast(1)
-                .map { it as Result.Yes }
                 .map {
-                    Pair(
-                        it.variables[Variable("Pokemon")]?.asAtom().toString(),
-                        it.variables[Variable("Move")]?.asAtom().toString(),
-                    )
+                    if (it is Result.Yes)
+                        Pair(
+                            it.variables[Variable("Pokemon")]?.asAtom().toString(),
+                            it.variables[Variable("Move")]?.asAtom().toString(),
+                        )
+                    else it
                 }
-                .toList()
-                .shouldContainExactly(
+                .map { println(it); it }
+                .shouldContainAll(
                     "charmander" to "scratch",
                     "charmander" to "growl",
                     "charmander" to "ember",
@@ -171,14 +171,14 @@ class SolutionUseCaseTest : FunSpec({
             val results = solutionUseCases.getResults(solutionId, Solver.prolog)
             results
                 .toList()
-                .dropLast(1)
-                .map { it as Result.Yes }
-                .map { it.variables[Variable("Pokemon")]?.asAtom().toString() }
-                .toList()
-                .shouldContainInOrder(
+                .map {
+                    if (it is Result.Yes) it.variables[Variable("Pokemon")]?.asAtom().toString()
+                    else it
+                }
+                .shouldContainAll(
                     "charmeleon",
                     "wartortle",
-                    "ivysaur"
+                    "ivysaur",
                 )
         }
     }

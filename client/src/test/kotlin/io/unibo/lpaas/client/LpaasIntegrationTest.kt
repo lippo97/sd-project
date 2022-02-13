@@ -1,6 +1,7 @@
 package io.unibo.lpaas.client
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -68,6 +69,7 @@ suspend fun doAsync(fn: (done: () -> Unit) -> Unit) {
     isComplete.future().await()
 }
 
+@Tags("HTTP")
 class LpaasIntegrationTest : FunSpec({
     val vertx = Vertx.vertx()
 

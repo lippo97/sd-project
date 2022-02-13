@@ -81,16 +81,17 @@ class LpaasRepl private constructor (
             parseExceptionFormatter: Formatter<ParseException> = Formatter.parseException,
             sessionId: String = UUID.randomUUID().toString()
         ): Future<LpaasRepl> =
-            Future.succeededFuture(
-                LpaasRepl(
-                    vertx,
-                    lpaas,
-                    theoryId,
-                    resultFormatter,
-                    parseExceptionFormatter,
-                    sessionId
-                )
-            )
+            lpaas.findTheoryByName(theoryId)
+                .map {
+                    LpaasRepl(
+                        vertx,
+                        lpaas,
+                        theoryId,
+                        resultFormatter,
+                        parseExceptionFormatter,
+                        sessionId
+                    )
+                }
 
         @Suppress("LongParameterList")
         fun fromTheory(

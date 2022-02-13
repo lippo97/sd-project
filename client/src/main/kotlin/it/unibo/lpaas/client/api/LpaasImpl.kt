@@ -30,6 +30,10 @@ class LpaasImpl(
 ) : Lpaas,
     JwtTokenAuthentication by JwtTokenAuthentication.usingToken(client, serverOptions, authenticationToken) {
 
+    override fun findTheoryByName(name: TheoryId): Future<Theory> =
+        sendRequest(null, "/theories/${name.show()}", HttpMethod.GET)
+            .map { Json.decodeValue(it, Theory::class.java) }
+
     override fun createTheory(name: TheoryId, data: Theory.Data): Future<Theory> =
         sendRequest(CreateTheoryDTO(name, data), "/theories", HttpMethod.POST)
             .map { Json.decodeValue(it, Theory::class.java) }
@@ -62,7 +66,7 @@ class LpaasImpl(
     }
 
     @Suppress("MagicNumber")
-    private fun sendRequest(dto: Any, path: String, httpMethod: HttpMethod): Future<Buffer> =
+    private fun sendRequest(dto: Any?, path: String, httpMethod: HttpMethod): Future<Buffer> =
         getValidToken()
             .flatMap { jwtToken ->
                 client.request(
@@ -76,7 +80,7 @@ class LpaasImpl(
                     }
                 )
             }
-            .flatMap { it.send(Json.encodeToBuffer(dto)) }
+            .flatMap { if (dto != null) it.send(Json.encodeToBuffer(dto)) else it.send() }
             .flatMap { res ->
                 if (res.statusCode() == HttpResponseStatus.UNAUTHORIZED.code()) {
                     invalidateToken()

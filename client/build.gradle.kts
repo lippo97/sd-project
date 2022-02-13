@@ -11,7 +11,9 @@ dependencies {
     implementation("it.unibo.tuprolog", "parser-theory", "0.20.4")
     implementation("io.vertx:vertx-core:4.2.1")
     implementation("io.vertx:vertx-lang-kotlin:4.2.1")
+    implementation("com.github.ajalt.clikt:clikt:3.4.0")
 
+    testImplementation(project(":utils"))
     testImplementation(project(":delivery-vertx"))
     testImplementation(project(":core"))
     testImplementation(project(":authorization"))
@@ -25,5 +27,5 @@ dependencies {
 }
 
 application {
-    mainClass.set("it.unibo.lpaas.client.MainKt")
+    mainClass.set("it.unibo.lpaas.client.application.ApplicationKt")
 }

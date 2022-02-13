@@ -31,14 +31,19 @@ interface JwtTokenAuthentication {
                         uri = "/login"
                     }
                 )
-                    .flatMap { it.send(token) }
-                    .flatMap {
-                        if (it.statusCode() == HttpResponseStatus.UNAUTHORIZED.code()) {
-                            throw UnauthorizedException()
-                        } else if (it.statusCode() != HttpResponseStatus.OK.code()) {
-                            throw RuntimeException("HTTP Status Code = ${it.statusCode()}")
-                        }
-                        it.body()
+                    .flatMap { req ->
+                        req.end(token)
+                        req.response()
+                    }
+                    .flatMap { res ->
+                        val body =
+                            if (res.statusCode() == HttpResponseStatus.UNAUTHORIZED.code()) {
+                                Future.failedFuture(UnauthorizedException())
+                            } else if (res.statusCode() != HttpResponseStatus.OK.code()) {
+                                Future.failedFuture(RuntimeException("HTTP Status Code = ${res.statusCode()}"))
+                            } else
+                                res.body()
+                        body.onFailure { res.end() }
                     }
                     .map { JwtToken(it.toString()) }
 

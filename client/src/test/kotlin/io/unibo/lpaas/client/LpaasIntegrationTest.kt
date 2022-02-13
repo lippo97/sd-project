@@ -20,6 +20,7 @@ import it.unibo.lpaas.client.api.JwtTokenAuthentication
 import it.unibo.lpaas.client.api.Lpaas
 import it.unibo.lpaas.client.api.ServerOptions
 import it.unibo.lpaas.client.api.exception.UnauthorizedException
+import it.unibo.lpaas.collections.nonEmptyListOf
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
@@ -58,6 +59,7 @@ import it.unibo.tuprolog.core.Struct
 import it.unibo.tuprolog.core.Var
 import it.unibo.tuprolog.solve.Solver
 import it.unibo.tuprolog.theory.Theory
+import it.unibo.lpaas.domain.Theory as MyTheory
 import it.unibo.lpaas.domain.Theory.Data as TheoryData
 
 suspend fun doAsync(fn: (done: () -> Unit) -> Unit) {
@@ -99,7 +101,17 @@ class LpaasIntegrationTest : FunSpec({
                 goalIdParser = GoalId::of,
             ),
             theoryDependencies = TheoryDependencies(
-                theoryRepository = TheoryRepository.inMemory { IncrementalVersion.zero },
+                theoryRepository = TheoryRepository.inMemory(
+                    mapOf(
+                        TheoryId.of("initialTheory") to nonEmptyListOf(
+                            MyTheory(
+                                TheoryId.of("initialTheory"),
+                                TheoryData(Theory.empty()),
+                                IncrementalVersion.zero
+                            )
+                        )
+                    ),
+                ) { IncrementalVersion.zero },
                 theoryIdParser = TheoryId::of,
                 functorParser = { Functor(it) },
                 incrementalVersionParser = { IncrementalVersion.of(Integer.parseInt(it))!! },
@@ -160,6 +172,20 @@ class LpaasIntegrationTest : FunSpec({
                             "abce"
                         )
                         .getValidToken()
+                        .await()
+                }
+            }
+        }
+
+        context("findTheoryByName") {
+            test("it should find a theory") {
+                lpaas.findTheoryByName(TheoryId.of("initialTheory"))
+                    .map { it.name shouldBe TheoryId.of("initialTheory") }
+                    .await()
+            }
+            test("it shouldn't find a theory") {
+                shouldThrow<RuntimeException> {
+                    lpaas.findTheoryByName(TheoryId.of("nonExistingOne"))
                         .await()
                 }
             }

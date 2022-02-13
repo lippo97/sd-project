@@ -1,3 +1,5 @@
 package it.unibo.lpaas.client.api.exception
 
-class UnauthorizedException : Throwable()
+import io.netty.handler.codec.http.HttpResponseStatus
+
+class UnauthorizedException : HTTPException(HttpResponseStatus.UNAUTHORIZED.code())

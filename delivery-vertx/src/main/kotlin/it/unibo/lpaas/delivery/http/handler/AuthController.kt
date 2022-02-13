@@ -36,8 +36,9 @@ interface AuthController : Controller {
                                         ctx.response()
                                             .setStatusCode(HTTPStatusCode.UNAUTHORIZED)
                                             .end()
+                                    } else {
+                                        ctx.next()
                                     }
-                                    ctx.next()
                                 }
                         }
                 }

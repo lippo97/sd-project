@@ -68,7 +68,7 @@ class MainWithAuth private constructor() {
                         goalIdParser = GoalId::of,
                     ),
                     theoryDependencies = TheoryDependencies(
-                        theoryRepository = TheoryRepository.inMemory { IncrementalVersion.zero },
+                        theoryRepository = TheoryRepository.inMemory() { IncrementalVersion.zero },
                         theoryIdParser = TheoryId::of,
                         functorParser = { Functor(it) },
                         incrementalVersionParser = { IncrementalVersion.of(Integer.parseInt(it))!! },

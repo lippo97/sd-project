@@ -3,6 +3,7 @@ package it.unibo.lpaas.client.api
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.Future
 import io.vertx.core.MultiMap
+import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpClient
@@ -10,12 +11,9 @@ import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.RequestOptions
 import io.vertx.core.json.Json
-import io.vertx.core.streams.ReadStream
-import it.unibo.lpaas.client.streams.BoundedStream
 import it.unibo.lpaas.client.streams.map
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
-import it.unibo.lpaas.domain.Result
 import it.unibo.lpaas.domain.Solution
 import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.Theory
@@ -46,23 +44,27 @@ class LpaasImpl(
         sendRequest(CreateSolutionDTO(name, data), "/solutions", HttpMethod.POST)
             .map { Json.decodeValue(it, Solution::class.java) }
 
-    override fun getResults(name: SolutionId): Pair<ReadStream<Result>, () -> Future<Void>> {
-        val results = BoundedStream<Result>(vertx)
+    override fun getResults(name: SolutionId): Future<ResultStream> {
+        val streamPromise = Promise.promise<ResultStream>()
 
-        val ws = client.webSocket(
+        client.webSocket(
             serverOptions.port,
             serverOptions.hostname,
             "${serverOptions.baseUrl}/solutions/${name.show()}/results"
-        ).map { ws ->
-            ws
-                .map { Json.decodeValue(it, Result::class.java) }
-                .pipeTo(results)
-            ws
-        }
+        )
+            .map { ws ->
+                ws.textMessageHandler {
+                    if (it == "ready") {
+                        vertx.executeBlocking<Unit> {
+                            streamPromise.complete(ResultStream.of(ws))
+                            it.complete()
+                        }
+                    }
+                }
+            }
+            .onFailure { it.printStackTrace() }
 
-        val getNext = { ws.flatMap { it.write(Buffer.buffer("get")) } }
-
-        return Pair(results, getNext)
+        return streamPromise.future()
     }
 
     @Suppress("MagicNumber")
@@ -86,7 +88,7 @@ class LpaasImpl(
                     invalidateToken()
                     sendRequest(dto, path, httpMethod)
                 } else if (res.statusCode() >= 300 || res.statusCode() < 200) {
-                    throw RuntimeException("HTTP status code = ${res.statusCode()}")
+                    throw RuntimeException("HTTP status code = ${res.statusCode()} ${res.statusMessage()}")
                 } else res.body()
             }
 

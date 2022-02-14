@@ -289,20 +289,22 @@ class LpaasIntegrationTest : FunSpec({
                     )
                 )
                     .await()
+                val results = lpaas.getResults(SolutionId.of("failSolution"))
+                    .await()
                 doAsync { done ->
-                    val (results, getNext) = lpaas.getResults(SolutionId.of("failSolution"))
                     results.handler {
                         it.shouldBeInstanceOf<Result.No>()
                         done()
                     }
                         .exceptionHandler { it.printStackTrace() }
-                    getNext()
+                    results.next()
                 }
             }
             test("it should return all the results") {
+                val results = lpaas.getResults(SolutionId.of("exampleSolution"))
+                    .await()
                 doAsync { done ->
                     val resultList = mutableListOf<Result>()
-                    val (results, getNext) = lpaas.getResults(SolutionId.of("exampleSolution"))
                     results.handler {
                         if (it != null) {
                             resultList.add(it)
@@ -312,10 +314,9 @@ class LpaasIntegrationTest : FunSpec({
                             done()
                         }
                     }
-                    getNext()
-                    getNext()
-                    getNext()
-                    getNext()
+                    repeat(4) {
+                        results.next()
+                    }
                 }
             }
         }

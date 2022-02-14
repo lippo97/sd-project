@@ -167,6 +167,7 @@ interface SolutionController : Controller {
                                     .onSuccess { ws.close() }
                             }
                         }
+                        ws.writeTextMessage("ready")
                     }
                 }
             }

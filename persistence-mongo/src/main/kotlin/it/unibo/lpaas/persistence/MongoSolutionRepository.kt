@@ -37,3 +37,8 @@ class MongoSolutionRepository(
     private suspend fun create(name: SolutionId, data: Solution.Data, version: IncrementalVersion): Solution =
         Solution(name, data, version).also { solutionCollection.insertOne(it) }
 }
+
+fun SolutionRepository.Companion.mongo(
+    solutionCollection: CoroutineCollection<Solution>,
+    incrementalVersionFactory: () -> IncrementalVersion,
+): SolutionRepository = MongoSolutionRepository(solutionCollection, incrementalVersionFactory)

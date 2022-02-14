@@ -25,3 +25,8 @@ class MongoTimerRepository<TimerID : Any> (
         timerCollection.findOneAndDelete(TimerRecord<TimerID>::name eq name)?.timerId
             ?: throw NotFoundException(name, "Timer")
 }
+
+fun <TimerID : Any> TimerRepository.Companion.mongo(
+    timerCollection: CoroutineCollection<TimerRecord<TimerID>>
+): TimerRepository<TimerID> =
+    MongoTimerRepository(timerCollection)

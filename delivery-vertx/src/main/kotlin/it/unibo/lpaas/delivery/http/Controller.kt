@@ -92,13 +92,12 @@ fun interface Controller {
                 is HttpException -> ctx.response()
                     .setStatusCode(failure.statusCode)
                     .end()
-                else -> if (ctx.statusCode() != HTTPStatusCode.INTERNAL_SERVER_ERROR.code)
-                    ctx.response()
-                        .setStatusCode(ctx.statusCode())
-                        .end()
-                else {
-                    ctx.fail(failure)
-                }
+                else ->
+                    if (ctx.statusCode() != HTTPStatusCode.INTERNAL_SERVER_ERROR.code)
+                        ctx.response()
+                            .setStatusCode(ctx.statusCode())
+                            .end()
+                    else ctx.next()
             }
         }
     }

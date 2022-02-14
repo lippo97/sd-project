@@ -55,21 +55,22 @@ class LpaasRepl private constructor (
                 )
             }
             .flatMap {
-                val (stream, next) = lpaas.getResults(it.name)
-
-                ResultsHandler(stream, next)
+                lpaas.getResults(it.name)
+            }
+            .onSuccess { res ->
+                ResultsHandler(res)
                     .onResult { putStrLn(resultFormatter.format(it)) }
                     .onHasNext {
-                        readLine().flatMap { input ->
-                            if (input == ";") next()
+                        readLine().flatMap {
+                            if (it == ";") res.next()
                             else repl()
                         }
                     }
                     .onEnd { repl() }
-
-                next()
             }
+            .flatMap { it.next() }
             .onSuccess { currentRound++ }
+            .map { null }
 
     companion object {
         @Suppress("LongParameterList")

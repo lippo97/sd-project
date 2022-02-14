@@ -30,3 +30,6 @@ class MongoGoalRepository(
         goalCollection.findOneAndDelete(Goal::name eq name)
             ?: throw (NotFoundException(name, "Goal"))
 }
+
+fun GoalRepository.Companion.mongo(goalCollection: CoroutineCollection<Goal>): GoalRepository =
+    MongoGoalRepository(goalCollection)

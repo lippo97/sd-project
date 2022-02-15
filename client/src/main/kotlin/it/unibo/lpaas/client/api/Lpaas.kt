@@ -3,10 +3,8 @@ package it.unibo.lpaas.client.api
 import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpClient
-import io.vertx.core.streams.ReadStream
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
-import it.unibo.lpaas.domain.Result
 import it.unibo.lpaas.domain.Solution
 import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.Theory
@@ -22,7 +20,7 @@ interface Lpaas {
 
     fun createSolution(name: SolutionId?, data: Solution.Data): Future<Solution>
 
-    fun getResults(name: SolutionId): Pair<ReadStream<Result>, () -> Future<Void>>
+    fun getResults(name: SolutionId): Future<ResultStream>
 
     companion object {
         fun of(

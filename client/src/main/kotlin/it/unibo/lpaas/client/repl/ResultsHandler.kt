@@ -1,14 +1,12 @@
 package it.unibo.lpaas.client.repl
 
-import io.vertx.core.Future
 import io.vertx.core.Handler
-import io.vertx.core.streams.ReadStream
+import it.unibo.lpaas.client.api.ResultStream
 import it.unibo.lpaas.domain.Result
 import java.util.LinkedList
 
 class ResultsHandler(
-    private val stream: ReadStream<Result>,
-    private val next: () -> Future<Void>
+    private val stream: ResultStream,
 ) {
     private val solutions = LinkedList<Result?>()
 
@@ -23,7 +21,7 @@ class ResultsHandler(
                 if (hasNext()) onNextHandler?.handle(null)
                 else onEndHandler?.handle(null)
             } else if (hasNext()) {
-                next()
+                stream.next()
             }
         }
     }

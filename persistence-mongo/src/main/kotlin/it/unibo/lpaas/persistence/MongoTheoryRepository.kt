@@ -64,3 +64,8 @@ class MongoTheoryRepository(
     private suspend fun create(name: TheoryId, data: Theory.Data, version: IncrementalVersion): Theory =
         Theory(name, data, version).also { theoryCollection.insertOne(it) }
 }
+
+fun TheoryRepository.Companion.mongo(
+    theoryCollection: CoroutineCollection<Theory>,
+    incrementalVersionFactory: () -> IncrementalVersion,
+): TheoryRepository = MongoTheoryRepository(theoryCollection, incrementalVersionFactory)

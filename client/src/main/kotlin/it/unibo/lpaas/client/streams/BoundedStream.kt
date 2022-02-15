@@ -13,7 +13,6 @@ import io.vertx.core.streams.impl.InboundBuffer
 class BoundedStream<T>(
     vertx: Vertx,
 ) : ReadStream<T>, WriteStream<T> {
-
     private var isClosed: Boolean = false
     private var maxWrites: Int = 10
     private var endHandler: Handler<Void>? = null

@@ -35,7 +35,7 @@ import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
 fun main(args: Array<String>) {
     val vertx = Vertx.vertx()
     val timer = Timer.vertx(vertx)
-    val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, Environment.getString("LPAAS_JWT_SECRET"))
+    val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, Environment.Secrets.JWT_SECRET)
 
     val controller = Controller.make(
         DependencyGraph(
@@ -83,7 +83,7 @@ fun main(args: Array<String>) {
                 )
             }
         )
-        .listen(8080).onComplete {
+        .listen(Environment.Web.PORT ?: 8080).onComplete {
             println("Running...")
         }
 }

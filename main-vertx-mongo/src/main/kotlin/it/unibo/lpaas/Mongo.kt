@@ -3,7 +3,6 @@ package it.unibo.lpaas
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
-import com.mongodb.MongoCredential
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -26,17 +25,10 @@ import org.litote.kmongo.util.KMongoConfiguration
 
 object Mongo {
     private val mongoClientSettings = MongoClientSettings.builder().apply {
-        credential(
-            MongoCredential.createCredential(
-                Environment.getString("LPAAS_MONGO_USERNAME"),
-                Environment.getString("LPAAS_MONGO_USER_DATABASE"),
-                Environment.getString("LPAAS_MONGO_PASSWORD").toCharArray()
-            ),
-        )
-        applyConnectionString(ConnectionString(Environment.getString("LPAAS_MONGO_CONNECTION_STRING")))
+        applyConnectionString(ConnectionString(Environment.Mongo.CONNECTION_STRING))
     }.build()
     private val client = KMongo.createClient(mongoClientSettings).coroutine
-    private val database = client.getDatabase(Environment.getString("LPAAS_MONGO_DATABASE"))
+    private val database = client.getDatabase(Environment.Mongo.APPLICATION_DATABASE)
 
     init {
         KMongoConfiguration.registerBsonModule(

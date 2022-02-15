@@ -104,6 +104,8 @@ interface SolutionController : Controller {
                             }
 
                         get("/:name/results")
+                            .authenticationHandler()
+                            .authorizationHandler(SolutionUseCases.Tags.getResults)
                             .handler { ctx ->
                                 val name = solutionIdParser.parse(ctx.pathParam("name"))
                                 val skip = ctx.queryParam("skip")

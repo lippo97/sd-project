@@ -10,6 +10,7 @@ import io.vertx.core.http.HttpClient
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.RequestOptions
+import io.vertx.core.http.WebSocketConnectOptions
 import io.vertx.core.json.Json
 import it.unibo.lpaas.client.streams.map
 import it.unibo.lpaas.domain.Goal
@@ -47,11 +48,18 @@ class LpaasImpl(
     override fun getResults(name: SolutionId): Future<ResultStream> {
         val streamPromise = Promise.promise<ResultStream>()
 
-        client.webSocket(
-            serverOptions.port,
-            serverOptions.hostname,
-            "${serverOptions.baseUrl}/solutions/${name.show()}/results"
-        )
+        getValidToken()
+            .flatMap { jwtToken ->
+                client.webSocket(
+                    WebSocketConnectOptions().apply {
+                        port = serverOptions.port
+                        host = serverOptions.hostname
+                        uri = "${serverOptions.baseUrl}/solutions/${name.show()}/results"
+                        headers = MultiMap.caseInsensitiveMultiMap()
+                            .add(HttpHeaders.AUTHORIZATION, jwtToken.bearer())
+                    }
+                )
+            }
             .map { ws ->
                 ws.textMessageHandler {
                     if (it == "ready") {

@@ -23,6 +23,9 @@ dependencies {
     implementation("org.litote.kmongo:kmongo-coroutine:4.4.0")
 }
 
+distributions {
+}
+
 application {
     mainClass.set("it.unibo.lpaas.MainKt")
 }

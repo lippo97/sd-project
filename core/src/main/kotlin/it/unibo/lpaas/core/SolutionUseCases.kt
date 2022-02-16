@@ -1,6 +1,5 @@
 package it.unibo.lpaas.core
 
-import it.unibo.lpaas.collections.onCompletion
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
@@ -13,6 +12,9 @@ import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.domain.Theory
 import it.unibo.tuprolog.core.Tuple
 import it.unibo.tuprolog.solve.SolverFactory
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -91,7 +93,6 @@ class SolutionUseCases<TimerID>(
         val (theoryId, theoryVersion) = data.theoryOptions
         val (_, goalId) = data
         val (skip, limit, within) = options
-
         val theory =
             if (theoryVersion != null)
                 theoryRepository.findByNameAndVersion(theoryId, theoryVersion)
@@ -106,21 +107,26 @@ class SolutionUseCases<TimerID>(
         val timeout = minOf(within ?: SOLUTION_MAX_TIMEOUT, SOLUTION_MAX_TIMEOUT)
             .toLong(DurationUnit.MILLISECONDS)
 
-        val solver = solverFactory.solverOf(theory2p)
+        val solver = solverFactory.solverOf(theory2p) // TODO solverOf(s, d)
         val prevKb = solver.dynamicKb
         return solver
             .solve(composedGoal, timeout = timeout)
             .map(Result::of)
-            .iterator()
-            .onCompletion(coroutineContext) {
+            .andThen(coroutineContext) {
                 if (solver.dynamicKb != prevKb) {
                     TheoryUseCases(theoryRepository)
-                        .updateTheory(theoryId, Theory.Data(solver.dynamicKb))
+                        .updateTheory(theoryId, Theory.Data(solver.dynamicKb.toImmutableTheory()))
                 }
             }
-            .asSequence()
             .drop(skip ?: SOLUTION_DEFAULT_SKIP)
             .take(limit ?: SOLUTION_DEFAULT_LIMIT)
+    }
+
+    private fun <T> Sequence<T>.andThen(context: CoroutineContext, action: suspend () -> Unit): Sequence<T> {
+        return sequence {
+            yieldAll(this@andThen)
+            GlobalScope.launch(context) { action() }
+        }
     }
 
     suspend fun deleteSolution(name: SolutionId): Solution {

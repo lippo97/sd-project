@@ -43,7 +43,7 @@ internal fun <T> decodeJson(buffer: Buffer, clazz: Class<T>): T =
  * would be duplicated otherwise.
  */
 internal fun Route.suspendHandler(fn: suspend (RoutingContext) -> Unit): Route =
-    handler { ctx ->
+    blockingHandler { ctx ->
         // Since apparently exceptions thrown inside this handler aren't
         // propagated to the vertx error handler automatically, we had to do it
         // manually.

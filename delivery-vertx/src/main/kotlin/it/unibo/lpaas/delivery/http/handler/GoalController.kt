@@ -35,7 +35,8 @@ interface GoalController : Controller {
                     HandlerDSL(
                         serializers,
                         authOptions.authenticationHandler,
-                        authOptions.authorizationProvider
+                        authOptions.authorizationProvider,
+                        BodyHandler.create(),
                     )
                 ) {
                     get("/")
@@ -51,7 +52,7 @@ interface GoalController : Controller {
                         .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.createGoal)
-                        .handler(BodyHandler.create())
+                        .bodyHandler()
                         .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                             val (name, data) = decodeJson(ctx.body, CreateGoalDTO::class.java)
                             goalUseCases.createGoal(name, data)
@@ -70,7 +71,7 @@ interface GoalController : Controller {
                         .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.replaceGoal)
-                        .handler(BodyHandler.create())
+                        .bodyHandler()
                         .dataHandler { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
                             val (data) = decodeJson(ctx.body, ReplaceGoalDTO::class.java)
@@ -89,7 +90,7 @@ interface GoalController : Controller {
                         .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.appendSubgoal)
-                        .handler(BodyHandler.create())
+                        .bodyHandler()
                         .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
                             val subgoal = decodeJson(ctx.body, Subgoal::class.java)
@@ -110,7 +111,7 @@ interface GoalController : Controller {
                         .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(GoalUseCases.Tags.replaceSubgoal)
-                        .handler(BodyHandler.create())
+                        .bodyHandler()
                         .dataHandler { ctx ->
                             val name = goalIdParser.parse(ctx.pathParam("name"))
                             val index = ctx.pathParam("index").toInt()

@@ -9,7 +9,7 @@ import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.core.Tag
 
-internal interface AuthorizationDSL {
+interface AuthorizationDSL {
     val authorizationProvider: AuthorizationProvider
 
     /**

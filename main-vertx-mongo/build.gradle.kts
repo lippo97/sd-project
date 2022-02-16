@@ -15,6 +15,7 @@ dependencies {
     implementation("io.vertx:vertx-core:4.2.1")
     implementation("io.vertx:vertx-web:4.2.1")
     implementation("io.vertx:vertx-auth-jwt:4.2.1")
+    implementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.1")
 
     implementation("it.unibo.tuprolog", "solve-classic", "0.20.4")
 

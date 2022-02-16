@@ -64,7 +64,8 @@ interface SolutionController : Controller {
                         HandlerDSL(
                             serializers,
                             authOptions.authenticationHandler,
-                            authOptions.authorizationProvider
+                            authOptions.authorizationProvider,
+                            BodyHandler.create()
                         )
                     ) {
 
@@ -72,7 +73,7 @@ interface SolutionController : Controller {
                             .produces(serializers.availableTypes)
                             .authenticationHandler()
                             .authorizationHandler(SolutionUseCases.Tags.createSolution)
-                            .handler(BodyHandler.create())
+                            .bodyHandler()
                             .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                                 val every = ctx.queryParam("every")
                                     .map(Duration::parse)
@@ -131,7 +132,6 @@ interface SolutionController : Controller {
                             }
 
                         delete("/:name")
-                            .produces(serializers.availableTypes)
                             .authenticationHandler()
                             .authorizationHandler(SolutionUseCases.Tags.deleteByName)
                             .dataHandler(HTTPStatusCode.NO_CONTENT) { ctx ->

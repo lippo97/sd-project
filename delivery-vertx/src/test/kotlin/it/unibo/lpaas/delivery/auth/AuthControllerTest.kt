@@ -19,7 +19,7 @@ import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.delivery.http.auth.Token
 import it.unibo.lpaas.delivery.http.auth.TokenStorage
-import it.unibo.lpaas.delivery.http.auth.UnauthorizedException
+import it.unibo.lpaas.delivery.http.exception.UnauthorizedException
 import it.unibo.lpaas.delivery.http.handler.AuthController
 
 @Tags("HTTP")

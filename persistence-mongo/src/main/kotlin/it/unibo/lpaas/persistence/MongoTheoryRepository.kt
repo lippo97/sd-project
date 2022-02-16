@@ -1,6 +1,8 @@
 package it.unibo.lpaas.persistence
 
+import com.mongodb.MongoWriteException
 import com.mongodb.client.model.Filters
+import it.unibo.lpaas.core.exception.DuplicateIdentifierException
 import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -16,6 +18,8 @@ import org.litote.kmongo.eq
 import org.litote.kmongo.first
 import org.litote.kmongo.group
 import org.litote.kmongo.sort
+
+private const val DUP_KEY_ERR_CODE = 11000
 
 class MongoTheoryRepository(
     private val theoryCollection: CoroutineCollection<Theory>,
@@ -47,7 +51,14 @@ class MongoTheoryRepository(
             ?: throw NotFoundException(name, "Theory")
 
     override suspend fun create(name: TheoryId, data: Theory.Data): Theory =
-        create(name, data, incrementalVersionFactory())
+        kotlin.runCatching {
+            create(name, data, incrementalVersionFactory())
+        }.getOrElse {
+            throw
+            if (it is MongoWriteException && it.code == DUP_KEY_ERR_CODE)
+                DuplicateIdentifierException(name.show(), "theory")
+            else it
+        }
 
     override suspend fun updateByName(name: TheoryId, data: Theory.Data): Theory =
         create(name, data, findByName(name).version.next())

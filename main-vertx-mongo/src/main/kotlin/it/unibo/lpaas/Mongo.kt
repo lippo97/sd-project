@@ -3,6 +3,8 @@ package it.unibo.lpaas
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
+import com.mongodb.client.model.IndexOptions
+import com.mongodb.client.model.Indexes
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -18,6 +20,9 @@ import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.TimerRecord
 import it.unibo.tuprolog.core.Struct
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
@@ -48,9 +53,23 @@ object Mongo {
 
     val timerCollection: CoroutineCollection<TimerRecord<Long>> by lazy { database.getCollection("timer") }
 
-    val theoryRepository: CoroutineCollection<Theory> by lazy { database.getCollection("theory") }
+    val theoryRepository: CoroutineCollection<Theory> by lazy {
+        database.getCollection<Theory>("theory").apply {
+            GlobalScope.launch(Dispatchers.IO) {
+                createIndex(Indexes.ascending(Theory::name.name, Theory::version.name), IndexOptions().unique(true))
+            }
+        }
+    }
 
     val goalRepository: CoroutineCollection<Goal> by lazy { database.getCollection("goal") }
 
     val solutionRepository: CoroutineCollection<Solution> by lazy { database.getCollection("solution") }
+
+    val tokenCollection: CoroutineCollection<TokenDTO> by lazy {
+        database.getCollection<TokenDTO>("token").apply {
+            GlobalScope.launch(Dispatchers.IO) {
+                createIndex(Indexes.ascending(TokenDTO::token.name), IndexOptions().unique(true))
+            }
+        }
+    }
 }

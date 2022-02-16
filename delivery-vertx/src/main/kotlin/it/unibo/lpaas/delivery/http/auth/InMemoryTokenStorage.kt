@@ -3,6 +3,7 @@ package it.unibo.lpaas.delivery.http.auth
 import io.vertx.core.Future
 import io.vertx.core.Vertx
 import it.unibo.lpaas.auth.Role
+import it.unibo.lpaas.delivery.http.exception.UnauthorizedException
 import java.io.InputStream
 import java.util.Properties
 import kotlin.jvm.Throws

@@ -9,12 +9,14 @@ class EnhancedIteratorImpl<T>(
     private val iterator: Iterator<T>,
     private val coroutineContext: CoroutineContext
 ) : EnhancedIterator<T>, AbstractIterator<T>() {
-    private var completionHandlers = listOf<suspend () -> Unit>()
+    private val completionHandlers = mutableListOf<suspend () -> Unit>()
 
+    @Synchronized
     override fun onCompletion(fn: suspend () -> Unit): EnhancedIterator<T> = this.apply {
-        completionHandlers = completionHandlers + fn
+        completionHandlers.add(fn)
     }
 
+    @Synchronized
     override fun computeNext() {
         if (iterator.hasNext()) {
             setNext(iterator.next())

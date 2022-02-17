@@ -4,6 +4,8 @@ import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.JWTAuthHandler
 import it.unibo.lpaas.auth.AuthorizationProvider
+import it.unibo.lpaas.authentication.AuthController
+import it.unibo.lpaas.authentication.provider.InMemoryCredentialsProvider
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
@@ -15,10 +17,8 @@ import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.SolutionDependencies
 import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.TimerDependencies
-import it.unibo.lpaas.delivery.http.auth.InMemoryTokenStorage
 import it.unibo.lpaas.delivery.http.auth.JWTAuthFactory
 import it.unibo.lpaas.delivery.http.bindApi
-import it.unibo.lpaas.delivery.http.handler.AuthController
 import it.unibo.lpaas.delivery.timer.vertx
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.GoalId
@@ -82,20 +82,20 @@ class MainWithAuth private constructor() {
                 )
             )
 
-            InMemoryTokenStorage.fromPropertyFile(
+            InMemoryCredentialsProvider.fromJsonFile(
                 vertx,
-                this::class.java.classLoader.getResourceAsStream("tokens.properties")!!
+                this::class.java.classLoader.getResourceAsStream("credentials.json")!!
             )
                 .onFailure { it.printStackTrace() }
-                .onFailure { println("Couldn't load token properties file.") }
-                .flatMap { tokenStorage ->
+                .onFailure { println("Couldn't load credentials properties file.") }
+                .flatMap { credentialsProvider ->
                     vertx.createHttpServer()
                         .requestHandler(
                             Router.router(vertx).apply {
                                 bindApi(1, controller)
                                 mountSubRouter(
                                     "/",
-                                    AuthController.make(vertx, jwtProvider, tokenStorage).routes()
+                                    AuthController.make(vertx, jwtProvider, credentialsProvider).routes()
                                 )
                             }
                         )

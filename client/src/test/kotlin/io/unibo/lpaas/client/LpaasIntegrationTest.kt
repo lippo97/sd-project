@@ -17,6 +17,11 @@ import io.vertx.ext.web.handler.JWTAuthHandler
 import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
+import it.unibo.lpaas.authentication.AuthController
+import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.provider.CredentialsProvider
+import it.unibo.lpaas.authentication.provider.Password
+import it.unibo.lpaas.authentication.provider.Username
 import it.unibo.lpaas.client.api.JwtTokenAuthentication
 import it.unibo.lpaas.client.api.Lpaas
 import it.unibo.lpaas.client.api.ServerOptions
@@ -34,11 +39,7 @@ import it.unibo.lpaas.delivery.http.SolutionDependencies
 import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.TimerDependencies
 import it.unibo.lpaas.delivery.http.auth.JWTAuthFactory
-import it.unibo.lpaas.delivery.http.auth.Token
-import it.unibo.lpaas.delivery.http.auth.TokenStorage
-import it.unibo.lpaas.delivery.http.auth.inMemory
 import it.unibo.lpaas.delivery.http.bindApi
-import it.unibo.lpaas.delivery.http.handler.AuthController
 import it.unibo.lpaas.delivery.timer.vertx
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.Goal
@@ -127,15 +128,14 @@ class LpaasIntegrationTest : FunSpec({
         )
     )
 
-    val tokenStorage = TokenStorage.inMemory(
-        Token("abc") to Role.CONFIGURATOR
-    )
+    val sampleCredentials = Credentials(Username("abc"), Password("pass"))
+    val credentialsProvider = CredentialsProvider.inMemory(sampleCredentials to Role.CONFIGURATOR)
 
     val lpaas = Lpaas.of(
         vertx,
         httpClient,
         ServerOptions("localhost", 8090, "/v1"),
-        "abc"
+        sampleCredentials
     )
 
     beforeAny {
@@ -145,7 +145,7 @@ class LpaasIntegrationTest : FunSpec({
                     bindApi(1, controller)
                     mountSubRouter(
                         "/",
-                        AuthController.make(vertx, jwtProvider, tokenStorage).routes()
+                        AuthController.make(vertx, jwtProvider, credentialsProvider).routes()
                     )
                 }
             )
@@ -160,18 +160,18 @@ class LpaasIntegrationTest : FunSpec({
                     .usingToken(
                         httpClient,
                         ServerOptions("localhost", 8090, "/v1"),
-                        "abc"
+                        sampleCredentials
                     )
                 jwtTokenAuthentication.getValidToken()
                     .await() shouldNotBe null
             }
-            test("it should not authenticate with invalid token") {
+            test("it should not authenticate with invalid credentials") {
                 shouldThrow<UnauthorizedException> {
                     JwtTokenAuthentication
                         .usingToken(
                             httpClient,
                             ServerOptions("localhost", 8090, "/v1"),
-                            "abce"
+                            Credentials(Username("unknown"), Password("invalid"))
                         )
                         .getValidToken()
                         .await()
@@ -181,13 +181,13 @@ class LpaasIntegrationTest : FunSpec({
 
         context("findTheoryByName") {
             test("it should find a theory") {
-                lpaas.findTheoryByName(TheoryId.of("initialTheory"))
+                lpaas.getTheoryByName(TheoryId.of("initialTheory"))
                     .map { it.name shouldBe TheoryId.of("initialTheory") }
                     .await()
             }
             test("it shouldn't find a theory") {
                 shouldThrow<RuntimeException> {
-                    lpaas.findTheoryByName(TheoryId.of("nonExistingOne"))
+                    lpaas.getTheoryByName(TheoryId.of("nonExistingOne"))
                         .await()
                 }
             }

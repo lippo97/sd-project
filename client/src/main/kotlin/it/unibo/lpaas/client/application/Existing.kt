@@ -6,6 +6,9 @@ import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
+import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.provider.Password
+import it.unibo.lpaas.authentication.provider.Username
 import it.unibo.lpaas.client.api.Lpaas
 import it.unibo.lpaas.client.api.ServerOptions
 import it.unibo.lpaas.client.repl.LpaasRepl
@@ -13,8 +16,8 @@ import it.unibo.lpaas.domain.TheoryId
 import java.util.concurrent.TimeUnit
 
 class Existing : CliktCommand() {
-    val theoryId: TheoryId by argument().convert { TheoryId.of(it) }
-    val options by CommonOptions()
+    private val theoryId: TheoryId by argument().convert { TheoryId.of(it) }
+    private val options by CommonOptions()
 
     override fun run() {
         val vertxOptions = VertxOptions().setBlockedThreadCheckIntervalUnit(TimeUnit.DAYS)
@@ -28,7 +31,7 @@ class Existing : CliktCommand() {
                     vertx,
                     client,
                     ServerOptions(options.hostname, options.port, "/v1"),
-                    options.accessToken
+                    Credentials(Username(options.username), Password(options.password))
                 ),
                 theoryId
             )

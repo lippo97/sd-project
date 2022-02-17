@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":authorization"))
     implementation(project(":delivery-vertx"))
+    implementation(project(":authentication-vertx"))
     implementation(project(":persistence-mongo"))
 
     implementation("io.vertx:vertx-core:4.2.1")

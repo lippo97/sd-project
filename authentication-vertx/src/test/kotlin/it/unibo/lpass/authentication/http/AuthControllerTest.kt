@@ -1,12 +1,12 @@
-package it.unibo.lpaas.delivery.auth
+package it.unibo.lpass.authentication.http
 
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.ext.auth.PubSecKeyOptions
 import io.vertx.ext.auth.jwt.JWTAuth
@@ -17,10 +17,15 @@ import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.Role
-import it.unibo.lpaas.delivery.http.auth.Token
-import it.unibo.lpaas.delivery.http.auth.TokenStorage
-import it.unibo.lpaas.delivery.http.exception.UnauthorizedException
-import it.unibo.lpaas.delivery.http.handler.AuthController
+import it.unibo.lpaas.authentication.AuthController
+import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.provider.CredentialsProvider
+import it.unibo.lpaas.authentication.provider.Password
+import it.unibo.lpaas.authentication.provider.Username
+import it.unibo.lpaas.authentication.serialization.PasswordSerializer
+import it.unibo.lpaas.authentication.serialization.UsernameSerializer
+import it.unibo.lpaas.http.databind.SerializerCollection
+import it.unibo.lpaas.http.databind.SerializerConfiguration
 
 @Tags("HTTP")
 class AuthControllerTest : FunSpec({
@@ -38,10 +43,18 @@ class AuthControllerTest : FunSpec({
             )
     )
 
-    suspend fun withHttpServerOf(tokenStorage: TokenStorage, fn: suspend () -> Unit) {
+    val serializerCollection = SerializerCollection.default()
+
+    SerializerConfiguration.defaultWithModule {
+        addSerializer(Username::class.java, UsernameSerializer())
+        addSerializer(Password::class.java, PasswordSerializer())
+    }
+        .applyOnJacksonAndSerializers(serializerCollection)
+
+    suspend fun withHttpServerOf(credentialsProvider: CredentialsProvider, fn: suspend () -> Unit) {
         with(
             vertx.createHttpServer()
-                .requestHandler(AuthController.make(vertx, jwtProvider, tokenStorage).routes())
+                .requestHandler(AuthController.make(vertx, jwtProvider, credentialsProvider).routes())
         ) {
             listen(8080).await()
             fn()
@@ -49,19 +62,20 @@ class AuthControllerTest : FunSpec({
         }
     }
 
-    val goodStorage = object : TokenStorage {
-        override fun getRole(token: Token): Future<Role> = Future.succeededFuture(Role.CONFIGURATOR)
-    }
+    val sampleCredentials = Credentials(Username("abc"), Password("pass"))
 
-    val badStorage = object : TokenStorage {
-        override fun getRole(token: Token): Future<Role> = Future.failedFuture(UnauthorizedException())
-    }
+    val goodProvider = CredentialsProvider.inMemory(
+        sampleCredentials to Role.CONFIGURATOR
+    )
+
+    val badProvider = CredentialsProvider.inMemory()
 
     context("When a user tries to log in") {
+        println(Json.encode(sampleCredentials))
         test("it should return the token") {
-            withHttpServerOf(goodStorage) {
+            withHttpServerOf(goodProvider) {
                 client.request(HttpMethod.POST, 8080, "localhost", "/login")
-                    .flatMap { it.send("goodToken") }
+                    .flatMap { it.send(Json.encode(sampleCredentials)) }
                     .flatMap { it.body() }
                     .flatMap {
                         jwtProvider.authenticate(json { obj("token" to it.toString()) })
@@ -74,9 +88,9 @@ class AuthControllerTest : FunSpec({
             }
         }
         test("it should return unauthorized error") {
-            withHttpServerOf(badStorage) {
+            withHttpServerOf(badProvider) {
                 client.request(HttpMethod.POST, 8080, "localhost", "/login")
-                    .flatMap { it.send("fakeToken") }
+                    .flatMap { it.send(Json.encode(sampleCredentials)) }
                     .map { it.statusCode() }
                     .map {
                         it shouldBeExactly 401

@@ -5,6 +5,8 @@ import io.vertx.core.Future
 import io.vertx.core.http.HttpClient
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.RequestOptions
+import io.vertx.core.json.Json
+import it.unibo.lpaas.authentication.provider.Credentials
 import it.unibo.lpaas.client.api.exception.UnauthorizedException
 
 interface JwtTokenAuthentication {
@@ -17,7 +19,7 @@ interface JwtTokenAuthentication {
         fun usingToken(
             client: HttpClient,
             serverOptions: ServerOptions,
-            token: String
+            credentials: Credentials
         ): JwtTokenAuthentication = object : JwtTokenAuthentication {
 
             var cached: JwtToken? = null
@@ -32,7 +34,7 @@ interface JwtTokenAuthentication {
                     }
                 )
                     .flatMap { req ->
-                        req.end(token)
+                        req.end(Json.encode(credentials))
                         req.response()
                     }
                     .flatMap { res ->

@@ -65,7 +65,7 @@ fun main() {
         )
     )
 
-    val credentialsProvider = CredentialsProvider.mongo()
+    val credentialsProvider = CredentialsProvider.mongo(vertx, Mongo.userCollection)
 
     @Suppress("MagicNumber")
     vertx.createHttpServer()

@@ -2,15 +2,24 @@ db = db.getSiblingDB('lpaas')
 db.token.drop();
 db.token.insertMany([
   {
-    "token": "abc0",
+    "credentials": {
+      "username": "abc0",
+      "password": "pass"
+    },
     "role": "source"
   },
   {
-    "token": "abc1",
+    "credentials": {
+      "username": "abc1",
+      "password": "pass"
+    },
     "role": "client"
   },
   {
-    "token": "abc2",
+    "credentials": {
+      "username": "abc2",
+      "password": "pass"
+    },
     "role": "configurator"
   }
 ])

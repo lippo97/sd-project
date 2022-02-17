@@ -1,8 +1,10 @@
 package it.unibo.lpaas.authentication.provider
 
 import io.vertx.core.Future
+import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import it.unibo.lpaas.auth.Role
+import org.litote.kmongo.coroutine.CoroutineCollection
 
 @JvmInline
 value class Username(val value: String)
@@ -27,6 +29,9 @@ interface CredentialsProvider {
 
         fun inMemory(vararg pairs: Pair<Credentials, Role>): CredentialsProvider = inMemory(pairs.toMap())
 
-        fun mongo(): CredentialsProvider = TODO()
+        fun mongo(
+            vertx: Vertx,
+            collection: CoroutineCollection<UserDTO>
+        ): CredentialsProvider = MongoCredentialsProvider(vertx, collection)
     }
 }

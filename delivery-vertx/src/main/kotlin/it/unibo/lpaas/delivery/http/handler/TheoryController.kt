@@ -37,7 +37,8 @@ interface TheoryController : Controller {
                     HandlerDSL(
                         serializers,
                         authOptions.authenticationHandler,
-                        authOptions.authorizationProvider
+                        authOptions.authorizationProvider,
+                        BodyHandler.create()
                     )
                 ) {
                     get("/")
@@ -52,7 +53,7 @@ interface TheoryController : Controller {
                         .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.createTheory)
-                        .handler(BodyHandler.create())
+                        .bodyHandler()
                         .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                             val (name, data) = decodeJson(ctx.body, CreateTheoryDTO::class.java)
                             theoryUseCase.createTheory(name, data)
@@ -71,7 +72,7 @@ interface TheoryController : Controller {
                         .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.updateTheory)
-                        .handler(BodyHandler.create())
+                        .bodyHandler()
                         .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val (data) = decodeJson(ctx.body, ReplaceTheoryDTO::class.java)
@@ -90,7 +91,7 @@ interface TheoryController : Controller {
                         .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.addFactToTheory)
-                        .handler(BodyHandler.create())
+                        .bodyHandler()
                         .dataHandler(HTTPStatusCode.CREATED) { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val (fact) = decodeJson(ctx.body, FactInTheoryDTO::class.java)
@@ -104,7 +105,7 @@ interface TheoryController : Controller {
                         .produces(serializers.availableTypes)
                         .authenticationHandler()
                         .authorizationHandler(TheoryUseCases.Tags.updateFactInTheory)
-                        .handler(BodyHandler.create())
+                        .bodyHandler()
                         .dataHandler { ctx ->
                             val name = theoryIdParser.parse(ctx.pathParam("name"))
                             val (fact) = decodeJson(ctx.body, FactInTheoryDTO::class.java)

@@ -7,11 +7,17 @@ import io.vertx.core.MultiMap
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpMethod
+import io.vertx.core.json.Json
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.JWTAuthHandler
 import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
+import it.unibo.lpaas.authentication.AuthController
+import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.provider.CredentialsProvider
+import it.unibo.lpaas.authentication.provider.Password
+import it.unibo.lpaas.authentication.provider.Username
 import it.unibo.lpaas.core.GoalUseCases
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
@@ -26,11 +32,7 @@ import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.TimerDependencies
 import it.unibo.lpaas.delivery.http.VertxHttpClient
 import it.unibo.lpaas.delivery.http.auth.JWTAuthFactory
-import it.unibo.lpaas.delivery.http.auth.Token
-import it.unibo.lpaas.delivery.http.auth.TokenStorage
-import it.unibo.lpaas.delivery.http.auth.inMemory
 import it.unibo.lpaas.delivery.http.bindApi
-import it.unibo.lpaas.delivery.http.handler.AuthController
 import it.unibo.lpaas.delivery.http.tap
 import it.unibo.lpaas.delivery.timer.vertx
 import it.unibo.lpaas.domain.Functor
@@ -64,9 +66,6 @@ class AuthenticationE2E : FunSpec({
     }
         .applyOnJacksonAndSerializers(serializerCollection)
 
-    val tokenStorage = TokenStorage.inMemory(
-        Token("goodToken") to Role.CONFIGURATOR
-    )
     val timer = Timer.vertx(vertx)
     val controller = Controller.make(
         DependencyGraph(
@@ -101,12 +100,18 @@ class AuthenticationE2E : FunSpec({
         ),
     )
 
+    val sampleCredentials = Credentials(Username("abc"), Password("pass"))
+    val credentialsProvider = CredentialsProvider.inMemory(sampleCredentials to Role.CONFIGURATOR)
+
     beforeAny {
         vertx.createHttpServer()
             .requestHandler(
                 Router.router(vertx).apply {
                     bindApi(1, controller)
-                    mountSubRouter("/", AuthController.make(vertx, jwtProvider, tokenStorage).routes())
+                    mountSubRouter(
+                        "/",
+                        AuthController.make(vertx, jwtProvider, credentialsProvider).routes()
+                    )
                 }
             )
             .listen(port)
@@ -118,7 +123,7 @@ class AuthenticationE2E : FunSpec({
         test("it should return a valid token") {
             vertx.createHttpClient()
                 .request(HttpMethod.POST, port, "localhost", "/login")
-                .flatMap { it.send("goodToken") }
+                .flatMap { it.send(Json.encode(sampleCredentials)) }
                 .tap { it.statusCode() shouldBe 200 }
                 .flatMap { it.body() }
                 .map { token = it.toString() }

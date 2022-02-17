@@ -82,7 +82,7 @@ class LpaasRepl private constructor (
             parseExceptionFormatter: Formatter<ParseException> = Formatter.parseException,
             sessionId: String = UUID.randomUUID().toString()
         ): Future<LpaasRepl> =
-            lpaas.findTheoryByName(theoryId)
+            lpaas.getTheoryByName(theoryId)
                 .map {
                     LpaasRepl(
                         vertx,

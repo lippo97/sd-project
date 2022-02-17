@@ -1,0 +1,4 @@
+# exclude hidden dirs .git etc.
+.*
+# build/*
+**/build/*

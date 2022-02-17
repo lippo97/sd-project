@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation(project(":domain"))
     implementation(project(":serialization-vertx"))
+    implementation(project(":authentication-vertx"))
     implementation("it.unibo.tuprolog", "solve", "0.20.4")
     implementation("it.unibo.tuprolog", "parser-core", "0.20.4")
     implementation("it.unibo.tuprolog", "parser-theory", "0.20.4")

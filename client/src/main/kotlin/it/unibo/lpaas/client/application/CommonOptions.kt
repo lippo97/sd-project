@@ -14,6 +14,7 @@ class CommonOptions : OptionGroup() {
         .check("Must be between 1 and 65535") {
             it in 1..(65535)
         }
-    val accessToken: String by option(help = "Access token used to authenticate").required()
+    val username: String by option(help = "Username used to authenticate").required()
+    val password: String by option(help = "Password used to authenticate").required()
     val verbose: Boolean by option("-v", "--verbose").flag()
 }

@@ -3,7 +3,13 @@ package it.unibo.lpaas
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
-import com.mongodb.MongoCredential
+import com.mongodb.client.model.IndexOptions
+import com.mongodb.client.model.Indexes
+import it.unibo.lpaas.auth.Role
+import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.provider.UserDTO
+import it.unibo.lpaas.authentication.serialization.RoleDeserializer
+import it.unibo.lpaas.authentication.serialization.RoleSerializer
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -19,24 +25,22 @@ import it.unibo.lpaas.domain.impl.IntegerIncrementalVersion
 import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.persistence.TimerRecord
 import it.unibo.tuprolog.core.Struct
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.coroutine
+import org.litote.kmongo.div
 import org.litote.kmongo.reactivestreams.KMongo
 import org.litote.kmongo.util.KMongoConfiguration
+import it.unibo.tuprolog.theory.Theory as Theory2P
 
 object Mongo {
     private val mongoClientSettings = MongoClientSettings.builder().apply {
-        credential(
-            MongoCredential.createCredential(
-                Environment.getString("LPAAS_MONGO_USERNAME"),
-                Environment.getString("LPAAS_MONGO_USER_DATABASE"),
-                Environment.getString("LPAAS_MONGO_PASSWORD").toCharArray()
-            ),
-        )
-        applyConnectionString(ConnectionString(Environment.getString("LPAAS_MONGO_CONNECTION_STRING")))
+        applyConnectionString(ConnectionString(Environment.Mongo.CONNECTION_STRING))
     }.build()
     private val client = KMongo.createClient(mongoClientSettings).coroutine
-    private val database = client.getDatabase(Environment.getString("LPAAS_MONGO_DATABASE"))
+    private val database = client.getDatabase(Environment.Mongo.APPLICATION_DATABASE)
 
     init {
         KMongoConfiguration.registerBsonModule(
@@ -47,8 +51,10 @@ object Mongo {
                 addAbstractTypeMapping(IncrementalVersion::class.java, IntegerIncrementalVersion::class.java)
                 addSerializer(Struct::class.java, StructSerializer())
                 addDeserializer(Struct::class.java, StructDeserializer())
-                addSerializer(it.unibo.tuprolog.theory.Theory::class.java, TheorySerializer())
-                addDeserializer(it.unibo.tuprolog.theory.Theory::class.java, TheoryDeserializer())
+                addSerializer(Theory2P::class.java, TheorySerializer())
+                addDeserializer(Theory2P::class.java, TheoryDeserializer())
+                addSerializer(Role::class.java, RoleSerializer())
+                addDeserializer(Role::class.java, RoleDeserializer())
             }
         )
         println("Initialize mongo")
@@ -56,9 +62,28 @@ object Mongo {
 
     val timerCollection: CoroutineCollection<TimerRecord<Long>> by lazy { database.getCollection("timer") }
 
-    val theoryRepository: CoroutineCollection<Theory> by lazy { database.getCollection("theory") }
+    val theoryRepository: CoroutineCollection<Theory> by lazy {
+        database.getCollection<Theory>("theory").apply {
+            GlobalScope.launch(Dispatchers.IO) {
+                createIndex(Indexes.ascending(Theory::name.name, Theory::version.name), IndexOptions().unique(true))
+            }
+        }
+    }
 
     val goalRepository: CoroutineCollection<Goal> by lazy { database.getCollection("goal") }
 
     val solutionRepository: CoroutineCollection<Solution> by lazy { database.getCollection("solution") }
+
+    val userCollection: CoroutineCollection<UserDTO> by lazy {
+        database.getCollection<UserDTO>("user").apply {
+            GlobalScope.launch(Dispatchers.IO) {
+                createIndex(
+                    Indexes
+                        .ascending((UserDTO::credentials / Credentials::username).name),
+                    IndexOptions()
+                        .unique(true)
+                )
+            }
+        }
+    }
 }

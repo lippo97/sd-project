@@ -1,11 +1,15 @@
 package it.unibo.lpaas
 
+import UsernameDeserializer
 import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.JWTAuthHandler
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.authentication.AuthController
 import it.unibo.lpaas.authentication.provider.InMemoryCredentialsProvider
+import it.unibo.lpaas.authentication.provider.Password
+import it.unibo.lpaas.authentication.provider.Username
+import it.unibo.lpaas.authentication.serialization.PasswordDeserializer
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
 import it.unibo.lpaas.core.persistence.TheoryRepository
@@ -44,6 +48,8 @@ class MainWithAuth private constructor() {
                 addAbstractTypeMapping(GoalId::class.java, StringId::class.java)
                 addAbstractTypeMapping(TheoryId::class.java, StringId::class.java)
                 addAbstractTypeMapping(SolutionId::class.java, StringId::class.java)
+                addDeserializer(Username::class.java, UsernameDeserializer())
+                addDeserializer(Password::class.java, PasswordDeserializer())
             }
                 .applyOnJacksonAndSerializers(serializerCollection)
 

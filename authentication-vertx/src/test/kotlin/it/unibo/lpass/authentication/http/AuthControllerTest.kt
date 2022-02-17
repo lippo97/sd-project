@@ -1,5 +1,6 @@
 package it.unibo.lpass.authentication.http
 
+import UsernameDeserializer
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeExactly
@@ -22,6 +23,7 @@ import it.unibo.lpaas.authentication.provider.Credentials
 import it.unibo.lpaas.authentication.provider.CredentialsProvider
 import it.unibo.lpaas.authentication.provider.Password
 import it.unibo.lpaas.authentication.provider.Username
+import it.unibo.lpaas.authentication.serialization.PasswordDeserializer
 import it.unibo.lpaas.authentication.serialization.PasswordSerializer
 import it.unibo.lpaas.authentication.serialization.UsernameSerializer
 import it.unibo.lpaas.http.databind.SerializerCollection
@@ -48,6 +50,8 @@ class AuthControllerTest : FunSpec({
     SerializerConfiguration.defaultWithModule {
         addSerializer(Username::class.java, UsernameSerializer())
         addSerializer(Password::class.java, PasswordSerializer())
+        addDeserializer(Username::class.java, UsernameDeserializer())
+        addDeserializer(Password::class.java, PasswordDeserializer())
     }
         .applyOnJacksonAndSerializers(serializerCollection)
 
@@ -71,11 +75,11 @@ class AuthControllerTest : FunSpec({
     val badProvider = CredentialsProvider.inMemory()
 
     context("When a user tries to log in") {
-        println(Json.encode(sampleCredentials))
         test("it should return the token") {
             withHttpServerOf(goodProvider) {
                 client.request(HttpMethod.POST, 8080, "localhost", "/login")
                     .flatMap { it.send(Json.encode(sampleCredentials)) }
+                    .map { it.statusCode() shouldBe 200; it }
                     .flatMap { it.body() }
                     .flatMap {
                         jwtProvider.authenticate(json { obj("token" to it.toString()) })

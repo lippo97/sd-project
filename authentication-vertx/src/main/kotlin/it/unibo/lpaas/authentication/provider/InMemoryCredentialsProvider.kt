@@ -1,9 +1,9 @@
 package it.unibo.lpaas.authentication.provider
 
+import com.fasterxml.jackson.core.type.TypeReference
 import io.vertx.core.Future
 import io.vertx.core.Vertx
-import io.vertx.core.json.JsonArray
-import io.vertx.core.json.JsonObject
+import io.vertx.core.json.jackson.DatabindCodec
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.delivery.http.exception.UnauthorizedException
 import java.io.InputStream
@@ -13,14 +13,11 @@ class InMemoryCredentialsProvider(private val memory: Map<Credentials, Role>) : 
     companion object {
         fun fromJsonFile(vertx: Vertx, inputStream: InputStream): Future<InMemoryCredentialsProvider> =
             vertx.executeBlocking<Map<Credentials, Role>> { p ->
-                val values = JsonArray(String(inputStream.readAllBytes(), StandardCharsets.UTF_8))
-                val map = values
-                    .map { it as JsonObject }
-                    .associate {
-                        val credentials = Credentials.fromJson(it.getJsonObject("credentials"))
-                        val role = Role.parse(it.getString("role"))
-                        credentials to role
-                    }
+                val values = String(inputStream.readAllBytes(), StandardCharsets.UTF_8)
+                val users = DatabindCodec.mapper().readValue(values, object : TypeReference<List<UserDTO>>() {})
+                val map = users.associate {
+                    it.credentials to it.role
+                }
                 p.complete(map)
             }.map {
                 InMemoryCredentialsProvider(it)

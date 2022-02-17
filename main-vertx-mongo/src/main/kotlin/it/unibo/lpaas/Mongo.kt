@@ -1,6 +1,5 @@
 package it.unibo.lpaas
 
-import UsernameDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
@@ -8,14 +7,9 @@ import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.Indexes
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.authentication.provider.Credentials
-import it.unibo.lpaas.authentication.provider.Password
 import it.unibo.lpaas.authentication.provider.UserDTO
-import it.unibo.lpaas.authentication.provider.Username
-import it.unibo.lpaas.authentication.serialization.PasswordDeserializer
-import it.unibo.lpaas.authentication.serialization.PasswordSerializer
 import it.unibo.lpaas.authentication.serialization.RoleDeserializer
 import it.unibo.lpaas.authentication.serialization.RoleSerializer
-import it.unibo.lpaas.authentication.serialization.UsernameSerializer
 import it.unibo.lpaas.domain.Goal
 import it.unibo.lpaas.domain.GoalId
 import it.unibo.lpaas.domain.IncrementalVersion
@@ -36,6 +30,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.coroutine
+import org.litote.kmongo.div
 import org.litote.kmongo.reactivestreams.KMongo
 import org.litote.kmongo.util.KMongoConfiguration
 import it.unibo.tuprolog.theory.Theory as Theory2P
@@ -58,11 +53,6 @@ object Mongo {
                 addDeserializer(Struct::class.java, StructDeserializer())
                 addSerializer(Theory2P::class.java, TheorySerializer())
                 addDeserializer(Theory2P::class.java, TheoryDeserializer())
-
-                addSerializer(Username::class.java, UsernameSerializer())
-                addDeserializer(Username::class.java, UsernameDeserializer())
-                addSerializer(Password::class.java, PasswordSerializer())
-                addDeserializer(Password::class.java, PasswordDeserializer())
                 addSerializer(Role::class.java, RoleSerializer())
                 addDeserializer(Role::class.java, RoleDeserializer())
             }
@@ -87,7 +77,12 @@ object Mongo {
     val userCollection: CoroutineCollection<UserDTO> by lazy {
         database.getCollection<UserDTO>("user").apply {
             GlobalScope.launch(Dispatchers.IO) {
-                createIndex(Indexes.ascending(Credentials::username.name), IndexOptions().unique(true))
+                createIndex(
+                    Indexes
+                        .ascending((UserDTO::credentials / Credentials::username).name),
+                    IndexOptions()
+                        .unique(true)
+                )
             }
         }
     }

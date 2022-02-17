@@ -1,13 +1,13 @@
 package it.unibo.lpaas.authentication
 
 import io.vertx.core.Vertx
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.auth.jwt.JWTAuth
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
+import it.unibo.lpaas.authentication.provider.Credentials
 import it.unibo.lpaas.authentication.provider.CredentialsProvider
-import it.unibo.lpaas.authentication.provider.Password
-import it.unibo.lpaas.authentication.provider.Username
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.exception.UnauthorizedException
@@ -25,9 +25,7 @@ interface AuthController : Controller {
                         post("/login")
                             .bodyHandler()
                             .handler { ctx ->
-                                val username = Username(ctx.bodyAsJson.getString("username"))
-                                val password = Password(ctx.bodyAsJson.getString("password"))
-
+                                val (username, password) = Json.decodeValue(ctx.bodyAsString, Credentials::class.java)
                                 credentialsStorage.login(username, password)
                                     .map {
                                         jwtProvider.generateToken(

@@ -7,25 +7,24 @@ import it.unibo.lpaas.delivery.http.exception.UnauthorizedException
 import kotlinx.coroutines.runBlocking
 import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.CoroutineCollection
+import org.litote.kmongo.div
 import org.litote.kmongo.eq
-
-data class UserDTO(val credentials: Credentials, val role: Role)
 
 class MongoCredentialsProvider(
     private val vertx: Vertx,
     private val credentialsCollection: CoroutineCollection<UserDTO>
 ) : CredentialsProvider {
     override fun login(username: Username, password: Password): Future<Role> =
-        vertx.executeBlocking {
+        vertx.executeBlocking { p ->
             runBlocking {
-                credentialsCollection.findOne(
-                    and(
-                        Credentials::username::name eq username.value,
-                        Credentials::password::name eq password.value,
-                    )
-                )?.run {
-                    it.complete(role)
-                } ?: it.fail(UnauthorizedException())
+                kotlin.runCatching {
+                    credentialsCollection.findOne(
+                        and(
+                            (UserDTO::credentials / Credentials::username / Username::value) eq username.value,
+                            (UserDTO::credentials / Credentials::password / Password::value) eq password.value
+                        )
+                    )?.let { p.complete(it.role) } ?: p.fail(UnauthorizedException())
+                }.getOrElse { p.fail(it) }
             }
         }
 }

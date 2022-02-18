@@ -107,7 +107,7 @@ class SolutionUseCases<TimerID>(
         val timeout = minOf(within ?: SOLUTION_MAX_TIMEOUT, SOLUTION_MAX_TIMEOUT)
             .toLong(DurationUnit.MILLISECONDS)
 
-        val solver = solverFactory.solverOf(theory2p) // TODO solverOf(s, d)
+        val solver = solverFactory.solverOf(theory2p)
         val prevKb = solver.dynamicKb
         return solver
             .solve(composedGoal, timeout = timeout)

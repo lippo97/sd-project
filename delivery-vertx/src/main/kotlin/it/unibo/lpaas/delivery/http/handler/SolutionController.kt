@@ -1,10 +1,10 @@
 package it.unibo.lpaas.delivery.http.handler
 
+import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
-import io.vertx.kotlin.coroutines.dispatcher
 import it.unibo.lpaas.core.GetResultsOptions
 import it.unibo.lpaas.core.SolutionUseCases
 import it.unibo.lpaas.core.persistence.GoalRepository
@@ -17,12 +17,12 @@ import it.unibo.lpaas.delivery.http.TimerDependencies
 import it.unibo.lpaas.delivery.http.handler.dsl.HandlerDSL
 import it.unibo.lpaas.delivery.http.handler.dto.CreateSolutionDTO
 import it.unibo.lpaas.domain.IncrementalVersion
+import it.unibo.lpaas.domain.Result
 import it.unibo.lpaas.domain.SolutionId
 import it.unibo.lpaas.http.databind.BufferSerializer
 import it.unibo.lpaas.http.databind.MimeType
 import it.unibo.lpaas.http.databind.SerializerCollection
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.jvm.JvmStatic
 import kotlin.time.Duration
 
@@ -124,7 +124,7 @@ interface SolutionController : Controller {
                                     ?: error("Couldn't find serializer for $mimeType.")
                                 val fws = ctx.request().toWebSocket()
                                 fws
-                                    .onSuccess((::onSocketAccept)(name, skip, limit, within, serializer))
+                                    .flatMap((::onSocketAccept)(name, skip, limit, within, serializer))
                                     .onFailure { fail ->
                                         fail.printStackTrace()
                                         ctx.fail(HTTPStatusCode.BAD_REQUEST.code)
@@ -147,21 +147,19 @@ interface SolutionController : Controller {
                     limit: Int?,
                     within: Duration?,
                     serializer: BufferSerializer
-                ): (ServerWebSocket) -> Unit = { ws ->
-                    GlobalScope.launch(vertx.dispatcher()) {
-                        val solutions = solutionUseCases.getResults(
-                            name,
-                            solverFactory,
-                            GetResultsOptions(
-                                skip,
-                                limit,
-                                within,
-                            )
-                        )
-                            .iterator()
-
+                ): (ServerWebSocket) -> Future<Void> = { ws ->
+                    vertx.executeBlocking<Iterator<Result>> { p ->
+                        runBlocking {
+                            val results = solutionUseCases.getResults(
+                                name,
+                                solverFactory,
+                                GetResultsOptions(skip, limit, within)
+                            ).iterator()
+                            p.complete(results)
+                        }
+                    }.flatMap {
                         ws.onMessage("get") {
-                            val next = if (solutions.hasNext()) solutions.next() else null
+                            val next = if (it.hasNext()) it.next() else null
                             if (next != null) {
                                 ws.write(serializer.serializeToBuffer(next))
                             } else {

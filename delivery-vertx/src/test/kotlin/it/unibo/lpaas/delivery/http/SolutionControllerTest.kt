@@ -7,7 +7,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
-import io.vertx.core.buffer.Buffer
 import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
@@ -109,19 +108,20 @@ class SolutionControllerTest : DescribeSpec({
                 res.succeeded() shouldBe true
                 val ws = res.result()
                 val pokemons = mutableListOf<String>()
-                ws.write(Buffer.buffer("get"))
-                ws
-                    .handler {
+                ws.handler {
+                    if (it.toString() == "ready") {
+                        ws.writeTextMessage("get")
+                    } else if (it.toString() != "null") {
                         pokemons.add(
                             it.toJsonObject()
                                 ?.getJsonObject("variables")
                                 ?.getString("Pokemon") ?: "NO"
                         )
-                        if (!ws.isClosed) ws.write(Buffer.buffer("get"))
+                        if (!ws.isClosed) ws.writeTextMessage("get")
                     }
-                    .closeHandler {
-                        promise.complete(pokemons.dropLast(1))
-                    }
+                }.closeHandler {
+                    promise.complete(pokemons.dropLast(1))
+                }
             }
             promise.future()
                 .await()

@@ -1,6 +1,6 @@
-package it.unibo.lpaas.core.exception
+package it.unibo.lpaas.delivery.http.exception
 
 class ValidationException(
     override val message: String? = null,
     override val cause: Throwable? = null
-) : NonFatalError()
+) : DeliveryException()

@@ -3,7 +3,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":domain"))
     implementation(project(":authorization"))
     implementation(project(":delivery-vertx"))
     implementation("io.vertx:vertx-core:4.2.1")

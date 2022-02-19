@@ -2,7 +2,7 @@ package it.unibo.lpaas.delivery.http.handler.dsl
 
 import io.vertx.ext.web.Route
 import io.vertx.ext.web.handler.BodyHandler
-import it.unibo.lpaas.core.exception.ValidationException
+import it.unibo.lpaas.delivery.http.exception.ValidationException
 
 interface BodyDSL {
     val bodyHandler: BodyHandler

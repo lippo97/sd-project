@@ -13,7 +13,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import it.unibo.lpaas.core.exception.DuplicateIdentifierException
 import it.unibo.lpaas.core.exception.NotFoundException
-import it.unibo.lpaas.core.exception.ValidationException
 import it.unibo.lpaas.core.persistence.TheoryRepository
 import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Functor
@@ -34,7 +33,6 @@ internal class TheoryUseCasesTest : FunSpec({
     val theoryRepository = mockk<TheoryRepository>()
     val theory = mockk<Theory>()
     val someData = mockk<Theory.Data>()
-    val invalidData = mockk<Theory.Data>()
     val defaultVersion = mockk<IncrementalVersion>()
     val functor = Functor("default")
 
@@ -91,15 +89,6 @@ internal class TheoryUseCasesTest : FunSpec({
             }
             coVerify { theoryRepository.create(duplicateId, someData) }
         }
-
-        coEvery { theoryRepository.create(realId, invalidData) } throws
-            ValidationException()
-        test("it should throw validation exception") {
-            assertThrows<ValidationException> {
-                theoryUseCases.createTheory(realId, invalidData)
-            }
-            coVerify { theoryRepository.create(realId, invalidData) }
-        }
     }
 
     context("updateTheory") {
@@ -114,14 +103,6 @@ internal class TheoryUseCasesTest : FunSpec({
         test("it should throw not found identifier") {
             assertThrows<NotFoundException> {
                 theoryUseCases.updateTheory(fakeId, someData)
-            }
-        }
-
-        coEvery { theoryRepository.updateByName(realId, someData) } throws
-            ValidationException("Theory")
-        test("it should throw validation exception") {
-            assertThrows<ValidationException> {
-                theoryUseCases.updateTheory(realId, someData)
             }
         }
     }

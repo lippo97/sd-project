@@ -9,8 +9,11 @@ import io.vertx.kotlin.coroutines.dispatcher
 import it.unibo.lpaas.core.exception.DuplicateIdentifierException
 import it.unibo.lpaas.core.exception.NonFatalError
 import it.unibo.lpaas.core.exception.NotFoundException
-import it.unibo.lpaas.core.exception.ValidationException
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
+import it.unibo.lpaas.delivery.http.exception.DeliveryException
+import it.unibo.lpaas.delivery.http.exception.UnauthorizedException
+import it.unibo.lpaas.delivery.http.exception.UnsupportedMediaTypeException
+import it.unibo.lpaas.delivery.http.exception.ValidationException
 import it.unibo.lpaas.delivery.http.setStatusCode
 import it.unibo.lpaas.http.databind.MimeType
 import kotlinx.coroutines.GlobalScope
@@ -59,7 +62,20 @@ internal fun RoutingContext.handleNonFatal(error: NonFatalError) {
     val statusCode = when (error) {
         is NotFoundException -> HTTPStatusCode.NOT_FOUND
         is DuplicateIdentifierException -> HTTPStatusCode.CONFLICT
+        else -> HTTPStatusCode.INTERNAL_SERVER_ERROR
+    }
+    val response = response()
+        .setStatusCode(statusCode)
+
+    if (error.message != null) response.end(error.message)
+    else response.end()
+}
+
+fun RoutingContext.handleDelivery(error: DeliveryException) {
+    val statusCode = when (error) {
+        is UnauthorizedException -> HTTPStatusCode.UNAUTHORIZED
         is ValidationException -> HTTPStatusCode.BAD_REQUEST
+        is UnsupportedMediaTypeException -> HTTPStatusCode.UNSUPPORTED_MEDIA_TYPE
         else -> HTTPStatusCode.INTERNAL_SERVER_ERROR
     }
     val response = response()

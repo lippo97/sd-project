@@ -6,9 +6,11 @@ import io.vertx.ext.web.handler.AuthenticationHandler
 import io.vertx.ext.web.handler.HttpException
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.core.exception.NonFatalError
+import it.unibo.lpaas.delivery.http.exception.DeliveryException
 import it.unibo.lpaas.delivery.http.handler.GoalController
 import it.unibo.lpaas.delivery.http.handler.SolutionController
 import it.unibo.lpaas.delivery.http.handler.TheoryController
+import it.unibo.lpaas.delivery.http.handler.handleDelivery
 import it.unibo.lpaas.delivery.http.handler.handleNonFatal
 
 fun interface Controller {
@@ -85,20 +87,21 @@ fun interface Controller {
                     }
             }
         }
+    }
+}
 
-        private fun Route.nonFatalHandler(): Route = failureHandler { ctx ->
-            when (val failure = ctx.failure()) {
-                is NonFatalError -> ctx.handleNonFatal(failure)
-                is HttpException -> ctx.response()
-                    .setStatusCode(failure.statusCode)
+fun Route.nonFatalHandler(): Route = failureHandler { ctx ->
+    when (val failure = ctx.failure()) {
+        is NonFatalError -> ctx.handleNonFatal(failure)
+        is DeliveryException -> ctx.handleDelivery(failure)
+        is HttpException -> ctx.response()
+            .setStatusCode(failure.statusCode)
+            .end()
+        else ->
+            if (ctx.statusCode() != HTTPStatusCode.INTERNAL_SERVER_ERROR.code)
+                ctx.response()
+                    .setStatusCode(ctx.statusCode())
                     .end()
-                else ->
-                    if (ctx.statusCode() != HTTPStatusCode.INTERNAL_SERVER_ERROR.code)
-                        ctx.response()
-                            .setStatusCode(ctx.statusCode())
-                            .end()
-                    else ctx.next()
-            }
-        }
+            else ctx.next()
     }
 }

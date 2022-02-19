@@ -6,9 +6,8 @@ plugins {
 
 dependencies {
     implementation(project(":utils"))
-    implementation(project(":domain"))
-    implementation(project(":serialization"))
     implementation(project(":core"))
+    implementation(project(":serialization"))
     implementation(project(":authorization"))
     implementation(project(":delivery-vertx"))
     implementation(project(":authentication-vertx"))

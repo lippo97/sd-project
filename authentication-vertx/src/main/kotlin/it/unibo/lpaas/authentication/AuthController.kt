@@ -10,8 +10,9 @@ import it.unibo.lpaas.authentication.provider.Credentials
 import it.unibo.lpaas.authentication.provider.CredentialsProvider
 import it.unibo.lpaas.delivery.http.Controller
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
-import it.unibo.lpaas.delivery.http.exception.UnauthorizedException
+import it.unibo.lpaas.delivery.http.exception.DeliveryException
 import it.unibo.lpaas.delivery.http.handler.dsl.BodyDSL
+import it.unibo.lpaas.delivery.http.handler.handleDelivery
 import it.unibo.lpaas.delivery.http.setStatusCode
 
 interface AuthController : Controller {
@@ -36,15 +37,17 @@ interface AuthController : Controller {
                                         ctx.response()
                                             .end(it)
                                     }
-                                    .onFailure { failure ->
-                                        if (failure is UnauthorizedException) {
-                                            ctx.response()
-                                                .setStatusCode(HTTPStatusCode.UNAUTHORIZED)
-                                                .end()
-                                        } else {
-                                            ctx.next()
-                                        }
-                                    }
+                                    .onFailure(ctx::fail)
+                            }
+                            .failureHandler { ctx ->
+                                val failure = ctx.failure()
+                                if (failure is DeliveryException) {
+                                    ctx.handleDelivery(failure)
+                                } else {
+                                    ctx.response()
+                                        .setStatusCode(HTTPStatusCode.INTERNAL_SERVER_ERROR)
+                                        .end()
+                                }
                             }
                     }
                 }

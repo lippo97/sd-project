@@ -11,6 +11,7 @@ dependencies {
     implementation("org.litote.kmongo:kmongo:4.4.0")
     implementation("org.litote.kmongo:kmongo-async:4.4.0")
     implementation("org.litote.kmongo:kmongo-coroutine:4.4.0")
+    implementation("at.favre.lib:bcrypt:0.9.0")
 
     testImplementation("io.vertx:vertx-lang-kotlin:4.2.1")
     testImplementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.1")

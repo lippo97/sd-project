@@ -6,24 +6,23 @@ import io.vertx.core.Vertx
 import at.favre.lib.crypto.bcrypt.BCrypt as BCryptAlg
 
 interface BCrypt {
-    fun verify(password: String, hash: String): Future<Boolean>
+    fun verify(password: String, hashed: String): Future<Boolean>
 
     fun hash(password: String): Future<String>
 
     companion object {
 
         fun vertx(vertx: Vertx, cost: Int = 6): BCrypt = object : BCrypt {
-            override fun verify(password: String, hash: String): Future<Boolean> =
+            override fun verify(password: String, hashed: String): Future<Boolean> =
                 vertx.executeBlocking<Result> {
-                    it.complete(BCryptAlg.verifyer().verify(password.toByteArray(), hash.toByteArray()))
+                    it.complete(BCryptAlg.verifyer().verify(password.toCharArray(), hashed))
                 }
                     .map { it.verified }
 
             override fun hash(password: String): Future<String> =
-                vertx.executeBlocking<ByteArray> {
-                    it.complete(BCryptAlg.withDefaults().hash(cost, password.toCharArray()))
+                vertx.executeBlocking {
+                    it.complete(BCryptAlg.withDefaults().hashToString(cost, password.toCharArray()))
                 }
-                    .map { it.toString() }
         }
     }
 }

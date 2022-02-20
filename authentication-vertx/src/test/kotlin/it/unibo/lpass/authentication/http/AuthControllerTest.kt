@@ -1,6 +1,5 @@
 package it.unibo.lpass.authentication.http
 
-import UsernameDeserializer
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeExactly
@@ -25,6 +24,7 @@ import it.unibo.lpaas.authentication.provider.Password
 import it.unibo.lpaas.authentication.provider.Username
 import it.unibo.lpaas.authentication.serialization.PasswordDeserializer
 import it.unibo.lpaas.authentication.serialization.PasswordSerializer
+import it.unibo.lpaas.authentication.serialization.UsernameDeserializer
 import it.unibo.lpaas.authentication.serialization.UsernameSerializer
 import it.unibo.lpaas.http.databind.SerializerCollection
 import it.unibo.lpaas.http.databind.SerializerConfiguration

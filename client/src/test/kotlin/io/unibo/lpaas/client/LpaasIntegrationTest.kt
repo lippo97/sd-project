@@ -18,6 +18,7 @@ import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.authentication.AuthController
+import it.unibo.lpaas.authentication.JWTAuthFactory
 import it.unibo.lpaas.authentication.provider.Credentials
 import it.unibo.lpaas.authentication.provider.CredentialsProvider
 import it.unibo.lpaas.authentication.provider.Password
@@ -38,7 +39,6 @@ import it.unibo.lpaas.delivery.http.GoalDependencies
 import it.unibo.lpaas.delivery.http.SolutionDependencies
 import it.unibo.lpaas.delivery.http.TheoryDependencies
 import it.unibo.lpaas.delivery.http.TimerDependencies
-import it.unibo.lpaas.delivery.http.auth.JWTAuthFactory
 import it.unibo.lpaas.delivery.http.bindApi
 import it.unibo.lpaas.delivery.timer.vertx
 import it.unibo.lpaas.domain.Functor

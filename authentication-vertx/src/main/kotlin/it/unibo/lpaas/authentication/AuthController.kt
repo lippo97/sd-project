@@ -41,6 +41,7 @@ interface AuthController : Controller {
                             }
                             .failureHandler { ctx ->
                                 val failure = ctx.failure()
+                                failure.printStackTrace()
                                 if (failure is DeliveryException) {
                                     ctx.handleDelivery(failure)
                                 } else {

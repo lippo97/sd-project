@@ -1,11 +1,22 @@
 version: "3.9"
 services:
-  app:
-    build: .
+  auth:
+    build:
+      context: .
+      dockerfile: Dockerfile.auth
+    ports:
+      - "8081:8080"
+    env_file:
+      - .lpaas.env
+
+  lpaas:
+    build:
+      context: .
+      dockerfile: Dockerfile.lpaas
     ports:
       - "8080:8080"
     env_file:
-      - .web-variables.env
+      - .lpaas.env
 
   mongodb:
     build: ./mongo

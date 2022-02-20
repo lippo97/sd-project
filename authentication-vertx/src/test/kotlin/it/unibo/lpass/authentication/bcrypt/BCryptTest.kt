@@ -13,21 +13,18 @@ internal class BCryptTest : FunSpec({
         val vertx = Vertx.vertx()
         val bcrypt = BCrypt.vertx(vertx, cost = 4)
         context("When a password is hashed") {
-            test("it should succeed") {
-
-                val hashed = bcrypt.hash("password").await()
-                hashed shouldNot be(null)
-            }
-            test("it should match the original password") {
-                bcrypt.hash("password")
-                    .flatMap { bcrypt.verify("password", it) }
-                    .await() shouldBe true
-            }
-            test("it shouldn't match other passwords") {
-                bcrypt.hash("password")
-                    .flatMap { bcrypt.verify("any other password", it) }
-                    .await() shouldBe false
-            }
+            val hashed = bcrypt.hash("password").await()
+            hashed shouldNot be(null)
+        }
+        test("it should match the original password") {
+            bcrypt.hash("password")
+                .flatMap { bcrypt.verify("password", it) }
+                .await() shouldBe true
+        }
+        test("it shouldn't match other passwords") {
+            bcrypt.hash("password")
+                .flatMap { bcrypt.verify("any other password", it) }
+                .await() shouldBe false
         }
     }
 })

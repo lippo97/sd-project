@@ -1,7 +1,7 @@
 import com.vanniktech.dependency.graph.generator.DependencyGraphGeneratorExtension
 
 plugins {
-    id("com.vanniktech.dependency.graph.generator") version "0.6.0"
+    id("com.vanniktech.dependency.graph.generator") version "0.7.0"
 }
 
 allprojects {
@@ -14,7 +14,7 @@ allprojects {
 
 rootProject.configure<DependencyGraphGeneratorExtension> {
     generators.create("internalModules") {
-        includeProject = { true }
-        children = { false }
+        include = { it.moduleGroup == "it.unibo.lpaas" }
+        children = { it.moduleGroup == "it.unibo.lpaas" }
     }
 }

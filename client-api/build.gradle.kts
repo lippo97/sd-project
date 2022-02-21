@@ -1,18 +1,12 @@
 plugins {
     id("kotlin-common-convention")
-    id("application")
 }
 
 dependencies {
-    implementation(project(":domain"))
+    api(project(":domain"))
+    api("io.vertx:vertx-core:4.2.1")
     implementation(project(":serialization-vertx"))
     implementation(project(":authentication-vertx"))
-    implementation("it.unibo.tuprolog", "solve", "0.20.4")
-    implementation("it.unibo.tuprolog", "parser-core", "0.20.4")
-    implementation("it.unibo.tuprolog", "parser-theory", "0.20.4")
-    implementation("io.vertx:vertx-core:4.2.1")
-    implementation("io.vertx:vertx-lang-kotlin:4.2.1")
-    implementation("com.github.ajalt.clikt:clikt:3.4.0")
 
     testImplementation(project(":utils"))
     testImplementation(project(":delivery-vertx"))
@@ -25,8 +19,4 @@ dependencies {
     testImplementation("io.vertx:vertx-lang-kotlin:4.2.1")
     testImplementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.1")
     testImplementation("it.unibo.tuprolog", "solve-classic", "0.20.4")
-}
-
-application {
-    mainClass.set("it.unibo.lpaas.client.application.ApplicationKt")
 }

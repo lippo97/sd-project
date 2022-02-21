@@ -17,4 +17,5 @@ include("examples:main-vertx-mongo")
 include("examples:authentication-service")
 include("examples:lpaas-service")
 
-include("client")
+include("client-api")
+include("client-repl")

@@ -2,7 +2,6 @@ package it.unibo.lpaas.client.repl
 
 import io.vertx.core.Future
 import io.vertx.core.Vertx
-import it.unibo.lpaas.client.Formatter
 import it.unibo.lpaas.client.api.Lpaas
 import it.unibo.lpaas.client.repl.console.Console
 import it.unibo.lpaas.client.repl.console.EnhancedConsole

@@ -1,7 +1,7 @@
 package it.unibo.lpaas.client.repl.console
 
 import io.vertx.core.Future
-import it.unibo.lpaas.client.Formatter
+import it.unibo.lpaas.client.repl.Formatter
 import it.unibo.tuprolog.core.Struct
 import it.unibo.tuprolog.core.parsing.ParseException
 import it.unibo.tuprolog.core.parsing.parse

@@ -17,11 +17,17 @@ import it.unibo.lpaas.domain.databind.DomainSerializationModule
 fun interface SerializerConfiguration {
     fun applyOn(objectMappers: Collection<ObjectMapper>)
 
-    fun applyOnJacksonAndObjectMappers(objectMappers: Collection<ObjectMapper>) =
-        applyOn(objectMappers + listOf(mapper(), prettyMapper()))
+    fun applyOnJackson() {
+        applyOn(listOf(mapper(), prettyMapper()))
+    }
 
-    fun applyOnJacksonAndSerializers(objectMapperSerializers: SerializerCollection<ObjectMapperSerializer>) =
+    fun applyOnJacksonAndObjectMappers(objectMappers: Collection<ObjectMapper>) {
+        applyOn(objectMappers + listOf(mapper(), prettyMapper()))
+    }
+
+    fun applyOnJacksonAndSerializers(objectMapperSerializers: SerializerCollection<ObjectMapperSerializer>) {
         applyOnJacksonAndObjectMappers(objectMapperSerializers.availableSerializers.map { it.objectMapper })
+    }
 
     companion object {
 

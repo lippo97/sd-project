@@ -3,8 +3,8 @@ package it.unibo.lpaas.client.application
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import io.vertx.core.json.jackson.DatabindCodec
-import it.unibo.lpaas.authentication.provider.Password
-import it.unibo.lpaas.authentication.provider.Username
+import it.unibo.lpaas.authentication.domain.Password
+import it.unibo.lpaas.authentication.domain.Username
 import it.unibo.lpaas.authentication.serialization.PasswordDeserializer
 import it.unibo.lpaas.authentication.serialization.PasswordSerializer
 import it.unibo.lpaas.authentication.serialization.UsernameDeserializer

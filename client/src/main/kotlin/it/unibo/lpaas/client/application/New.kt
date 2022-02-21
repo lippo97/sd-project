@@ -6,9 +6,9 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.types.file
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
-import it.unibo.lpaas.authentication.provider.Credentials
-import it.unibo.lpaas.authentication.provider.Password
-import it.unibo.lpaas.authentication.provider.Username
+import it.unibo.lpaas.authentication.domain.Credentials
+import it.unibo.lpaas.authentication.domain.Password
+import it.unibo.lpaas.authentication.domain.Username
 import it.unibo.lpaas.client.api.Lpaas
 import it.unibo.lpaas.client.api.ServerOptions
 import it.unibo.lpaas.client.repl.LpaasRepl

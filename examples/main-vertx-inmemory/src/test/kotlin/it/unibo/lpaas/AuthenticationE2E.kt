@@ -15,10 +15,12 @@ import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.authentication.AuthController
 import it.unibo.lpaas.authentication.JWTAuthFactory
-import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.bcrypt.BCrypt
+import it.unibo.lpaas.authentication.domain.Credentials
+import it.unibo.lpaas.authentication.domain.Password
+import it.unibo.lpaas.authentication.domain.SecureCredentials
+import it.unibo.lpaas.authentication.domain.Username
 import it.unibo.lpaas.authentication.provider.CredentialsProvider
-import it.unibo.lpaas.authentication.provider.Password
-import it.unibo.lpaas.authentication.provider.Username
 import it.unibo.lpaas.core.GoalUseCases
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
@@ -47,11 +49,13 @@ import it.unibo.lpaas.http.databind.SerializerCollection
 import it.unibo.lpaas.http.databind.SerializerConfiguration
 import it.unibo.lpaas.persistence.inMemory
 import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
+import kotlinx.coroutines.runBlocking
 
 @Tags("HTTP")
 class AuthenticationE2E : FunSpec({
 
     val vertx = Vertx.vertx()
+    val bCrypt = BCrypt.vertx(vertx)
     val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, "keyboard cat")
 
     val port = 8083
@@ -101,7 +105,14 @@ class AuthenticationE2E : FunSpec({
     )
 
     val sampleCredentials = Credentials(Username("abc"), Password("pass"))
-    val credentialsProvider = CredentialsProvider.inMemory(sampleCredentials to Role.CONFIGURATOR)
+    val credentialsProvider = CredentialsProvider.inMemory(
+        bCrypt,
+        sampleCredentials.let {
+            runBlocking {
+                SecureCredentials(it.username, it.password.hash(bCrypt).await())
+            }
+        } to Role.CONFIGURATOR
+    )
 
     beforeAny {
         vertx.createHttpServer()

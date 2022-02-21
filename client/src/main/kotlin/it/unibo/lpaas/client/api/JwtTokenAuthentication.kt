@@ -6,7 +6,7 @@ import io.vertx.core.http.HttpClient
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.RequestOptions
 import io.vertx.core.json.Json
-import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.domain.Credentials
 import it.unibo.lpaas.client.api.exception.UnauthorizedException
 
 interface JwtTokenAuthentication {

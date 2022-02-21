@@ -18,22 +18,26 @@ import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.await
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.authentication.AuthController
-import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.bcrypt.BCrypt
+import it.unibo.lpaas.authentication.domain.Credentials
+import it.unibo.lpaas.authentication.domain.Password
+import it.unibo.lpaas.authentication.domain.SecureCredentials
+import it.unibo.lpaas.authentication.domain.Username
 import it.unibo.lpaas.authentication.provider.CredentialsProvider
-import it.unibo.lpaas.authentication.provider.Password
-import it.unibo.lpaas.authentication.provider.Username
 import it.unibo.lpaas.authentication.serialization.PasswordDeserializer
 import it.unibo.lpaas.authentication.serialization.PasswordSerializer
 import it.unibo.lpaas.authentication.serialization.UsernameDeserializer
 import it.unibo.lpaas.authentication.serialization.UsernameSerializer
 import it.unibo.lpaas.http.databind.SerializerCollection
 import it.unibo.lpaas.http.databind.SerializerConfiguration
+import kotlinx.coroutines.runBlocking
 
 @Tags("HTTP")
 class AuthControllerTest : FunSpec({
 
     val vertx = Vertx.vertx()
     val client = vertx.createHttpClient()
+    val bCrypt = BCrypt.vertx(vertx)
 
     val jwtProvider = JWTAuth.create(
         vertx,
@@ -69,10 +73,15 @@ class AuthControllerTest : FunSpec({
     val sampleCredentials = Credentials(Username("abc"), Password("pass"))
 
     val goodProvider = CredentialsProvider.inMemory(
-        sampleCredentials to Role.CONFIGURATOR
+        bCrypt,
+        sampleCredentials.let {
+            runBlocking {
+                SecureCredentials(it.username, it.password.hash(bCrypt).await())
+            }
+        } to Role.CONFIGURATOR
     )
 
-    val badProvider = CredentialsProvider.inMemory()
+    val badProvider = CredentialsProvider.inMemory(bCrypt)
 
     context("When a user tries to log in") {
         test("it should return the token") {

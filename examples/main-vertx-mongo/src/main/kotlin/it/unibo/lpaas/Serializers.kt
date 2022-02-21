@@ -1,7 +1,7 @@
 package it.unibo.lpaas
 
-import it.unibo.lpaas.authentication.provider.Password
-import it.unibo.lpaas.authentication.provider.Username
+import it.unibo.lpaas.authentication.domain.Password
+import it.unibo.lpaas.authentication.domain.Username
 import it.unibo.lpaas.authentication.serialization.PasswordDeserializer
 import it.unibo.lpaas.authentication.serialization.UsernameDeserializer
 import it.unibo.lpaas.domain.GoalId

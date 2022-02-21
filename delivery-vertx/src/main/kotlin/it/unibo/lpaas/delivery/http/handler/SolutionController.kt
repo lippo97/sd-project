@@ -160,12 +160,8 @@ interface SolutionController : Controller {
                     }.flatMap {
                         ws.onMessage("get") {
                             val next = if (it.hasNext()) it.next() else null
-                            if (next != null) {
-                                ws.write(serializer.serializeToBuffer(next))
-                            } else {
-                                ws.write(serializer.serializeToBuffer(next))
-                                    .onSuccess { ws.close() }
-                            }
+                            ws.write(serializer.serializeToBuffer(next))
+                                .onSuccess { if (next == null) ws.close() }
                         }
                         ws.writeTextMessage("ready")
                     }

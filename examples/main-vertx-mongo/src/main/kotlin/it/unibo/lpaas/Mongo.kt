@@ -6,8 +6,8 @@ import com.mongodb.MongoClientSettings
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.Indexes
 import it.unibo.lpaas.auth.Role
-import it.unibo.lpaas.authentication.provider.Credentials
-import it.unibo.lpaas.authentication.provider.UserDTO
+import it.unibo.lpaas.authentication.domain.Credentials
+import it.unibo.lpaas.authentication.dto.SecureUserDTO
 import it.unibo.lpaas.authentication.serialization.RoleDeserializer
 import it.unibo.lpaas.authentication.serialization.RoleSerializer
 import it.unibo.lpaas.domain.Goal
@@ -75,12 +75,12 @@ object Mongo {
 
     val solutionRepository: CoroutineCollection<Solution> by lazy { database.getCollection("solution") }
 
-    val userCollection: CoroutineCollection<UserDTO> by lazy {
-        database.getCollection<UserDTO>("user").apply {
+    val userCollection: CoroutineCollection<SecureUserDTO> by lazy {
+        database.getCollection<SecureUserDTO>("user").apply {
             GlobalScope.launch(Dispatchers.IO) {
                 createIndex(
                     Indexes
-                        .ascending((UserDTO::credentials / Credentials::username).name),
+                        .ascending((SecureUserDTO::credentials / Credentials::username).name),
                     IndexOptions()
                         .unique(true)
                 )

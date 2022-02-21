@@ -6,6 +6,7 @@ import io.vertx.ext.web.handler.JWTAuthHandler
 import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.authentication.AuthController
 import it.unibo.lpaas.authentication.JWTAuthFactory
+import it.unibo.lpaas.authentication.bcrypt.BCrypt
 import it.unibo.lpaas.authentication.provider.CredentialsProvider
 import it.unibo.lpaas.core.persistence.GoalRepository
 import it.unibo.lpaas.core.persistence.SolutionRepository
@@ -33,6 +34,7 @@ import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
 fun main() {
     val vertx = Vertx.vertx()
     val timer = Timer.vertx(vertx)
+    val bCrypt = BCrypt.vertx(vertx)
     val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, Environment.Secrets.JWT_SECRET)
 
     val controller = Controller.make(
@@ -66,7 +68,7 @@ fun main() {
         )
     )
 
-    val credentialsProvider = CredentialsProvider.mongo(vertx, Mongo.userCollection)
+    val credentialsProvider = CredentialsProvider.mongo(vertx, bCrypt, Mongo.userCollection)
 
     @Suppress("MagicNumber")
     vertx.createHttpServer()

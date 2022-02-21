@@ -3,7 +3,7 @@ services:
   auth:
     build:
       context: .
-      dockerfile: Dockerfile.auth
+      dockerfile: ./docker/auth/Dockerfile
     ports:
       - "8081:8080"
     env_file:
@@ -12,14 +12,16 @@ services:
   lpaas:
     build:
       context: .
-      dockerfile: Dockerfile.lpaas
+      dockerfile: ./docker/lpaas/Dockerfile
     ports:
       - "8080:8080"
     env_file:
       - .lpaas.env
 
   mongodb:
-    build: ./mongo
+    build:
+      context: .
+      dockerfile: ./docker/mongo/Dockerfile
     ports:
       - "27017:27017"
     volumes:

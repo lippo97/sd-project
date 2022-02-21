@@ -14,7 +14,7 @@ import io.vertx.core.http.RequestOptions
 import io.vertx.core.http.WebSocketConnectOptions
 import io.vertx.core.json.Json
 import io.vertx.core.json.jackson.DatabindCodec.mapper
-import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.domain.Credentials
 import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.Goal

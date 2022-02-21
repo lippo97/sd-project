@@ -8,11 +8,12 @@ import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.Indexes
 import io.vertx.core.Vertx
 import it.unibo.lpaas.auth.Role
-import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.bcrypt.BCrypt
+import it.unibo.lpaas.authentication.domain.Credentials
+import it.unibo.lpaas.authentication.domain.Password
+import it.unibo.lpaas.authentication.domain.Username
+import it.unibo.lpaas.authentication.dto.SecureUserDTO
 import it.unibo.lpaas.authentication.provider.CredentialsProvider
-import it.unibo.lpaas.authentication.provider.Password
-import it.unibo.lpaas.authentication.provider.UserDTO
-import it.unibo.lpaas.authentication.provider.Username
 import it.unibo.lpaas.authentication.serialization.PasswordDeserializer
 import it.unibo.lpaas.authentication.serialization.RoleDeserializer
 import it.unibo.lpaas.authentication.serialization.UsernameDeserializer
@@ -39,6 +40,7 @@ fun main() {
     )
 
     val vertx = Vertx.vertx()
+    val bCrypt = BCrypt.vertx(vertx)
 
     val mongoClientSettings = MongoClientSettings.builder()
         .applyConnectionString(ConnectionString(Environment.getString("MONGO_CONNECTION_STRING")))
@@ -48,17 +50,17 @@ fun main() {
 
     val port = Environment.getInt("PORT")
     val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, Environment.getString("JWT_SECRET"))
-    val userCollection = database.getCollection<UserDTO>("user").apply {
+    val userCollection = database.getCollection<SecureUserDTO>("user").apply {
         GlobalScope.launch(Dispatchers.IO) {
             createIndex(
                 Indexes
-                    .ascending((UserDTO::credentials / Credentials::username).name),
+                    .ascending((SecureUserDTO::credentials / Credentials::username).name),
                 IndexOptions()
                     .unique(true)
             )
         }
     }
-    val credentialsProvider = CredentialsProvider.mongo(vertx, userCollection)
+    val credentialsProvider = CredentialsProvider.mongo(vertx, bCrypt, userCollection)
 
     vertx.createHttpServer()
         .requestHandler(AuthController.make(vertx, jwtProvider, credentialsProvider).routes())

@@ -3,7 +3,7 @@ package it.unibo.lpaas.client.api
 import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpClient
-import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.domain.Credentials
 import it.unibo.lpaas.domain.Fact
 import it.unibo.lpaas.domain.Functor
 import it.unibo.lpaas.domain.Goal

@@ -7,9 +7,10 @@ import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.authentication.AuthController
 import it.unibo.lpaas.authentication.JWTAuthFactory
+import it.unibo.lpaas.authentication.bcrypt.BCrypt
+import it.unibo.lpaas.authentication.domain.Password
+import it.unibo.lpaas.authentication.domain.Username
 import it.unibo.lpaas.authentication.provider.InMemoryCredentialsProvider
-import it.unibo.lpaas.authentication.provider.Password
-import it.unibo.lpaas.authentication.provider.Username
 import it.unibo.lpaas.authentication.serialization.PasswordDeserializer
 import it.unibo.lpaas.authentication.serialization.RoleDeserializer
 import it.unibo.lpaas.authentication.serialization.UsernameDeserializer
@@ -58,6 +59,7 @@ class MainWithAuth private constructor() {
 
             val vertx = Vertx.vertx()
             val timer = Timer.vertx(vertx)
+            val bCrypt = BCrypt.vertx(vertx)
             val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, "keyboard cat")
 
             val controller = Controller.make(
@@ -93,6 +95,7 @@ class MainWithAuth private constructor() {
 
             InMemoryCredentialsProvider.fromJsonFile(
                 vertx,
+                bCrypt,
                 this::class.java.classLoader.getResourceAsStream("credentials.json")!!
             )
                 .onFailure { it.printStackTrace() }

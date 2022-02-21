@@ -19,10 +19,12 @@ import it.unibo.lpaas.auth.AuthorizationProvider
 import it.unibo.lpaas.auth.Role
 import it.unibo.lpaas.authentication.AuthController
 import it.unibo.lpaas.authentication.JWTAuthFactory
-import it.unibo.lpaas.authentication.provider.Credentials
+import it.unibo.lpaas.authentication.bcrypt.BCrypt
+import it.unibo.lpaas.authentication.domain.Credentials
+import it.unibo.lpaas.authentication.domain.Password
+import it.unibo.lpaas.authentication.domain.SecureCredentials
+import it.unibo.lpaas.authentication.domain.Username
 import it.unibo.lpaas.authentication.provider.CredentialsProvider
-import it.unibo.lpaas.authentication.provider.Password
-import it.unibo.lpaas.authentication.provider.Username
 import it.unibo.lpaas.client.api.JwtTokenAuthentication
 import it.unibo.lpaas.client.api.Lpaas
 import it.unibo.lpaas.client.api.ServerOptions
@@ -61,6 +63,7 @@ import it.unibo.tuprolog.core.Struct
 import it.unibo.tuprolog.core.Var
 import it.unibo.tuprolog.solve.Solver
 import it.unibo.tuprolog.theory.Theory
+import kotlinx.coroutines.runBlocking
 import it.unibo.lpaas.domain.Theory as MyTheory
 import it.unibo.lpaas.domain.Theory.Data as TheoryData
 
@@ -76,6 +79,7 @@ class LpaasIntegrationTest : FunSpec({
 
     val httpClient = vertx.createHttpClient()
     val timer = Timer.vertx(vertx)
+    val bCrypt = BCrypt.vertx(vertx)
     val serializers = SerializerCollection.default()
 
     SerializerConfiguration.defaultWithModule {
@@ -129,7 +133,14 @@ class LpaasIntegrationTest : FunSpec({
     )
 
     val sampleCredentials = Credentials(Username("abc"), Password("pass"))
-    val credentialsProvider = CredentialsProvider.inMemory(sampleCredentials to Role.CONFIGURATOR)
+    val credentialsProvider = CredentialsProvider.inMemory(
+        bCrypt,
+        sampleCredentials.let {
+            runBlocking {
+                SecureCredentials(it.username, it.password.hash(bCrypt).await())
+            }
+        } to Role.CONFIGURATOR
+    )
 
     val lpaas = Lpaas.of(
         vertx,

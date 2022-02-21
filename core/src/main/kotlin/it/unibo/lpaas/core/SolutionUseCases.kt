@@ -19,6 +19,7 @@ import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
+import it.unibo.tuprolog.theory.Theory as Theory2P
 
 data class GetResultsOptions(
     val skip: Int? = null,
@@ -107,7 +108,7 @@ class SolutionUseCases<TimerID>(
         val timeout = minOf(within ?: SOLUTION_MAX_TIMEOUT, SOLUTION_MAX_TIMEOUT)
             .toLong(DurationUnit.MILLISECONDS)
 
-        val solver = solverFactory.solverOf(theory2p)
+        val solver = solverFactory.solverOf(staticKb = Theory2P.empty(), dynamicKb = theory2p)
         val prevKb = solver.dynamicKb
         return solver
             .solve(composedGoal, timeout = timeout)

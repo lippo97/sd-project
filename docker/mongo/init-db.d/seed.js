@@ -1,3 +1,4 @@
+/* The hashed password is "password" */
 db = db.getSiblingDB('lpaas')
 db.user.drop();
 db.user.insertMany([
@@ -7,7 +8,7 @@ db.user.insertMany([
         "value": "abc0"
       },
       "password": {
-        "value": "pass"
+        "value": "$2a$06$qSJV0tCzfA3as6Y1NwCqS.S/vxrbKc8ZrGguZ3W6yYRLZsUav/jz6"
       }
     },
     "role": "source"
@@ -18,7 +19,7 @@ db.user.insertMany([
         "value": "abc1"
       },
       "password": {
-         "value": "pass"
+        "value": "$2a$06$qSJV0tCzfA3as6Y1NwCqS.S/vxrbKc8ZrGguZ3W6yYRLZsUav/jz6"
       }
     },
     "role": "client"
@@ -29,7 +30,7 @@ db.user.insertMany([
         "value": "abc2"
       },
       "password": {
-         "value": "pass"
+        "value": "$2a$06$qSJV0tCzfA3as6Y1NwCqS.S/vxrbKc8ZrGguZ3W6yYRLZsUav/jz6"
       }
     },
     "role": "configurator"

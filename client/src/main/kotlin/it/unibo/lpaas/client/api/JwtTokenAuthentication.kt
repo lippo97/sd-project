@@ -16,7 +16,7 @@ interface JwtTokenAuthentication {
 
     companion object {
         @Suppress("TooGenericExceptionThrown")
-        fun usingToken(
+        fun usingCredentials(
             client: HttpClient,
             serverOptions: ServerOptions,
             credentials: Credentials

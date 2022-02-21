@@ -31,9 +31,10 @@ class LpaasImpl(
     private val vertx: Vertx,
     private val client: HttpClient,
     private val serverOptions: ServerOptions,
+    authServerOptions: ServerOptions,
     private val credentials: Credentials,
 ) : Lpaas,
-    JwtTokenAuthentication by JwtTokenAuthentication.usingToken(client, serverOptions, credentials) {
+    JwtTokenAuthentication by JwtTokenAuthentication.usingCredentials(client, authServerOptions, credentials) {
     override fun getAllGoalsIndex(): Future<List<GoalId>> =
         sendRequest(null, "/goals/", HttpMethod.GET)
             .map { mapper().readValue(it.toString(), object : TypeReference<List<GoalId>>() {}) }

@@ -14,7 +14,7 @@ abstract class HashedCredentialsProvider(private val bCrypt: BCrypt) : Credentia
 
     override fun login(username: Username, password: Password): Future<Role> =
         credentialsForUser(username).flatMap { user ->
-            bCrypt.verify(password, user.credentials.hashedPassword).flatMap {
+            bCrypt.verify(password, user.credentials.password).flatMap {
                 if (it) {
                     Future.succeededFuture(user.role)
                 } else {

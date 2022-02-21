@@ -88,6 +88,14 @@ interface Lpaas {
             client: HttpClient,
             serverOptions: ServerOptions,
             credentials: Credentials
-        ): Lpaas = LpaasImpl(vertx, client, serverOptions, credentials)
+        ): Lpaas = LpaasImpl(vertx, client, serverOptions, serverOptions, credentials)
+
+        fun of(
+            vertx: Vertx,
+            client: HttpClient,
+            serverOptions: ServerOptions,
+            authServerOptions: ServerOptions,
+            credentials: Credentials
+        ): Lpaas = LpaasImpl(vertx, client, serverOptions, authServerOptions, credentials)
     }
 }

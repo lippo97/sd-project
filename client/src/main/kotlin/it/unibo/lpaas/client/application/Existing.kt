@@ -30,7 +30,8 @@ class Existing : CliktCommand() {
                 Lpaas.of(
                     vertx,
                     client,
-                    ServerOptions(options.hostname, options.port, "/v1"),
+                    ServerOptions(options.lpaasHostname, options.lpaasPort, "/v1"),
+                    ServerOptions(options.authHostname, options.authPort),
                     Credentials(Username(options.username), Password(options.password))
                 ),
                 theoryId

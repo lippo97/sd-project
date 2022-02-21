@@ -168,7 +168,7 @@ class LpaasIntegrationTest : FunSpec({
         context("login") {
             test("it should authenticate as CONFIGURATOR") {
                 val jwtTokenAuthentication = JwtTokenAuthentication
-                    .usingToken(
+                    .usingCredentials(
                         httpClient,
                         ServerOptions("localhost", 8090, "/v1"),
                         sampleCredentials
@@ -179,7 +179,7 @@ class LpaasIntegrationTest : FunSpec({
             test("it should not authenticate with invalid credentials") {
                 shouldThrow<UnauthorizedException> {
                     JwtTokenAuthentication
-                        .usingToken(
+                        .usingCredentials(
                             httpClient,
                             ServerOptions("localhost", 8090, "/v1"),
                             Credentials(Username("unknown"), Password("invalid"))

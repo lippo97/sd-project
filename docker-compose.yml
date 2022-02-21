@@ -6,8 +6,11 @@ services:
       dockerfile: ./docker/auth/Dockerfile
     ports:
       - "8081:8080"
-    env_file:
-      - .lpaas.env
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://user:password@mongodb:27017/
+      MONGO_DATABASE: lpaas
+      JWT_SECRET: keyboard cat
+      PORT: 8080
 
   lpaas:
     build:
@@ -15,13 +18,13 @@ services:
       dockerfile: ./docker/lpaas/Dockerfile
     ports:
       - "8080:8080"
-    env_file:
-      - .lpaas.env
+    environment:
+      LPAAS_JWT_SECRET: keyboard cat
+      LPAAS_MONGO_CONNECTION_STRING: mongodb://user:password@mongodb:27017/
+      LPAAS_MONGO_DATABASE: lpaas
 
   mongodb:
-    build:
-      context: .
-      dockerfile: ./docker/mongo/Dockerfile
+    build: ./docker/mongo
     ports:
       - "27017:27017"
     volumes:

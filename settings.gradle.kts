@@ -1,4 +1,7 @@
 rootProject.name = "lpaas"
+
+enableFeaturePreview("VERSION_CATALOGS")
+
 include("utils")
 include("domain")
 include("serialization")

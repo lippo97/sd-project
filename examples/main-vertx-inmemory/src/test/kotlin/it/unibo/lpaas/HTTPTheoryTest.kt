@@ -515,15 +515,16 @@ class HTTPTheoryTest : FunSpec({
                     "value" to exampleTheory,
                 )
             )
-        }.await()
-
-        client.put("$theoryBaseUrl/$theoryName") {
-            obj(
-                "data" to obj(
-                    "value" to exampleTheory2
+        }.flatMap {
+            client.put("$theoryBaseUrl/$theoryName") {
+                obj(
+                    "data" to obj(
+                        "value" to exampleTheory2
+                    )
                 )
-            )
-        }.await()
+            }
+        }
+            .await()
 
         test("it should return the specific facts") {
             client.get("$theoryBaseUrl/$theoryName/history/${version.show()}/facts/$functor")

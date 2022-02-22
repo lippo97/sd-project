@@ -38,6 +38,9 @@ import it.unibo.lpaas.http.databind.SerializerCollection
 import it.unibo.lpaas.http.databind.SerializerConfiguration
 import it.unibo.lpaas.persistence.inMemory
 import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Paths
 
 class MainWithAuth private constructor() {
     companion object {
@@ -60,7 +63,12 @@ class MainWithAuth private constructor() {
             val vertx = Vertx.vertx()
             val timer = Timer.vertx(vertx)
             val bCrypt = BCrypt.vertx(vertx)
-            val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, "keyboard cat")
+//            val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, "keyboard cat")
+            val jwtProvider = JWTAuthFactory.asymmetric(
+                vertx,
+                Files.readAllBytes(Paths.get("keys/public.pem")).toString(Charset.defaultCharset()),
+                Files.readAllBytes(Paths.get("keys/private_key.pem")).toString(Charset.defaultCharset()),
+            )
 
             val controller = Controller.make(
                 DependencyGraph(
@@ -107,7 +115,7 @@ class MainWithAuth private constructor() {
                                 bindApi(1, controller)
                                 mountSubRouter(
                                     "/",
-                                    AuthController.make(vertx, jwtProvider, credentialsProvider).routes()
+                                    AuthController.make(vertx, jwtProvider, credentialsProvider, "RS256").routes()
                                 )
                             }
                         )

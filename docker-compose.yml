@@ -6,11 +6,13 @@ services:
       dockerfile: ./docker/auth/Dockerfile
     ports:
       - "8081:8080"
+    volumes:
+      - ./generated-keys/private.pkcs8.pem:/etc/ssl/certs/my_key.pem
     environment:
-      MONGO_CONNECTION_STRING: mongodb://user:password@mongodb:27017/
-      MONGO_DATABASE: lpaas
-      JWT_SECRET: keyboard cat
-      PORT: 8080
+      AUTH_MONGO_CONNECTION_STRING: mongodb://user:password@mongodb:27017/
+      AUTH_MONGO_DATABASE: lpaas
+      AUTH_PRIVATE_KEY_PATH: /etc/ssl/certs/my_key.pem
+      AUTH_PORT: 8080
 
   lpaas:
     build:
@@ -18,10 +20,13 @@ services:
       dockerfile: ./docker/lpaas/Dockerfile
     ports:
       - "8080:8080"
+    volumes:
+      - ./generated-keys/public.pem:/etc/ssl/certs/auth_key.pem
     environment:
-      LPAAS_JWT_SECRET: keyboard cat
       LPAAS_MONGO_CONNECTION_STRING: mongodb://user:password@mongodb:27017/
-      LPAAS_MONGO_DATABASE: lpaas
+      LPAAS_MONGO_APPLICATION_DATABASE: lpaas
+      LPAAS_PUBLIC_KEY_PATH: /etc/ssl/certs/auth_key.pem
+      LPAAS_PORT: 8080
 
   mongodb:
     build: ./docker/mongo

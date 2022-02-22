@@ -26,6 +26,9 @@ import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.div
 import org.litote.kmongo.reactivestreams.KMongo
 import org.litote.kmongo.util.KMongoConfiguration
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Paths
 
 fun main() {
     SerializerConfiguration.defaultWithModule {
@@ -43,13 +46,21 @@ fun main() {
     val bCrypt = BCrypt.vertx(vertx)
 
     val mongoClientSettings = MongoClientSettings.builder()
-        .applyConnectionString(ConnectionString(Environment.getString("MONGO_CONNECTION_STRING")))
+        .applyConnectionString(ConnectionString(Environment.getString("AUTH_MONGO_CONNECTION_STRING")))
         .build()
     val client = KMongo.createClient(mongoClientSettings).coroutine
-    val database = client.getDatabase(Environment.getString("MONGO_DATABASE"))
+    val database = client.getDatabase(Environment.getString("AUTH_MONGO_DATABASE"))
 
-    val port = Environment.getInt("PORT")
-    val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, Environment.getString("JWT_SECRET"))
+    val port = Environment.getInt("AUTH_PORT")
+//    val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, Environment.getString("JWT_SECRET"))
+    val privateKey = Files.readAllBytes(Paths.get(Environment.getString("AUTH_PRIVATE_KEY_PATH")))
+        .toString(Charset.defaultCharset())
+
+    val jwtProvider = JWTAuthFactory.rs256(
+        vertx,
+        privateKey
+    )
+
     val userCollection = database.getCollection<SecureUserDTO>("user").apply {
         GlobalScope.launch(Dispatchers.IO) {
             createIndex(
@@ -63,7 +74,7 @@ fun main() {
     val credentialsProvider = CredentialsProvider.mongo(vertx, bCrypt, userCollection)
 
     vertx.createHttpServer()
-        .requestHandler(AuthController.make(vertx, jwtProvider, credentialsProvider).routes())
+        .requestHandler(AuthController.make(vertx, jwtProvider, credentialsProvider, "RS256").routes())
         .listen(port)
         .onSuccess {
             println("Running...")

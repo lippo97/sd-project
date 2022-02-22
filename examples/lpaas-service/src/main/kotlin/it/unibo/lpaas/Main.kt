@@ -27,11 +27,16 @@ import it.unibo.lpaas.domain.impl.StringId
 import it.unibo.lpaas.environment.Environment
 import it.unibo.lpaas.persistence.mongo
 import it.unibo.tuprolog.solve.classic.ClassicSolverFactory
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Paths
 
 fun main() {
     val vertx = Vertx.vertx()
     val timer = Timer.vertx(vertx)
-    val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, Environment.Secrets.JWT_SECRET)
+    val publicKey = Files.readAllBytes(Paths.get(Environment.getString("LPAAS_PUBLIC_KEY_PATH")))
+        .toString(Charset.defaultCharset())
+    val jwtProvider = JWTAuthFactory.rs256(vertx, publicKey)
 
     val controller = Controller.make(
         DependencyGraph(
@@ -71,7 +76,7 @@ fun main() {
                 bindApi(1, controller)
             }
         )
-        .listen(Environment.Web.PORT ?: 8080).onComplete {
+        .listen(Environment.getInt("LPAAS_PORT")).onComplete {
             println("Running...")
         }
 }

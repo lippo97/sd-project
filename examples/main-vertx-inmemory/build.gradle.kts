@@ -22,5 +22,5 @@ dependencies {
 }
 
 application {
-    mainClass.set("it.unibo.lpaas.MainKt")
+    mainClass.set("it.unibo.lpaas.MainWithAuth")
 }

@@ -63,7 +63,6 @@ class MainWithAuth private constructor() {
             val vertx = Vertx.vertx()
             val timer = Timer.vertx(vertx)
             val bCrypt = BCrypt.vertx(vertx)
-//            val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, "keyboard cat")
             val jwtProvider = JWTAuthFactory.asymmetric(
                 vertx,
                 Files.readAllBytes(Paths.get("keys/public.pem")).toString(Charset.defaultCharset()),

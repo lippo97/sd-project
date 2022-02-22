@@ -52,7 +52,6 @@ fun main() {
     val database = client.getDatabase(Environment.getString("AUTH_MONGO_DATABASE"))
 
     val port = Environment.getInt("AUTH_PORT")
-//    val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, Environment.getString("JWT_SECRET"))
     val privateKey = Files.readAllBytes(Paths.get(Environment.getString("AUTH_PRIVATE_KEY_PATH")))
         .toString(Charset.defaultCharset())
 

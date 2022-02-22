@@ -13,14 +13,16 @@ This repository contains an implementation of both a server and a client over HT
 
 ## Repository content
 
+Modules are organized following the [Hexagonal
+architecture](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)) pattern. This way the
+components are loosely coupled.
+
+![Hexagonal architecture](./images/hexagonal-architecture.png)
+
 A complete overview of the modules and their dependencies is provided by the following diagram.
 
 ![Module dependencies
 diagram](./build/reports/dependency-graph/dependency-graph-internal-modules2.svg)
-
-Modules are organized following the [Hexagonal
-architecture](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)) pattern. This way the
-components are loosely coupled.
 
 The main modules are the following:
 - `utils` is the 0-level module and it holds common data structures or algorithms;
@@ -49,6 +51,25 @@ API can be deployed. Its structure is the following:
 - `lpaas` is the core service and to authenticate users it checks if incoming JSON Web Tokens are
   signed using the authentication service public key;
 - `mongodb` is a MongoDB instance; it holds data of both authentication and LPaaS services.
+
+In order to setup the LPaaS server using the docker-compose you must provide a pair of RSA keys. [As
+the official Vert.X documentation says](https://vertx.io/docs/vertx-auth-jwt/java/#_using_rsa_keys),
+in order for the standard JDK to read the file, you must convert it to PKCS8 format first. For the
+sake of the demo a `generate_keys.sh` script is provided in the repository. It will generate a RSA
+key pair into the `generated-keys` directory.
+
+``` sh
+$ ./generate_keys.sh 
+Generating RSA private key, 2048 bit long modulus (2 primes)
+..................................................................................+++++
+...................+++++
+e is 65537 (0x010001)
+writing RSA key
+Keys generated successfully.
+$ ls generated-keys 
+private.pkcs8.pem  public.pem
+$ docker-compose up
+```
 
 ## Reference publication
   

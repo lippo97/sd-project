@@ -27,10 +27,10 @@ import it.unibo.tuprolog.theory.Theory as Theory2P
 
 object Mongo {
     private val mongoClientSettings = MongoClientSettings.builder().apply {
-        applyConnectionString(ConnectionString(Environment.Mongo.CONNECTION_STRING))
+        applyConnectionString(ConnectionString(Environment.getString("LPAAS_MONGO_CONNECTION_STRING")))
     }.build()
     private val client = KMongo.createClient(mongoClientSettings).coroutine
-    private val database = client.getDatabase(Environment.Mongo.APPLICATION_DATABASE)
+    private val database = client.getDatabase(Environment.getString("LPAAS_MONGO_APPLICATION_DATABASE"))
 
     init {
         KMongoConfiguration.registerBsonModule(

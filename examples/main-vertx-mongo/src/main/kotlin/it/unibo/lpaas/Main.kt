@@ -35,7 +35,7 @@ fun main() {
     val vertx = Vertx.vertx()
     val timer = Timer.vertx(vertx)
     val bCrypt = BCrypt.vertx(vertx)
-    val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, Environment.Secrets.JWT_SECRET)
+    val jwtProvider = JWTAuthFactory.hs256SecretBased(vertx, Environment.getString("LPAAS_JWT_SECRET"))
 
     val controller = Controller.make(
         DependencyGraph(
@@ -81,7 +81,7 @@ fun main() {
                 )
             }
         )
-        .listen(Environment.Web.PORT ?: 8080).onComplete {
+        .listen(Environment.getNullableInt("LPAAS_PORT") ?: 8080).onComplete {
             println("Running...")
         }
 }

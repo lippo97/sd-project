@@ -10,6 +10,8 @@ interface BCrypt {
 
     fun hash(password: String): Future<String>
 
+    fun hashSync(password: String): String
+
     companion object {
 
         fun vertx(vertx: Vertx, cost: Int = 6): BCrypt = object : BCrypt {
@@ -21,8 +23,11 @@ interface BCrypt {
 
             override fun hash(password: String): Future<String> =
                 vertx.executeBlocking {
-                    it.complete(BCryptAlg.withDefaults().hashToString(cost, password.toCharArray()))
+                    it.complete(hashSync(password))
                 }
+
+            override fun hashSync(password: String): String =
+                BCryptAlg.withDefaults().hashToString(cost, password.toCharArray())
         }
     }
 }

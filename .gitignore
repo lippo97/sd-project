@@ -12,3 +12,5 @@ gradle-app.setting
 .gradletasknamecache
 
 .idea
+
+generated-keys

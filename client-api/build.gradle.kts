@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     api(project(":domain"))
-    api("io.vertx:vertx-core:4.2.1")
+    api(libs.vertx.core)
     implementation(project(":serialization-vertx"))
     implementation(project(":authentication-vertx"))
 
@@ -13,10 +13,9 @@ dependencies {
     testImplementation(project(":core"))
     testImplementation(project(":authorization"))
     testImplementation(project(":persistence-inmemory"))
-    testImplementation("io.mockk:mockk:1.12.1")
-    testImplementation("io.vertx:vertx-web:4.2.1")
-    testImplementation("io.vertx:vertx-auth-jwt:4.2.1")
-    testImplementation("io.vertx:vertx-lang-kotlin:4.2.1")
-    testImplementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.1")
-    testImplementation("it.unibo.tuprolog", "solve-classic", "0.20.4")
+    testImplementation(libs.mockk)
+    testImplementation(libs.vertx.web)
+    testImplementation(libs.vertx.auth.jwt)
+    testImplementation(libs.bundles.vertx.kotlin)
+    testImplementation(libs.tuprolog.solve.classic)
 }

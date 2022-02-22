@@ -5,6 +5,6 @@ plugins {
 
 dependencies {
     testFixturesImplementation(project(":domain"))
-    testFixturesImplementation("it.unibo.tuprolog", "parser-core", "0.20.4")
-    testFixturesImplementation("it.unibo.tuprolog", "parser-theory", "0.20.4")
+    testFixturesImplementation(libs.tuprolog.parser.core)
+    testFixturesImplementation(libs.tuprolog.parser.theory)
 }

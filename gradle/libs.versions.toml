@@ -1,0 +1,45 @@
+[versions]
+bcrypt = "0.9.0"
+clikt = "3.4.0"
+jackson = "2.13.1"
+junit-jupiter = "5.8.1"
+kmongo = "4.4.0"
+kotlin = "1.6.0"
+mockk = "1.12.1"
+tuprolog = "0.20.4"
+vertx = "4.2.4"
+
+[libraries]
+bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
+clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
+jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter"}
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter"}
+kmongo-core = { module = "org.litote.kmongo:kmongo", version.ref = "kmongo" }
+kmongo-async = { module = "org.litote.kmongo:kmongo-async", version.ref = "kmongo" }
+kmongo-coroutine = { module = "org.litote.kmongo:kmongo-coroutine", version.ref = "kmongo" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8", version.ref = "kotlin"}
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+tuprolog-core = { module = "it.unibo.tuprolog:core", version.ref = "tuprolog" }
+tuprolog-theory = { module = "it.unibo.tuprolog:theory", version.ref = "tuprolog" }
+tuprolog-parser-core = { module = "it.unibo.tuprolog:parser-core", version.ref = "tuprolog" }
+tuprolog-parser-theory = { module = "it.unibo.tuprolog:parser-theory", version.ref = "tuprolog" }
+tuprolog-serialize-core = { module = "it.unibo.tuprolog:serialize-core", version.ref = "tuprolog" }
+tuprolog-serialize-theory = { module = "it.unibo.tuprolog:serialize-theory", version.ref = "tuprolog" }
+tuprolog-solve-api = { module = "it.unibo.tuprolog:solve", version.ref = "tuprolog" }
+tuprolog-solve-classic = { module = "it.unibo.tuprolog:solve-classic", version.ref = "tuprolog" }
+vertx-auth-jwt = { module = "io.vertx:vertx-auth-jwt", version.ref = "vertx" }
+vertx-core = { module = "io.vertx:vertx-core", version.ref = "vertx" }
+vertx-lang-kotlin-core = { module = "io.vertx:vertx-lang-kotlin", version.ref = "vertx" }
+vertx-lang-kotlin-coroutines = { module = "io.vertx:vertx-lang-kotlin-coroutines", version.ref = "vertx" }
+vertx-web = { module = "io.vertx:vertx-web", version.ref = "vertx" }
+
+[bundles]
+vertx-kotlin = [ "vertx-lang-kotlin-core", "vertx-lang-kotlin-coroutines" ]
+kmongo = [ "kmongo-core", "kmongo-async", "kmongo-coroutine" ]

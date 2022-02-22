@@ -6,12 +6,12 @@ plugins {
 dependencies {
     api(project(":domain"))
     implementation(project(":utils"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
-    implementation("it.unibo.tuprolog", "solve", "0.20.4")
-    runtimeOnly("it.unibo.tuprolog", "solve-classic", "0.20.4")
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.tuprolog.solve.api)
+    runtimeOnly(libs.tuprolog.solve.classic)
 
     testImplementation(testFixtures(project(":test-fixtures-domain")))
-    testImplementation("io.mockk:mockk:1.12.1")
-    testImplementation("it.unibo.tuprolog", "parser-core", "0.20.4")
-    testImplementation("it.unibo.tuprolog", "parser-theory", "0.20.4")
+    testImplementation(libs.mockk)
+    testImplementation(libs.tuprolog.parser.core)
+    testImplementation(libs.tuprolog.parser.theory)
 }

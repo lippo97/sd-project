@@ -42,7 +42,7 @@ functions, in order to adapt to many asynchronous programming paradigms.
 
 ## End user setup
 
-![Docker compose deployment diagram](./docker/compose/deployment/diagram.png)
+![Docker compose deployment diagram](./images/docker-compose.png)
 
 A `docker-compose` file is provided in the repository. It declares an example of how the provided
 API can be deployed. Its structure is the following:

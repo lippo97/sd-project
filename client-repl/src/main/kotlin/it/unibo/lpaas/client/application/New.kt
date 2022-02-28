@@ -11,7 +11,7 @@ import it.unibo.lpaas.authentication.domain.Password
 import it.unibo.lpaas.authentication.domain.Username
 import it.unibo.lpaas.client.api.Lpaas
 import it.unibo.lpaas.client.api.ServerOptions
-import it.unibo.lpaas.client.repl.LpaasRepl
+import it.unibo.lpaas.client.repl.LpaasReplImpl
 import it.unibo.tuprolog.theory.Theory
 import it.unibo.tuprolog.theory.parsing.parse
 import java.util.concurrent.TimeUnit
@@ -29,7 +29,7 @@ class New : CliktCommand() {
             vertx.fileSystem().readFile(file.absolutePath)
                 .map { Theory.parse(it.toString()) }
                 .flatMap {
-                    LpaasRepl.fromTheory(
+                    LpaasReplImpl.fromTheory(
                         vertx,
                         Lpaas.of(
                             vertx,

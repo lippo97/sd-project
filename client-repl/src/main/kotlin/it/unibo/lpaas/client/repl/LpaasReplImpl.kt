@@ -18,7 +18,7 @@ import it.unibo.tuprolog.core.parsing.ParseException
 import java.util.UUID
 import it.unibo.tuprolog.theory.Theory as Theory2P
 
-class LpaasRepl private constructor (
+class LpaasReplImpl private constructor (
     vertx: Vertx,
     private val lpaas: Lpaas,
     private val theoryId: TheoryId,
@@ -26,7 +26,8 @@ class LpaasRepl private constructor (
     parseExceptionFormatter: Formatter<ParseException>,
     private val sessionId: String,
 ) : Console by Console.standard(vertx.createSharedWorkerExecutor("console", 1)),
-    EnhancedConsole(parseExceptionFormatter) {
+    EnhancedConsole(parseExceptionFormatter),
+    Repl {
 
     private var currentRound: Int = 0
 
@@ -36,7 +37,7 @@ class LpaasRepl private constructor (
     private val currentSolutionId: SolutionId
         get() = SolutionId.of("solution-$sessionId-$currentRound")
 
-    fun repl(): Future<Void> =
+    override fun repl(): Future<Void> =
         shellReadStruct()
             .map { listOf(Subgoal(it)) }
             .flatMap {
@@ -80,10 +81,10 @@ class LpaasRepl private constructor (
             resultFormatter: Formatter<Result> = Formatter.result,
             parseExceptionFormatter: Formatter<ParseException> = Formatter.parseException,
             sessionId: String = UUID.randomUUID().toString()
-        ): Future<LpaasRepl> =
+        ): Future<Repl> =
             lpaas.getTheoryByName(theoryId)
                 .map {
-                    LpaasRepl(
+                    LpaasReplImpl(
                         vertx,
                         lpaas,
                         theoryId,
@@ -101,7 +102,7 @@ class LpaasRepl private constructor (
             resultFormatter: Formatter<Result> = Formatter.result,
             parseExceptionFormatter: Formatter<ParseException> = Formatter.parseException,
             sessionId: String = UUID.randomUUID().toString()
-        ): Future<LpaasRepl> =
+        ): Future<Repl> =
             lpaas.createTheory(StringId.uuid(), Theory.Data(theory2p))
                 .map { it.name }
                 .flatMap { fromExistingTheory(vertx, lpaas, it, resultFormatter, parseExceptionFormatter, sessionId) }

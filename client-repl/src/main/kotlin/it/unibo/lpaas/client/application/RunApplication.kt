@@ -5,7 +5,7 @@ import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpClient
 import it.unibo.lpaas.client.api.exception.HTTPException
-import it.unibo.lpaas.client.repl.LpaasRepl
+import it.unibo.lpaas.client.repl.Repl
 
 class RunApplication(
     private val vertx: Vertx,
@@ -32,7 +32,7 @@ class RunApplication(
         }
     }
 
-    fun Future<LpaasRepl>.run(): Future<Void> =
+    fun Future<Repl>.run(): Future<Void> =
         flatMap { it.repl() }
             .onFailure(::errorHandler)
 }

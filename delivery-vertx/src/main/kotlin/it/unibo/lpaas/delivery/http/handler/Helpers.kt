@@ -6,8 +6,8 @@ import io.vertx.core.json.Json
 import io.vertx.ext.web.Route
 import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.coroutines.dispatcher
+import it.unibo.lpaas.core.exception.CoreException
 import it.unibo.lpaas.core.exception.DuplicateIdentifierException
-import it.unibo.lpaas.core.exception.NonFatalError
 import it.unibo.lpaas.core.exception.NotFoundException
 import it.unibo.lpaas.delivery.http.HTTPStatusCode
 import it.unibo.lpaas.delivery.http.exception.DeliveryException
@@ -58,11 +58,10 @@ internal fun Route.suspendHandler(fn: suspend (RoutingContext) -> Unit): Route =
         }
     }
 
-internal fun RoutingContext.handleNonFatal(error: NonFatalError) {
+internal fun RoutingContext.handleCoreException(error: CoreException) {
     val statusCode = when (error) {
         is NotFoundException -> HTTPStatusCode.NOT_FOUND
         is DuplicateIdentifierException -> HTTPStatusCode.CONFLICT
-        else -> HTTPStatusCode.INTERNAL_SERVER_ERROR
     }
     val response = response()
         .setStatusCode(statusCode)
@@ -71,12 +70,11 @@ internal fun RoutingContext.handleNonFatal(error: NonFatalError) {
     else response.end()
 }
 
-fun RoutingContext.handleDelivery(error: DeliveryException) {
+fun RoutingContext.handleDeliveryException(error: DeliveryException) {
     val statusCode = when (error) {
         is UnauthorizedException -> HTTPStatusCode.UNAUTHORIZED
         is ValidationException -> HTTPStatusCode.BAD_REQUEST
         is UnsupportedMediaTypeException -> HTTPStatusCode.UNSUPPORTED_MEDIA_TYPE
-        else -> HTTPStatusCode.INTERNAL_SERVER_ERROR
     }
     val response = response()
         .setStatusCode(statusCode)

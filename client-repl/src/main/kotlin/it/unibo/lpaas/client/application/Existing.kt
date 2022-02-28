@@ -11,7 +11,7 @@ import it.unibo.lpaas.authentication.domain.Password
 import it.unibo.lpaas.authentication.domain.Username
 import it.unibo.lpaas.client.api.Lpaas
 import it.unibo.lpaas.client.api.ServerOptions
-import it.unibo.lpaas.client.repl.LpaasRepl
+import it.unibo.lpaas.client.repl.LpaasReplImpl
 import it.unibo.lpaas.domain.TheoryId
 import java.util.concurrent.TimeUnit
 
@@ -25,7 +25,7 @@ class Existing : CliktCommand() {
         val client = vertx.createHttpClient()
 
         with(RunApplication(vertx, client, options.verbose)) {
-            LpaasRepl.fromExistingTheory(
+            LpaasReplImpl.fromExistingTheory(
                 vertx,
                 Lpaas.of(
                     vertx,

@@ -5,13 +5,13 @@ import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.AuthenticationHandler
 import io.vertx.ext.web.handler.HttpException
 import it.unibo.lpaas.auth.AuthorizationProvider
-import it.unibo.lpaas.core.exception.NonFatalError
+import it.unibo.lpaas.core.exception.CoreException
 import it.unibo.lpaas.delivery.http.exception.DeliveryException
 import it.unibo.lpaas.delivery.http.handler.GoalController
 import it.unibo.lpaas.delivery.http.handler.SolutionController
 import it.unibo.lpaas.delivery.http.handler.TheoryController
-import it.unibo.lpaas.delivery.http.handler.handleDelivery
-import it.unibo.lpaas.delivery.http.handler.handleNonFatal
+import it.unibo.lpaas.delivery.http.handler.handleCoreException
+import it.unibo.lpaas.delivery.http.handler.handleDeliveryException
 
 fun interface Controller {
     fun routes(): Router
@@ -92,8 +92,8 @@ fun interface Controller {
 
 fun Route.nonFatalHandler(): Route = failureHandler { ctx ->
     when (val failure = ctx.failure()) {
-        is NonFatalError -> ctx.handleNonFatal(failure)
-        is DeliveryException -> ctx.handleDelivery(failure)
+        is CoreException -> ctx.handleCoreException(failure)
+        is DeliveryException -> ctx.handleDeliveryException(failure)
         is HttpException -> ctx.response()
             .setStatusCode(failure.statusCode)
             .end()

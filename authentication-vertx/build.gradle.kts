@@ -3,13 +3,12 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":authorization"))
     api(project(":delivery-vertx"))
+    api(project(":authentication"))
     implementation(libs.vertx.core)
     implementation(libs.vertx.web)
     implementation(libs.vertx.auth.jwt)
     implementation(libs.bundles.kmongo)
-    implementation(libs.bcrypt)
 
     testImplementation(libs.bundles.vertx.kotlin)
 }

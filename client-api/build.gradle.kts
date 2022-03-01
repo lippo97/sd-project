@@ -4,12 +4,13 @@ plugins {
 
 dependencies {
     api(project(":domain"))
-    api(libs.vertx.core)
+    api(project(":authentication"))
     implementation(project(":serialization-vertx"))
-    implementation(project(":authentication-vertx"))
+    api(libs.vertx.core)
 
     testImplementation(project(":utils"))
     testImplementation(project(":delivery-vertx"))
+    testImplementation(project(":authentication-vertx"))
     testImplementation(project(":core"))
     testImplementation(project(":authorization"))
     testImplementation(project(":persistence-inmemory"))

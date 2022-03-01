@@ -22,7 +22,7 @@ components are loosely coupled.
 A complete overview of the modules and their dependencies is provided by the following diagram.
 
 ![Module dependencies
-diagram](./build/reports/dependency-graph/dependency-graph-internal-modules2.svg)
+diagram](./images/module-dependencies.png)
 
 The main modules are the following:
 - `utils` is the 0-level module and it holds common data structures or algorithms;
@@ -42,7 +42,7 @@ functions, in order to adapt to many asynchronous programming paradigms.
 
 ## End user setup
 
-![Docker compose deployment diagram](./images/docker-compose.png)
+![Docker compose deployment diagram](./images/deployment.png)
 
 A `docker-compose` file is provided in the repository. It declares an example of how the provided
 API can be deployed. Its structure is the following:

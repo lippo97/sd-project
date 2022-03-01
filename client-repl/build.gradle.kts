@@ -1,6 +1,7 @@
 plugins {
     id("kotlin-common-convention")
     id("application")
+    alias(libs.plugins.shadow)
 }
 
 dependencies {
@@ -14,6 +15,16 @@ dependencies {
     implementation(libs.clikt)
 }
 
+val main = "it.unibo.lpaas.client.application.ApplicationKt"
+
+tasks{
+    shadowJar {
+        manifest {
+            attributes(Pair("Main-Class", main))
+        }
+    }
+}
+
 application {
-    mainClass.set("it.unibo.lpaas.client.application.ApplicationKt")
+    mainClass.set(main)
 }

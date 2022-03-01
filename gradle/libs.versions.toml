@@ -43,3 +43,6 @@ vertx-web = { module = "io.vertx:vertx-web", version.ref = "vertx" }
 [bundles]
 vertx-kotlin = [ "vertx-lang-kotlin-core", "vertx-lang-kotlin-coroutines" ]
 kmongo = [ "kmongo-core", "kmongo-async", "kmongo-coroutine" ]
+
+[plugins]
+shadow = { id = "com.github.johnrengelman.shadow", version = "7.0.0" }

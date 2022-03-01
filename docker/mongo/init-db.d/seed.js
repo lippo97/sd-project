@@ -5,7 +5,7 @@ db.user.insertMany([
   {
     "credentials": {
       "username": {
-        "value": "abc0"
+        "value": "source"
       },
       "password": {
         "value": "$2a$06$qSJV0tCzfA3as6Y1NwCqS.S/vxrbKc8ZrGguZ3W6yYRLZsUav/jz6"
@@ -16,7 +16,7 @@ db.user.insertMany([
   {
     "credentials": {
       "username": {
-        "value": "abc1"
+        "value": "client"
       },
       "password": {
         "value": "$2a$06$qSJV0tCzfA3as6Y1NwCqS.S/vxrbKc8ZrGguZ3W6yYRLZsUav/jz6"
@@ -27,7 +27,7 @@ db.user.insertMany([
   {
     "credentials": {
       "username": {
-        "value": "abc2"
+        "value": "configurator"
       },
       "password": {
         "value": "$2a$06$qSJV0tCzfA3as6Y1NwCqS.S/vxrbKc8ZrGguZ3W6yYRLZsUav/jz6"

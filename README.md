@@ -71,6 +71,18 @@ private.pkcs8.pem  public.pem
 $ docker-compose up
 ```
 
+Then get the REPL latest version and start it:
+```sh
+$ java -jar client-repl-0.1-all.jar \
+  new theory.pl \
+  --lpaas-hostname "localhost" \
+  --lpaas-port 8080 \
+  --auth-hostname "localhost" \
+  --auth-port 8081 \
+  --username "configurator" \
+  --password "password"
+```
+
 ## Reference publication
   
 ``` bibtex

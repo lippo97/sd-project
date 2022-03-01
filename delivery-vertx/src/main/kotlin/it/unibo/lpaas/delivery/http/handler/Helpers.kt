@@ -19,8 +19,6 @@ import it.unibo.lpaas.http.databind.MimeType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-const val USE_CASE_CTX = "USE_CASE"
-
 /**
  * Lifts the existing `JSON.decodeValue` function, mapping its errors into
  * domain-specific ones.
@@ -47,9 +45,6 @@ internal fun <T> decodeJson(buffer: Buffer, clazz: Class<T>): T =
  */
 internal fun Route.suspendHandler(fn: suspend (RoutingContext) -> Unit): Route =
     blockingHandler { ctx ->
-        // Since apparently exceptions thrown inside this handler aren't
-        // propagated to the vertx error handler automatically, we had to do it
-        // manually.
         GlobalScope.launch(ctx.vertx().dispatcher()) {
             runCatching {
                 fn(ctx)

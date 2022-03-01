@@ -9,7 +9,7 @@ natural evolution of LP in nowadays pervasive computing systems. Its purpose is 
 reasoning via explicit definition of the spatial-temporal structure of the environment where
 situated entities act and interact.
 
-This repository contains an implementation of both a server and a client over HTTP and WebSockets.
+This repository contains an implementation of both a server and a client over HTTP and WebSockets, following [this OpenAPI specification](https://app.swaggerhub.com/apis/unibo-sd/LPaaS/1.0.0#/).
 
 ## Repository content
 
